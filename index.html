@@ -200,6 +200,25 @@ body.touchEditing #overlay{display:none!important}
 .friendRow button{margin:2px;padding:7px 11px;font-size:12px}
 .onlinePanel{max-height:min(88dvh,670px);overflow-y:auto;overscroll-behavior:contain}
 
+/* Multiplayer lobby and live chat */
+.multiRoomCode{font-size:24px;letter-spacing:.2em;color:#ffda90;font-weight:900;user-select:text}
+.multiGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:12px 0}
+.multiMember{padding:10px 6px;background:#243947;border:1px solid #8b7853;border-radius:6px;font-size:12px}
+.multiMember.ready{border-color:#69d59b;color:#d7ffe5}
+.multiField{display:grid;gap:4px;text-align:left;margin:8px auto;max-width:400px;font-size:12px}
+.multiField input,.multiField select{width:100%;max-width:100%;min-width:0}
+.multiActions{display:flex;justify-content:center;gap:5px;flex-wrap:wrap}
+.multiActions button{font-size:12px;margin:2px;padding:9px 12px}
+.multiFriendPrefs{display:flex;gap:5px;align-items:center;flex-wrap:wrap}
+.multiFriendPrefs input{width:110px;min-width:0;padding:5px;font-size:12px}
+.multiFriendPrefs button{margin:0;padding:6px;font-size:12px}
+#onlineChatToggle{position:fixed;bottom:94px;right:12px;z-index:4;padding:8px 11px;background:#203b48;color:#fff;border:2px solid #d7b477;border-radius:6px;display:none}
+#onlineChatPanel{position:fixed;right:10px;bottom:137px;width:min(340px,72vw);max-height:52vh;display:none;z-index:6;background:#122436eb;border:2px solid #c9a875;border-radius:8px;padding:8px;box-shadow:0 6px 20px #0009}
+#onlineChatLog{height:min(200px,29vh);overflow:auto;font-size:12px;display:flex;flex-direction:column;gap:5px;text-align:left}
+#onlineChatPanel form{display:flex;gap:4px;margin-top:7px}
+#onlineChatInput{min-width:0;width:100%;padding:7px;font-size:13px}
+#onlineChatPanel button{margin:0;padding:7px;font-size:12px}
+@media(max-height:450px){#onlineChatToggle{bottom:70px;right:5px}#onlineChatPanel{bottom:112px;max-height:60vh}}
 /* Profile dialog: separate ID, copy and actions; prevent overlaps on landscape phones. */
 .titleScene .onlinePanel{width:min(680px,94vw);max-width:100%;padding:clamp(12px,2.5vh,24px);min-width:0;overflow-x:hidden}
 .titleScene .onlinePanel .onlineIdentifier{margin:8px auto;overflow-wrap:anywhere;word-break:break-all}
@@ -509,7 +528,7 @@ function baseTile(x,y){if(x<0||x>=W||y<0)return 0;if(y>=H)return 3;let h=heightA
 }
 function getChunk(cx,cy){let k=cx+','+cy;if(chunks.has(k))return chunks.get(k);let a=new Uint8Array(CHUNK*CHUNK);for(let yy=0;yy<CHUNK;yy++)for(let xx=0;xx<CHUNK;xx++){let x=cx*CHUNK+xx,y=cy*CHUNK+yy;a[yy*CHUNK+xx]=baseTile(x,y)}chunks.set(k,a);if(chunks.size>85){for(let old of chunks.keys()){if(old!==k){chunks.delete(old);break}}}return a}
 function get(x,y){x=Math.floor(x);y=Math.floor(y);if(x<0||x>=W||y<0||y>=H)return 3;let id=x+','+y;if(edits.has(id))return edits.get(id);let cx=Math.floor(x/CHUNK),cy=Math.floor(y/CHUNK);return getChunk(cx,cy)[(y%CHUNK)*CHUNK+x%CHUNK]}
-function put(x,y,type){if(x<0||x>=W||y<0||y>=H)return;edits.set(x+','+y,type);}
+function put(x,y,type){if(x<0||x>=W||y<0||y>=H)return;const prev=get(x,y);edits.set(x+','+y,type);if(onlineCaptureEdits&&!onlineSuppressEdit&&onlineRoomCode&&prev!==type)window.WRCloud?.writeBlock?.(onlineRoomCode,x,y,type).catch(e=>console.warn('Block sync failed',e));}
 // Natural stone backdrop in caves; it is not an editable block and cannot be mined or placed.
 function getWall(x,y){if(x<0||x>=W||y<0||y>=H)return 0;return y>=heightAt(x)+4&&y<H-2?26:0}
 const DURABLE={99:180,9:100,10:100,11:100,14:180,15:180,16:180,17:420,21:280,22:280,23:280,24:420,25:420,72:900,27:160,41:520,42:320,43:380,44:600,59:360,64:850,65:580,78:1000,86:660,87:700};
@@ -708,6 +727,7 @@ function prepareTitlePreview(){
  time=780;zoom=1.6;weather='clear';
 }
 function showMenu(){
+ if(onlineRoomCode)leaveOnlineRoom();
  hideTip();mode='menu';document.body.classList.add('titleScene');overlay.classList.remove('hidden');
  prepareTitlePreview();
  modal.classList.remove('mapModal');
@@ -736,12 +756,93 @@ function showPlayerProfile(){
  document.getElementById('profileCopyId').onclick=()=>{const id=window.WRCloud?.uid;if(!id){status.textContent='先にオンライン接続をしてください。';return;}if(navigator.clipboard?.writeText)navigator.clipboard.writeText(id).then(()=>status.textContent='オンラインIDをコピーしました。').catch(()=>status.textContent='コピーできませんでした。IDを手動で選択してください。');else status.textContent='コピーできませんでした。IDを手動で選択してください。';};
  document.getElementById('profileBack').onclick=showMenu;
 }
+// Online room state. Single-player is not affected.
+let onlineRoomCode='',onlineRoomData=null,onlineRoomUnsubs=[],onlineRemotePlayers=new Map(),onlineCaptureEdits=false,onlineSuppressEdit=false,onlineMoveAt=0,onlineLastMoveX=NaN,onlineLastMoveY=NaN,onlineLastMoveStamp=-1000000,onlineChatUnsub=null;
+const onlineSafe=v=>escapeHTML(String(v||''));
+function onlineStatus(t){const el=document.getElementById('multiStatus');if(el)el.textContent=t;else toast(t);}
+function getMulti(){if(!window.WRCloud?.uid||!window.WRCloud.createRoom)throw Error('先にプロフィールからオンライン接続してください。');return window.WRCloud;}
+function closeRoomSubscriptions(){for(const fn of onlineRoomUnsubs.splice(0)){try{fn()}catch(_){}}onlineChatUnsub?.();onlineChatUnsub=null;}
+window.addEventListener('pagehide',()=>{if(onlineRoomCode)onlineLocalSave()});
+function onlineLocalSave(){if(!onlineRoomCode||!player||!window.WRCloud?.uid)return;try{localStorage.setItem('wildroot_multi_player_'+onlineRoomCode+'_'+window.WRCloud.uid,JSON.stringify({inv,armor,hp:player.hp,food:player.food,water:player.water,x:player.x,y:player.y}))}catch(_){}}
+function onlineLocalLoad(){try{const d=JSON.parse(localStorage.getItem('wildroot_multi_player_'+onlineRoomCode+'_'+window.WRCloud.uid)||'null');if(!d)return;if(Array.isArray(d.inv)&&d.inv.length===49)inv=d.inv;if(Array.isArray(d.armor)&&d.armor.length===3)armor=d.armor;for(const k of ['hp','food','water','x','y'])if(Number.isFinite(d[k]))player[k]=d[k];updateBar();}catch(_){}}
+function leaveOnlineRoom(){onlineLocalSave();closeRoomSubscriptions();onlineRoomCode='';onlineRoomData=null;onlineRemotePlayers.clear();document.getElementById('onlineChatToggle')?.style.setProperty('display','none');document.getElementById('onlineChatPanel')?.style.setProperty('display','none');}
 function showMultiplayerEntry(){
  mode='multiplayerEntry';document.body.classList.add('titleScene');overlay.classList.remove('hidden');
- const name=getLocalProfile().name;
- modal.innerHTML='<main class="titlePanel onlinePanel"><h2>🌐 マルチプレイ</h2><p>ようこそ、'+escapeHTML(name)+'！</p><p>最大4人のルーム・合言葉参加・チャット・共有ワールドを順番に開発します。</p><p class="onlineStatus">現在：オンライン接続は未実装（第1段階：画面の準備）</p><p class="small">本当にほかのプレイヤーと接続できるようになるのは、サーバー接続後です。</p><div class="worldActions"><button id="multiplayerBack">タイトルへ戻る</button></div></main>';
+ const recent=JSON.parse(localStorage.getItem('wildroot_recent_rooms')||'[]');
+ modal.innerHTML='<main class="titlePanel onlinePanel"><h2>🌐 マルチプレイ</h2><p>最大4人・合言葉で参加。ルームはホスト不在でも残ります。</p><p class="small">※オンライン接続とFirestoreルールの更新が必要。ワールド同期は試験版です。</p><div class="multiActions"><button id="multiCreate">＋ ルーム作成</button></div><label class="multiField">参加コード<input id="multiCode" maxlength="10" placeholder="8文字の合言葉"></label><div class="multiActions"><button id="multiJoin">参加する</button></div><p id="multiStatus" class="onlineStatus"></p><h3>最近のルーム</h3><div id="multiRecent" class="multiActions">'+recent.map(c=>'<button data-code="'+onlineSafe(c)+'">'+onlineSafe(c)+'</button>').join('')+'</div><div class="worldActions"><button id="multiplayerBack">タイトルへ戻る</button></div></main>';
  document.getElementById('multiplayerBack').onclick=showMenu;
+ document.querySelectorAll('#multiRecent [data-code]').forEach(b=>b.onclick=()=>enterMultiplayerRoom(b.dataset.code));
+ document.getElementById('multiCreate').onclick=async()=>{const b=document.getElementById('multiCreate');b.disabled=true;try{const c=await getMulti().createRoom();await enterMultiplayerRoom(c)}catch(e){onlineStatus('作成失敗：'+(e.code||e.message))}finally{b.disabled=false}};
+ document.getElementById('multiJoin').onclick=()=>enterMultiplayerRoom(document.getElementById('multiCode').value.trim().toUpperCase());
+ if(!window.WRCloud?.uid)onlineStatus('先にプロフィールからオンライン接続してください。');else onlineStatus('オンライン接続済み。');
 }
+async function enterMultiplayerRoom(code){
+ if(!/^[A-Z2-9]{8}$/.test(code)){onlineStatus('8文字の合言葉を入力してください。');return;}
+ try{onlineStatus('ルームに接続中…');const room=await getMulti().joinRoom(code);onlineRoomCode=code;onlineRoomData=room;
+  const recent=JSON.parse(localStorage.getItem('wildroot_recent_rooms')||'[]');localStorage.setItem('wildroot_recent_rooms',JSON.stringify([code,...recent.filter(x=>x!==code)].slice(0,10)));
+  showMultiplayerLobby();
+ }catch(e){onlineStatus('参加できません：'+(e.code||e.message))}
+}
+async function showMultiplayerLobby(){
+ if(!onlineRoomCode)return showMultiplayerEntry();
+ mode='multiLobby';document.body.classList.add('titleScene');overlay.classList.remove('hidden');closeRoomSubscriptions();
+ const roomCode=onlineRoomCode,cloud=getMulti();
+ modal.innerHTML='<main class="titlePanel onlinePanel"><h2>🌐 マルチルーム</h2><div class="multiRoomCode">'+onlineSafe(roomCode)+'</div><div class="multiActions"><button id="multiCopy">合言葉をコピー</button></div><p id="multiStatus" class="onlineStatus">読み込み中…</p><div id="multiMemberList" class="multiGrid"></div><div id="multiHostSetup"></div><div class="multiActions"><button id="multiReady">準備完了</button><button id="multiStart" style="display:none">ワールド生成・開始</button><button id="multiEnter" style="display:none">ワールドに入る</button><button id="multiDelete" style="display:none">ルームを削除</button></div><h3>💬 ルームチャット</h3><div id="multiLobbyLog" style="max-height:120px;overflow:auto;text-align:left;font-size:12px"></div><form id="multiLobbyChat" class="multiActions"><input id="multiLobbyInput" maxlength="200" placeholder="メッセージ" style="flex:1;min-width:120px"><button>送信</button></form><div class="worldActions"><button id="multiBack">マルチ一覧へ戻る</button></div></main>';
+ document.getElementById('multiBack').onclick=()=>{closeRoomSubscriptions();onlineRoomCode='';showMultiplayerEntry()};
+ document.getElementById('multiCopy').onclick=()=>{navigator.clipboard?.writeText(roomCode).then(()=>onlineStatus('合言葉をコピーしました')).catch(()=>onlineStatus('合言葉：'+roomCode))};
+ let readyMap={};let nameMap={};let state=null;let readyMe=false;
+ const show=()=>{if(mode!=='multiLobby'||onlineRoomCode!==roomCode||!state)return;
+  const me=cloud.uid,host=state.host===me,started=!!state.started;
+  document.getElementById('multiMemberList').innerHTML=state.members.map((uid,i)=>'<div class="multiMember '+(readyMap[uid]?'ready':'')+'">'+(uid===state.host?'👑 ':'👤 ')+onlineSafe(friendPref(uid).nickname||nameMap[uid]||uid.slice(0,8))+(uid===me?'（自分）':'')+'<div>'+(readyMap[uid]?'✓ 準備完了':'○ 準備待ち')+'</div></div>').join('')+Array.from({length:Math.max(0,4-state.members.length)},()=>'<div class="multiMember">＋ 空き枠</div>').join('');
+  document.getElementById('multiReady').style.display=started?'none':'';
+  document.getElementById('multiReady').textContent=readyMe?'準備を取り消す':'準備完了';
+  document.getElementById('multiReady').disabled=!state.settings;
+  document.getElementById('multiStart').style.display=host&&!started?'':'none';
+  document.getElementById('multiStart').disabled=state.members.length<2||!state.settings||state.members.some(uid=>!readyMap[uid]);
+  document.getElementById('multiEnter').style.display=started?'':'none';
+  document.getElementById('multiDelete').style.display=host?'':'none';
+  document.getElementById('multiStatus').textContent=started?'ワールド作成済み。いつでも参加できます。':(state.settings?'全員準備完了でホストが開始できます。':'ホストがワールドを設定してください。');
+  const setup=document.getElementById('multiHostSetup');
+  if(host&&!started&&!setup.querySelector('#multiWorldName')){setup.innerHTML='<label class="multiField">ワールド名<input id="multiWorldName" maxlength="28" placeholder="みんなのワールド"></label><label class="multiField">モード<select id="multiGameMode"><option value="survival">サバイバル</option><option value="sandbox">サンドボックス</option></select></label><label class="multiField">シード値<input id="multiSeed" maxlength="30" placeholder="任意のシード値"></label><label><input type="checkbox" id="multiPvp" style="width:auto">味方への攻撃（PvP）を許可</label><div class="multiActions"><button id="multiSaveSetup">ワールド設定を確定</button></div>';if(state.settings){setup.querySelector('#multiWorldName').value=state.settings.name;setup.querySelector('#multiGameMode').value=state.settings.mode;setup.querySelector('#multiSeed').value=state.settings.seed;setup.querySelector('#multiPvp').checked=!!state.settings.pvp;}
+   document.getElementById('multiSaveSetup').onclick=async()=>{try{await cloud.updateRoomSettings(roomCode,{name:document.getElementById('multiWorldName').value.trim().slice(0,28)||'マルチワールド',mode:document.getElementById('multiGameMode').value,seed:document.getElementById('multiSeed').value.trim().slice(0,30)||String(Date.now()),pvp:document.getElementById('multiPvp').checked});onlineStatus('設定を保存しました。各プレイヤーは準備完了を押してください。')}catch(e){onlineStatus('設定失敗：'+(e.code||e.message))}};
+  }else if(!host)setup.textContent=state.settings?'ワールド：'+state.settings.name+' / '+(state.settings.mode==='sandbox'?'サンドボックス':'サバイバル')+' / PvP '+(state.settings.pvp?'ON':'OFF'):'ホストの設定を待機中…';
+ };
+ document.getElementById('multiReady').onclick=async()=>{try{await cloud.setReady(roomCode,!readyMe)}catch(e){onlineStatus('準備設定失敗：'+(e.code||e.message))}};
+ document.getElementById('multiStart').onclick=async()=>{try{await cloud.startRoom(roomCode);onlineStatus('ワールドを生成しました！')}catch(e){onlineStatus('開始失敗：'+(e.code||e.message))}};
+ document.getElementById('multiEnter').onclick=()=>launchMultiplayerWorld();
+ document.getElementById('multiDelete').onclick=()=>{
+  const area=document.getElementById('multiHostSetup');
+  area.insertAdjacentHTML('beforeend','<div id="multiDeleteWarning" class="onlineStatus"><strong>このルームを削除しますか？全員が参加できなくなります。</strong><div class="multiActions"><button id="multiDeleteYes">削除する</button><button id="multiDeleteNo">キャンセル</button></div></div>');
+  document.getElementById('multiDeleteNo').onclick=()=>document.getElementById('multiDeleteWarning')?.remove();
+  document.getElementById('multiDeleteYes').onclick=()=>cloud.deleteRoom(roomCode).then(()=>{closeRoomSubscriptions();onlineRoomCode='';showMultiplayerEntry()}).catch(e=>onlineStatus('削除できません：'+(e.code||e.message)));
+ };
+ document.getElementById('multiLobbyChat').onsubmit=async e=>{e.preventDefault();const f=document.getElementById('multiLobbyInput');const msg=f.value.trim();if(!msg)return;f.value='';try{await cloud.sendChat(roomCode,msg,getLocalProfile().name)}catch(err){onlineStatus('チャット送信失敗：'+(err.code||err.message))}};
+ onlineRoomUnsubs.push(cloud.watchRoom(roomCode,r=>{if(!r){closeRoomSubscriptions();onlineRoomCode='';showMultiplayerEntry();return}state=r;onlineRoomData=r;show()}));
+ onlineRoomUnsubs.push(cloud.watchReady(roomCode,r=>{readyMap=r;readyMe=!!r[cloud.uid];show()}));
+ onlineRoomUnsubs.push(cloud.watchChat(roomCode,items=>{const el=document.getElementById('multiLobbyLog');if(mode!=='multiLobby'||!el)return;el.innerHTML=items.map(m=>'<div><strong>'+onlineSafe(m.name)+':</strong> '+onlineSafe(m.text)+'</div>').join('');el.scrollTop=el.scrollHeight;}));
+ if(onlineRoomData)for(const uid of onlineRoomData.members){cloud.findPlayer(uid).then(profile=>{nameMap[uid]=profile?.name||uid.slice(0,8);show()}).catch(()=>{})}
+}
+async function launchMultiplayerWorld(){
+ const r=onlineRoomData;if(!r?.started||!r.settings)return onlineStatus('まだワールドを開始できません。');
+ const str=r.settings.seed;let n=0;for(const c of str)n=(Math.imul(n,31)+c.charCodeAt(0))|0;
+ closeRoomSubscriptions();onlineLastMoveX=NaN;onlineLastMoveY=NaN;onlineLastMoveStamp=-1000000;onlineMoveAt=-1000000;currentWorldSlot=-1;worldName=r.settings.name;gameMode=r.settings.mode;newGame(n,str);onlineRoomCode=r.code||onlineRoomCode;onlineLocalLoad();
+ const code=onlineRoomCode,cloud=getMulti();onlineRoomData=r;
+ onlineRoomUnsubs.push(cloud.watchBlocks(code,(x,y,t)=>{onlineSuppressEdit=true;put(x,y,t);onlineSuppressEdit=false}));
+ onlineRoomUnsubs.push(cloud.watchPlayers(code,players=>{onlineRemotePlayers=new Map(players.filter(p=>p.uid!==cloud.uid&&Date.now()-(p.updatedAt?.toMillis?.()||0)<45000).map(p=>[p.uid,p]))}));
+ attachOnlineChat(code);toast('🌐 マルチワールドに参加しました');
+}
+function attachOnlineChat(code){
+ const toggle=document.getElementById('onlineChatToggle'),panel=document.getElementById('onlineChatPanel');toggle.style.display='block';panel.style.display='none';
+ toggle.onclick=()=>{panel.style.display=panel.style.display==='block'?'none':'block'};
+ const form=document.getElementById('onlineChatForm');form.onsubmit=async e=>{e.preventDefault();const input=document.getElementById('onlineChatInput'),msg=input.value.trim();if(!msg)return;input.value='';try{await getMulti().sendChat(code,msg,getLocalProfile().name)}catch(err){toast('チャット失敗：'+(err.code||err.message))}};
+ onlineChatUnsub=getMulti().watchChat(code,items=>{const el=document.getElementById('onlineChatLog');el.innerHTML=items.map(m=>'<div><b>'+onlineSafe(m.name)+':</b> '+onlineSafe(m.text)+'</div>').join('');el.scrollTop=el.scrollHeight;});
+}
+function drawOnlinePlayers(cw,ch){if(!onlineRoomCode)return;for(const p of onlineRemotePlayers.values()){const x=(p.x*T-cam.x)*zoom+cw/2,y=(p.y*T-cam.y)*zoom+ch/2;if(x< -80||x>cw+80||y< -80||y>ch+80)continue;const img=spriteReady('player_idle');ctx.save();if(img){ctx.translate(x,y);ctx.scale(-(p.face||1),1);ctx.drawImage(img,-16*zoom,-48*zoom,32*zoom,48*zoom)}else{ctx.fillStyle='#82c8ff';ctx.fillRect(x-12*zoom,y-40*zoom,24*zoom,38*zoom)}ctx.restore();ctx.fillStyle='#fff5c3';ctx.font=Math.max(11,12*zoom)+'px monospace';ctx.textAlign='center';ctx.fillText(String(p.name||'プレイヤー').slice(0,16),x,y-54*zoom)}}
+// Friend favorites and personal nicknames are private to this browser.
+const FRIEND_PREF_KEY='wildroot_friend_prefs_v1';
+function friendPrefStore(){try{return JSON.parse(localStorage.getItem(FRIEND_PREF_KEY)||'{}')||{}}catch(_){return {}}}
+function friendPref(uid){return friendPrefStore()[uid]||{favorite:false,nickname:''}}
+function setFriendPref(uid,changes){const all=friendPrefStore();all[uid]={...all[uid],...changes};try{localStorage.setItem(FRIEND_PREF_KEY,JSON.stringify(all))}catch(_){}}
 function showFriendsEntry(){
  mode='friendsEntry';document.body.classList.add('titleScene');overlay.classList.remove('hidden');
  modal.innerHTML='<main class="titlePanel onlinePanel"><h2>👥 フレンド</h2><p>オンラインIDを入力してフレンド申請を送れます。自分のIDは「プロフィール」で確認できます。</p><p id="friendSelfId" class="onlineIdentifier"></p><label class="onlineField">フレンドのオンラインID<input id="friendSearchId" placeholder="相手のオンラインID（Firebase UID）" spellcheck="false" autocomplete="off"></label><div class="worldActions"><button id="friendSearch">🔎 IDを検索</button><button id="friendReload">↻ 更新</button></div><div id="friendSearchResult"></div><p id="friendStatus" class="onlineStatus" role="status">読み込み中…</p><h3>📨 届いた申請</h3><div id="friendIncoming" class="friendRows"></div><h3>⏳ 送信した申請</h3><div id="friendOutgoing" class="friendRows"></div><h3>🤝 フレンド一覧</h3><div id="friendAccepted" class="friendRows"></div><div class="worldActions"><button id="friendsBack">タイトルへ戻る</button></div><p class="small">匿名ログインは端末を変えるとIDが変わる場合があります。相手のIDは正確に入力してください。</p></main>';
@@ -757,17 +858,20 @@ function showFriendsEntry(){
   try{
    const data=await cloud.listFriends();if(mode!=='friendsEntry')return;
    const groups={friendIncoming:[],friendOutgoing:[],friendAccepted:[]};
+   data.sort((a,b)=>Number(friendPref((b.sender===cloud.uid?b.recipient:b.sender)).favorite)-Number(friendPref((a.sender===cloud.uid?a.recipient:a.sender)).favorite));
    for(const item of data){
     const otherId=item.sender===cloud.uid?item.recipient:item.sender;
-    const name=escapeHTML(item.otherName||'プレイヤー');
+    const pref=friendPref(otherId);const name=escapeHTML(pref.nickname||item.otherName||'プレイヤー');
     const shortId=escapeHTML(otherId);
     const label='<div class="friendIdentity"><b>'+name+'</b><span>'+shortId+'</span></div>';
     const act=(value,title)=>'<button class="friendAction" data-pair="'+escapeHTML(item.id)+'" data-act="'+value+'">'+title+'</button>';
-    if(item.status==='accepted')groups.friendAccepted.push('<div class="friendRow">'+label+act('remove','解除')+'</div>');
+    if(item.status==='accepted')groups.friendAccepted.push('<div class="friendRow">'+label+'<div class="multiFriendPrefs"><button class="friendFav" data-user="'+escapeHTML(otherId)+'">'+(pref.favorite?'★ お気に入り':'☆ お気に入り')+'</button><input class="friendNick" data-user="'+escapeHTML(otherId)+'" maxlength="20" placeholder="ニックネーム" value="'+escapeHTML(pref.nickname||'')+'"><button class="friendNickSave" data-user="'+escapeHTML(otherId)+'">保存</button>'+act('remove','解除')+'</div></div>');
     else if(item.recipient===cloud.uid)groups.friendIncoming.push('<div class="friendRow">'+label+act('accept','承認')+act('reject','拒否')+'</div>');
     else groups.friendOutgoing.push('<div class="friendRow">'+label+act('cancel','取り消す')+'</div>');
    }
    for(const [id,html] of Object.entries(groups))$(id).innerHTML=html.length?html.join(''):'<p class="small">なし</p>';
+   for(const btn of document.querySelectorAll('.friendFav'))btn.onclick=()=>{const uid=btn.dataset.user;setFriendPref(uid,{favorite:!friendPref(uid).favorite});reload();};
+   for(const btn of document.querySelectorAll('.friendNickSave'))btn.onclick=()=>{const uid=btn.dataset.user;const val=[...document.querySelectorAll('.friendNick')].find(x=>x.dataset.user===uid)?.value.trim().slice(0,20)||'';setFriendPref(uid,{nickname:val});reload();};
    for(const button of document.querySelectorAll('.friendAction'))button.onclick=async()=>{
     if(busy)return;button.disabled=true;const action=button.dataset.act;
     try{status('処理中…');if(action==='accept')await cloud.acceptFriend(button.dataset.pair);else await cloud.removeFriend(button.dataset.pair);await reload();status(action==='accept'?'フレンドになりました！':action==='reject'?'申請を拒否しました。':'更新しました。');}
@@ -982,6 +1086,7 @@ function renderWorldMap(){let c=document.getElementById('worldMapCanvas');if(!c)
  const status=document.getElementById('mapStatus');if(status)status.textContent='現在地：'+Math.floor(player.x)+', '+Math.floor(player.y)+'　表示縮尺：1px = '+mapZoom.toFixed(1)+'ブロック';}
 function closeWorldMap(){modal.classList.remove('mapModal');startPlay()}
 function showPauseScreen(){
+ document.getElementById('onlineChatPanel').style.display='none';
  hideTip();settingsPauseWorld=true;mode='pause';keys.clear();mouse.left=mouse.right=false;
  document.body.classList.remove('titleScene');overlay.classList.remove('hidden');
  modal.classList.remove('mapModal','inGameSettings');
@@ -1648,7 +1753,7 @@ function worldRender(sceneOnly=false){let cw=canvas.width,ch=canvas.height;let d
  for(const [k,c] of crops){let [x,y]=k.split(',').map(Number);if(x<left||x>right||y<top||y>bottom)continue;let sx=(x*T-cam.x)*zoom+cw/2,sy=(y*T-cam.y)*zoom+ch/2;let h=(8+Math.floor(c.age)*7)*zoom;ctx.fillStyle=c.kind===100?'#a6c85b':'#67bc51';ctx.fillRect(sx+14*zoom,sy+32*zoom-h,4*zoom,h);if(c.age>1){ctx.fillStyle=c.kind===100?'#ead67c':'#f69a41';ctx.fillRect(sx+10*zoom,sy+32*zoom-h,12*zoom,8*zoom)}}
  if(weather!=='clear'){let count=weather==='storm'?95:65;for(let i=0;i<count;i++){let sx=(hash(i,1482)*cw+weatherPhase*(weather==='snow'?14:140)+i*73)%(cw+20),sy=(hash(i,1782)*ch+weatherPhase*(weather==='snow'?26:240)+i*41)%(ch+20);ctx.strokeStyle=weather==='snow'?'#eafaffcc':'#9ddcff9a';ctx.lineWidth=Math.max(1,zoom*.55);ctx.beginPath();ctx.moveTo(sx,sy);ctx.lineTo(sx+(weather==='snow'?2:5)*zoom,sy+(weather==='snow'?2:12)*zoom);ctx.stroke()}if(weather==='storm'&&Math.sin(weatherPhase*5)>.9995){ctx.fillStyle='#d9f1ff44';ctx.fillRect(0,0,cw,ch)}}
  if(sceneOnly)return;
- drawWorldDrops(cw,ch);drawGraves(cw,ch);let px=(player.x*T-cam.x)*zoom+cw/2,py=(player.y*T-cam.y)*zoom+ch/2;character(px,py,32*zoom);drawEnemies(cw,ch);drawProjectiles(cw,ch);drawAttack(cw,ch);drawFx(cw,ch);drawLighting(cw,ch,left,right,top,bottom,day);drawEnvironmentVignette(cw,ch);
+ drawWorldDrops(cw,ch);drawGraves(cw,ch);let px=(player.x*T-cam.x)*zoom+cw/2,py=(player.y*T-cam.y)*zoom+ch/2;character(px,py,32*zoom);drawOnlinePlayers(cw,ch);drawEnemies(cw,ch);drawProjectiles(cw,ch);drawAttack(cw,ch);drawFx(cw,ch);drawLighting(cw,ch,left,right,top,bottom,day);drawEnvironmentVignette(cw,ch);
  let {tx,ty,reachable,front,back}=tileTarget();if(reachable&&tx>=0&&tx<W&&ty>=0&&ty<H&&!(inv[active]?.id in WEAPONS)&&inv[active]?.id!==59){let mx=(tx*T-cam.x)*zoom+cw/2,my=(ty*T-cam.y)*zoom+ch/2;ctx.strokeStyle='#f9e9ae';ctx.lineWidth=Math.max(1,zoom);ctx.strokeRect(Math.floor(mx)+1,Math.floor(my)+1,ts-2,ts-2);if(mineProgress>0&&mineX===tx&&mineY===ty){ctx.fillStyle='#0009';ctx.fillRect(mx,my+ts*.75,ts,ts*.16);ctx.fillStyle='#ffe18a';ctx.fillRect(mx,my+ts*.75,ts*Math.min(1,mineProgress/digTime(get(tx,ty),inv[active]?.id)),ts*.16)}}
  // カーソル表示と採掘・設置対象は同じ座標変換を使用する。
  drawItemCursor();
@@ -1678,7 +1783,7 @@ function loop(ts){
  requestAnimationFrame(loop);
  if(touchDevice)document.body.classList.toggle('touchPlaying',mode==='playing'||mode==='touchEdit');
  const dt=Math.min(.05,(ts-last)/1000||0);last=ts;lightingFrameDt=Math.max(.001,dt);
- if(['menu','worldSlots','worldCreate','worldRename','worldDelete','titleSettings','titleControls'].includes(mode)){if(player){titlePreviewFrame+=dt;cam.x=titleViewX*T+Math.sin(titlePreviewFrame*.14)*T*1.5;cam.y=(heightAt(titleViewX)-3)*T;worldRender(true);}return;}if(!player)return;
+ if(['menu','worldSlots','worldCreate','worldRename','worldDelete','titleSettings','titleControls','multiplayerEntry','multiLobby','friendsEntry','profile'].includes(mode)){if(player){titlePreviewFrame+=dt;cam.x=titleViewX*T+Math.sin(titlePreviewFrame*.14)*T*1.5;cam.y=(heightAt(titleViewX)-3)*T;worldRender(true);}return;}if(!player)return;
  // Only Esc pause (and its settings screen) or the death screen stops the world.
  const pauseWorld=mode==='pause'||mode==='dead'||(mode==='settings'&&(settingsPauseWorld||settingsReturn==='menu'));
  if(!pauseWorld){
@@ -1690,7 +1795,7 @@ function loop(ts){
    updateFlowWater(step);survivalAndEnvironment(step);if(mode==='dead'){accumulator=0;break;}
    physics(step);if(mode==='dead'){accumulator=0;break;}
    updateWorldDrops(step);drinkAndEatTick(step);if(mode==='dead'){accumulator=0;break;}
-   if(interactive)act(step);
+   if(interactive){onlineCaptureEdits=!!onlineRoomCode;try{act(step)}finally{onlineCaptureEdits=false}}
    updateEnemies(step);if(mode==='dead'){accumulator=0;break;}
    updateProjectiles(step);if(mode==='dead'){accumulator=0;break;}
    enemyAnimTime+=step;player.mp=Math.min(20,player.mp+step*1.1);
@@ -1700,10 +1805,10 @@ function loop(ts){
    accumulator-=step;
   }
   if(mode!=='dead'){
-   autosave+=dt;if(autosave>300){save(true);autosave=0}
+   autosave+=dt;if(autosave>60){save(true);if(onlineRoomCode)onlineLocalSave();autosave=0}
    const cx=player.x*T,cy=(player.y-player.h*.6)*T,a=Math.min(1,dt*6);
    cam.x+=(cx-cam.x)*a;cam.y+=(cy-cam.y)*a;
-   hudUpdate();updateHP();renderMini(dt);
+   hudUpdate();updateHP();renderMini(dt);if(onlineRoomCode&&mode==='playing'&&ts-onlineMoveAt>1200&&(Math.hypot(player.x-onlineLastMoveX,player.y-onlineLastMoveY)>.12||ts-onlineLastMoveStamp>12000)){onlineMoveAt=ts;onlineLastMoveStamp=ts;onlineLastMoveX=player.x;onlineLastMoveY=player.y;window.WRCloud?.publishPlayer?.(onlineRoomCode,{x:player.x,y:player.y,face:player.face,name:getLocalProfile().name}).catch(()=>{});}
    const inventoryClock=document.getElementById('inventoryClock');
    if(inventoryClock)inventoryClock.textContent=document.getElementById('clock').textContent;
   }
@@ -1892,12 +1997,13 @@ mini.addEventListener('click',()=>{if(mode==='playing')openWorldMap()});document
 })();
 
 </script>
+<button id="onlineChatToggle" type="button">💬 チャット</button><div id="onlineChatPanel"><div id="onlineChatLog"></div><form id="onlineChatForm"><input id="onlineChatInput" maxlength="200" placeholder="チャットを入力"><button>送信</button></form></div>
 <script type="module">
 // WILDROOT online phase 3: Firebase profiles and friend requests.
 // Loaded separately so the existing offline / single-player game still works if Firebase is unavailable.
 import {initializeApp} from 'https://www.gstatic.com/firebasejs/13.3.0/firebase-app.js';
 import {getAuth, signInAnonymously, onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/13.3.0/firebase-auth.js';
-import {getFirestore, doc, getDoc, setDoc, deleteDoc, updateDoc, collection, getDocs, query, where, serverTimestamp} from 'https://www.gstatic.com/firebasejs/13.3.0/firebase-firestore.js';
+import {getFirestore, doc, getDoc, setDoc, deleteDoc, updateDoc, collection, getDocs, query, where, serverTimestamp, runTransaction, onSnapshot, addDoc, orderBy, limit} from 'https://www.gstatic.com/firebasejs/13.3.0/firebase-firestore.js';
 const firebaseConfig = {
  apiKey: 'AIzaSyBxs2_1WzYCqFOY4U6rwznCXoB-9SObsbY',
  authDomain: 'wildroot-online.firebaseapp.com',
@@ -1958,6 +2064,32 @@ window.WRCloud={
   if(!snap.exists()||snap.data().recipient!==me||snap.data().status!=='pending')throw Error('受け取った申請だけ承認できます。');
   await updateDoc(ref,{status:'accepted'});
  },
+ // Shared room and friend multiplayer foundations.
+ async createRoom(){
+  const uid=auth.currentUser?.uid;if(!uid)throw Error('オンライン接続が必要です。');
+  const alphabet='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  for(let attempt=0;attempt<5;attempt++){
+   const bytes=crypto.getRandomValues(new Uint8Array(8));const code=[...bytes].map(n=>alphabet[n%alphabet.length]).join('');
+   try{await setDoc(doc(db,'rooms',code),{host:uid,members:[uid],settings:null,started:false,createdAt:serverTimestamp()});return code}catch(e){if(e.code!=='already-exists')throw e}
+  }throw Error('ルームコードを作成できません。');
+ },
+ async joinRoom(code){
+  const uid=auth.currentUser?.uid;if(!uid)throw Error('オンライン接続が必要です。');
+  const ref=doc(db,'rooms',code);
+  return runTransaction(db,async tx=>{const snap=await tx.get(ref);if(!snap.exists())throw Error('合言葉のルームが見つかりません。');const room=snap.data();if(room.members.includes(uid))return {...room,code};if(room.members.length>=4)throw Error('満員です。');tx.update(ref,{members:[...room.members,uid]});return {...room,members:[...room.members,uid],code}});
+ },
+ watchRoom(code,cb){return onSnapshot(doc(db,'rooms',code),snap=>cb(snap.exists()?{...snap.data(),code}:null),e=>console.warn('Room watch:',e));},
+ watchReady(code,cb){return onSnapshot(collection(db,'rooms',code,'ready'),snap=>{const state={};for(const d of snap.docs)state[d.id]=!!d.data().ready;cb(state)},e=>console.warn('Ready watch:',e));},
+ async setReady(code,ready){const uid=auth.currentUser?.uid;if(!uid)throw Error('未接続');await setDoc(doc(db,'rooms',code,'ready',uid),{ready:!!ready,updatedAt:serverTimestamp()});},
+ async updateRoomSettings(code,settings){await updateDoc(doc(db,'rooms',code),{settings});},
+ async startRoom(code){const ref=doc(db,'rooms',code);await updateDoc(ref,{started:true});},
+ async deleteRoom(code){await deleteDoc(doc(db,'rooms',code));},
+ async sendChat(code,text,name){const uid=auth.currentUser?.uid;if(!uid)throw Error('未接続');await addDoc(collection(db,'rooms',code,'messages'),{sender:uid,name:String(name).slice(0,20),text:String(text).slice(0,200),createdAt:serverTimestamp()});},
+ watchChat(code,cb){return onSnapshot(query(collection(db,'rooms',code,'messages'),orderBy('createdAt','desc'),limit(50)),snap=>cb(snap.docs.map(d=>d.data()).reverse()),e=>console.warn('Chat watch:',e));},
+ async writeBlock(code,x,y,t){await setDoc(doc(db,'rooms',code,'blocks',Math.floor(x)+'_'+Math.floor(y)),{x:Math.floor(x),y:Math.floor(y),t,by:auth.currentUser.uid,updatedAt:serverTimestamp()});},
+ watchBlocks(code,cb){return onSnapshot(collection(db,'rooms',code,'blocks'),snap=>{for(const c of snap.docChanges())if(c.type!=='removed'){const b=c.doc.data();cb(b.x,b.y,b.t)}},e=>console.warn('Block watch:',e));},
+ async publishPlayer(code,p){await setDoc(doc(db,'rooms',code,'players',auth.currentUser.uid),{uid:auth.currentUser.uid,x:p.x,y:p.y,face:p.face,name:String(p.name).slice(0,20),updatedAt:serverTimestamp()});},
+ watchPlayers(code,cb){return onSnapshot(collection(db,'rooms',code,'players'),snap=>cb(snap.docs.map(d=>d.data())),e=>console.warn('Player watch:',e));},
  async removeFriend(id){
   const me=auth.currentUser?.uid;if(!me)throw Error('オンライン接続が必要です。');
   const ref=doc(db,'friendRequests',id),snap=await getDoc(ref);
