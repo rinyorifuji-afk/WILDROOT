@@ -214,7 +214,7 @@ body.touchEditing #overlay{display:none!important}
 .multiFriendPrefs button{margin:0;padding:6px;font-size:12px}
 #onlineChatToggle{position:fixed;bottom:94px;right:12px;z-index:4;padding:8px 11px;background:#203b48;color:#fff;border:2px solid #d7b477;border-radius:6px;display:none}
 #onlineChatPanel{position:fixed;right:10px;bottom:137px;width:min(340px,72vw);max-height:52vh;display:none;z-index:6;background:#122436eb;border:2px solid #c9a875;border-radius:8px;padding:8px;box-shadow:0 6px 20px #0009}
-#onlineChatLog{height:min(200px,29vh);overflow:auto;font-size:12px;display:flex;flex-direction:column;gap:5px;text-align:left}
+#onlineChatLog{height:min(200px,29vh);overflow:auto;font-size:12px;display:flex;flex-direction:column;gap:5px;text-align:left}.wrWorldNotice{color:#ffe16a;font-weight:700;text-shadow:0 1px 3px #111}
 #onlineChatPanel form{display:flex;gap:4px;margin-top:7px}
 #onlineChatInput{min-width:0;width:100%;padding:7px;font-size:13px}
 #onlineChatPanel button{margin:0;padding:7px;font-size:12px}
@@ -770,7 +770,82 @@ function baseTile(x,y){if(x<0||x>=W||y<0)return 0;if(y>=H)return 3;let h=heightA
 }
 function getChunk(cx,cy){let k=cx+','+cy;if(chunks.has(k))return chunks.get(k);let a=new Uint8Array(CHUNK*CHUNK);for(let yy=0;yy<CHUNK;yy++)for(let xx=0;xx<CHUNK;xx++){let x=cx*CHUNK+xx,y=cy*CHUNK+yy;a[yy*CHUNK+xx]=baseTile(x,y)}chunks.set(k,a);if(chunks.size>85){for(let old of chunks.keys()){if(old!==k){chunks.delete(old);break}}}return a}
 function get(x,y){x=Math.floor(x);y=Math.floor(y);if(x<0||x>=W||y<0||y>=H)return 3;let id=x+','+y;if(edits.has(id))return edits.get(id);let cx=Math.floor(x/CHUNK),cy=Math.floor(y/CHUNK);return getChunk(cx,cy)[(y%CHUNK)*CHUNK+x%CHUNK]}
-function put(x,y,type){if(x<0||x>=W||y<0||y>=H)return;const prev=get(x,y);edits.set(x+','+y,type);if(onlineCaptureEdits&&!onlineSuppressEdit&&onlineRoomCode&&prev!==type)window.WRCloud?.writeBlock?.(onlineRoomCode,x,y,type).catch(e=>console.warn('Block sync failed',e));}
+function put(x,y,type){if(x<0||x>=W||y<0||y>=H)return;const prev=get(x,y);edits.set(x+','+y,type);if(prev===91&&type!==91)wrBedInvalidated(x,y);if(onlineCaptureEdits&&!onlineSuppressEdit&&onlineRoomCode&&prev!==type)window.WRCloud?.writeBlock?.(onlineRoomCode,x,y,type).catch(e=>console.warn('Block sync failed',e));}
+// Disable the browser's context menu over the game and UI, while retaining editable text fields.
+document.addEventListener('contextmenu',e=>{
+  if(!e.target.closest('input,textarea,[contenteditable="true"]')) e.preventDefault();
+},true);
+
+function wrBedKey(x,y){return String(x)+','+String(y)}
+let wrBedUsersLocal=new Map();
+function wrBedValid(){
+ if(!bedSpawn)return false;
+ const bx=Number.isFinite(bedSpawn.bx)?bedSpawn.bx:Math.floor(bedSpawn.x);
+ const by=Number.isFinite(bedSpawn.by)?bedSpawn.by:Math.floor(bedSpawn.y);
+ if(get(bx,by)!==91)return false;
+ return true;
+}
+function wrBedInvalidated(x,y){
+ if(bedSpawn&&Math.floor(bedSpawn.x)===x&&Math.floor(bedSpawn.y)===y){bedSpawn=null;toast('設定していたベッドが壊れたため、初期リスポーン地点に戻りました');if(onlineRoomCode)window.WRCloud?.deleteBedAssignment?.(onlineRoomCode).catch(e=>console.warn('ベッド解除:',e));else if(player&&currentWorldSlot>=0)save(true);}
+ wrBedUsersLocal.delete(wrBedKey(x,y));
+}
+function wrBedLocalUsers(x,y){
+ const local=wrBedUsersLocal.get(wrBedKey(x,y))||[];
+ return local.filter(p=>p&&p.uid&&p.name);
+}
+function wrBedUsername(){return String(getLocalProfile()?.name||window.WRCloud?.uid?.slice(0,8)||'プレイヤー').slice(0,20)}
+async function wrBedSetSpawn(x,y){
+ if(get(x,y)!==91){toast('このベッドは壊れています');return;}
+ // Store the block position, not the inside of the solid bed tile.
+ bedSpawn={x:x+.5,y:y,bx:x,by:y};
+ const uid=onlineRoomCode?window.WRCloud?.uid:'single';
+ wrBedUsersLocal.set(wrBedKey(x,y),[{uid,name:wrBedUsername()}]);
+ if(onlineRoomCode&&window.WRCloud?.saveBedAssignment){
+   try{await window.WRCloud.saveBedAssignment(onlineRoomCode,{x,y,name:wrBedUsername()});}
+   catch(e){toast('ベッド登録のオンライン保存に失敗: '+(e.code||e.message));}
+ }
+ if(!onlineRoomCode)save(true);
+ toast('リスポーン地点を設定しました');
+}
+async function wrBedMenu(x,y){
+ if(get(x,y)!==91)return;
+ mouse.right=false;actionCooldown=.25;
+ const shade=document.createElement('div');shade.className='wrGameDialog';
+ shade.style.cssText='position:fixed;inset:0;z-index:999999;background:#07111bd9;display:flex;align-items:center;justify-content:center;padding:16px;box-sizing:border-box';
+ const panel=document.createElement('section');panel.style.cssText='width:min(94vw,420px);max-height:90dvh;overflow:auto;background:#172536;border:2px solid #8fa8b7;border-radius:12px;padding:18px;box-shadow:0 14px 60px #0009;color:#fff;font-family:inherit';
+ const title=document.createElement('h2');title.textContent='🛏 ベッド';title.style.margin='0 0 10px';panel.append(title);
+ const info=document.createElement('p');info.textContent='このベッドにリスポーン地点を設定している人を読み込み中…';info.style.cssText='font-size:13px;line-height:1.6;overflow-wrap:anywhere';panel.append(info);
+ const make=(label,fn)=>{const btn=document.createElement('button');btn.textContent=label;btn.style.cssText='display:block;width:100%;min-height:42px;margin:7px 0;padding:9px;border-radius:7px;color:white;background:#2b4b60;border:1px solid #92b3c4;cursor:pointer';btn.onclick=async()=>{shade.remove();await fn()};panel.append(btn)};
+ make('📍 リスポーン地点を設定',()=>wrBedSetSpawn(x,y));
+ make('🌙 夜まで寝る',()=>wrBedSleep(19*60,x,y));
+ make('☀ 朝まで寝る',()=>wrBedSleep(8*60,x,y));
+ make('戻る',()=>{});
+ shade.append(panel);document.body.append(shade);
+ let users=wrBedLocalUsers(x,y);
+ if(onlineRoomCode&&window.WRCloud?.listBedAssignments){
+   try{users=(await window.WRCloud.listBedAssignments(onlineRoomCode)).filter(p=>p.x===x&&p.y===y);}
+   catch(e){info.textContent='登録者の取得に失敗しました: '+(e.code||e.message);return;}
+ }
+ if(shade.isConnected){info.textContent='リスポーン登録者: '+(users.length?users.map(p=>p.name||'プレイヤー').join('、'):'まだいません')+'\n※1つのベッドに何人でも登録できます。';info.style.whiteSpace='pre-wrap';}
+}
+function wrBedSleep(target,x,y){
+ if(get(x,y)!==91)return toast('ベッドがありません');
+ if(onlineRoomCode&&onlineRoomData?.host!==window.WRCloud?.uid){return toast('共有時刻の変更はホストが操作してください');}
+ if(target===8*60){if(time>=6*60&&time<18*60)return toast('今は昼間です。朝まで寝るのは夜に使えます');time=8*60;toast('朝まで眠りました');}
+ else {if(time>=18*60||time<6*60)return toast('今は夜です。夜まで寝るのは昼間に使えます');time=19*60;toast('夜まで眠りました');}
+ if(!onlineRoomCode)save(true);
+}
+function wrBedRespawnSpot(){
+ if(!wrBedValid())return spawn;
+ const bx=bedSpawn.bx,by=bedSpawn.by;
+ // Stay near the bed on a safe two-tile-high empty spot.
+ for(const [dx,dy] of [[0,-1],[1,0],[-1,0],[2,0],[-2,0],[1,-1],[-1,-1],[0,-2]]){
+  const tx=bx+dx,ty=by+dy;
+  if(tx<1||tx>=W-1||ty<3||ty>=H-2)continue;
+  if(!solid(get(tx,ty))&&!solid(get(tx,ty-1))&&solid(get(tx,ty+1)))return {x:tx+.5,y:ty+.9};
+ }
+ return {x:bedSpawn.x,y:bedSpawn.y-1.5};
+}
 // Natural stone backdrop in caves; it is not an editable block and cannot be mined or placed.
 function getWall(x,y){if(x<0||x>=W||y<0||y>=H)return 0;return y>=heightAt(x)+4&&y<H-2?26:0}
 const DURABLE={99:180,9:100,10:100,11:100,14:180,15:180,16:180,17:420,21:280,22:280,23:280,24:420,25:420,72:900,27:160,41:520,42:320,43:380,44:600,59:360,64:850,65:580,78:1000,86:660,87:700};
@@ -807,7 +882,7 @@ function canStoreDrop(d){
 }
 function updateWorldDrops(dt){
  for(let i=worldDrops.length-1;i>=0;i--){const d=worldDrops[i];
-  d.age+=dt;d.life-=dt;if(d.life<=0){worldDrops.splice(i,1);continue}
+  d.age+=dt;if(!onlineRoomCode||!d.wrId){d.life-=dt;if(d.life<=0){worldDrops.splice(i,1);continue}}
   d.vy=Math.min(17,d.vy+21*dt);d.vx*=Math.exp(-dt*2.2);
   let nx=d.x+d.vx*dt,ny=d.y+d.vy*dt;
   const wallX=d.vx>0?nx+.17:nx-.17;
@@ -1063,15 +1138,15 @@ function onlineStatus(t){const el=document.getElementById('multiStatus');if(el)e
 function getMulti(){if(!window.WRCloud?.uid||!window.WRCloud.createRoom)throw Error('先にプロフィールからオンライン接続してください。');return window.WRCloud;}
 let wrEnemySyncAt=0,wrEnemySyncPending=false,wrRemoteEnemySyncAt=0,wrEnemyHitsSeen=new Set(),wrPvpSeen=new Set();
 
-let wrWorldStateAt=0,wrWorldStatePending=false,wrOnlineTimeTarget=null;
+let wrWorldStateAt=0,wrWorldStatePending=false,wrOnlineTimeTarget=null,wrHasWorldSnapshot=false;
 let wrClaimingDrops=new Set();
 function wrReceiveSharedDrops(list){
  if(!onlineRoomCode||!Array.isArray(list))return;
- const seen=new Set();
+ const seen=new Set(), existing=new Map(worldDrops.filter(d=>d.wrId).map(d=>[d.wrId,d]));
  for(const item of list){
   if(!item||typeof item.docId!=='string'||!Number.isInteger(item.id)||!Number.isFinite(item.x)||!Number.isFinite(item.y))continue;
   seen.add(item.docId);
-  let d=worldDrops.find(v=>v.wrId===item.docId);
+  let d=existing.get(item.docId);
   if(!d){d={wrId:item.docId,id:item.id,n:item.n,x:item.x,y:item.y,vx:item.vx||0,vy:item.vy||0,age:0,delay:.35,bob:Math.random()*6.28,life:1800,...(Number.isFinite(item.dur)?{dur:item.dur}:{})};worldDrops.push(d);}
   d.wrPublished=true;
  }
@@ -1084,10 +1159,12 @@ function wrPublishWorldState(ts){
  window.WRCloud?.publishWorldState?.(onlineRoomCode,{time:+time.toFixed(3),weather,weatherPhase:+weatherPhase.toFixed(2),weatherTimer:+weatherTimer.toFixed(2)}).catch(e=>console.warn('World state:',e)).finally(()=>wrWorldStatePending=false);
 }
 function wrApplyWorldState(state){
- if(!onlineRoomCode||wrIsOnlineHost()||!state||!Number.isFinite(state.time))return;
+ if(!onlineRoomCode||!state||!Number.isFinite(state.time))return;
+ if(wrIsOnlineHost()&&wrHasWorldSnapshot)return;
+ wrHasWorldSnapshot=true;
  const v=(state.time%1440+1440)%1440;
  const delta=((v-time+2160)%1440)-720;
- if(Math.abs(delta)>15)time=v;else time=(time+delta*.6+1440)%1440;
+ if(Math.abs(delta)>15||wrIsOnlineHost())time=v;else time=(time+delta*.6+1440)%1440;
  if(['clear','rain','storm','snow'].includes(state.weather))weather=state.weather;
  if(Number.isFinite(state.weatherPhase))weatherPhase=state.weatherPhase;
  if(Number.isFinite(state.weatherTimer))weatherTimer=state.weatherTimer;
@@ -1110,7 +1187,7 @@ function wrEnemyVisualUpdate(dt){
  for(const e of enemies){if(Number.isFinite(e.wrTargetX)){e.x+=(e.wrTargetX-e.x)*blend;e.y+=(e.wrTargetY-e.y)*blend;}}
 }
 function wrSendEnemyState(ts){
- if(!wrIsOnlineHost()||wrEnemySyncPending||ts-wrEnemySyncAt<650)return;
+ if(!wrIsOnlineHost()||wrEnemySyncPending||ts-wrEnemySyncAt<950)return;
  wrEnemySyncAt=ts;wrEnemySyncPending=true;
  const state=enemies.slice(0,32).map(e=>({id:e.wrId||(e.wrId='e'+Math.random().toString(36).slice(2,11)),
   type:e.type,x:+e.x.toFixed(2),y:+e.y.toFixed(2),vx:+(e.vx||0).toFixed(1),vy:+(e.vy||0).toFixed(1),
@@ -1141,9 +1218,9 @@ function wrAttackRemotePlayers(cx,cy,damage){
 }
 function closeRoomSubscriptions(){for(const fn of onlineRoomUnsubs.splice(0)){try{fn()}catch(_){}}onlineChatUnsub?.();onlineChatUnsub=null;}
 window.addEventListener('pagehide',()=>{if(onlineRoomCode)onlineLocalSave()});
-function onlineLocalSave(){if(!onlineRoomCode||!player||!window.WRCloud?.uid)return;try{localStorage.setItem('wildroot_multi_player_'+onlineRoomCode+'_'+window.WRCloud.uid,JSON.stringify({inv,armor,hp:player.hp,food:player.food,water:player.water,x:player.x,y:player.y}))}catch(_){}}
-function onlineLocalLoad(){try{const d=JSON.parse(localStorage.getItem('wildroot_multi_player_'+onlineRoomCode+'_'+window.WRCloud.uid)||'null');if(!d)return;if(Array.isArray(d.inv))inv=wrUpgradeInventory(d.inv);if(Array.isArray(d.armor)&&d.armor.length===3)armor=d.armor;for(const k of ['hp','food','water','x','y'])if(Number.isFinite(d[k]))player[k]=d[k];updateBar();}catch(_){}}
-function leaveOnlineRoom(){wrClaimingDrops.clear();wrOnlineTimeTarget=null;onlineLocalSave();closeRoomSubscriptions();onlineRoomCode='';onlineRoomData=null;onlineRemotePlayers.clear();onlineRemoteMotion.clear();onlinePublishQueued=null;document.getElementById('onlineChatToggle')?.style.setProperty('display','none');document.getElementById('onlineChatPanel')?.style.setProperty('display','none');}
+function onlineLocalSave(){if(!onlineRoomCode||!player||!window.WRCloud?.uid)return;try{localStorage.setItem('wildroot_multi_player_'+onlineRoomCode+'_'+window.WRCloud.uid,JSON.stringify({inv,armor,hp:player.hp,food:player.food,water:player.water,x:player.x,y:player.y,bedSpawn}))}catch(_){}}
+function onlineLocalLoad(){try{const d=JSON.parse(localStorage.getItem('wildroot_multi_player_'+onlineRoomCode+'_'+window.WRCloud.uid)||'null');if(!d)return;if(Array.isArray(d.inv))inv=wrUpgradeInventory(d.inv);if(Array.isArray(d.armor)&&d.armor.length===3)armor=d.armor;if(d.bedSpawn)bedSpawn=d.bedSpawn;for(const k of ['hp','food','water','x','y'])if(Number.isFinite(d[k]))player[k]=d[k];updateBar();}catch(_){}}
+function leaveOnlineRoom(){if(wrIsOnlineHost())window.WRCloud?.publishWorldState?.(onlineRoomCode,{time,weather,weatherPhase,weatherTimer}).catch(()=>{});wrClaimingDrops.clear();wrOnlineTimeTarget=null;onlineLocalSave();closeRoomSubscriptions();onlineRoomCode='';onlineRoomData=null;onlineRemotePlayers.clear();onlineRemoteMotion.clear();onlinePublishQueued=null;document.getElementById('onlineChatToggle')?.style.setProperty('display','none');document.getElementById('onlineChatPanel')?.style.setProperty('display','none');}
 const ACTIVE_WORLDS_KEY='wildroot_joined_worlds_v2';
 function joinedWorlds(){try{return JSON.parse(localStorage.getItem(ACTIVE_WORLDS_KEY)||'[]').filter(x=>x&&/^[A-Z2-9]{8}$/.test(x.code))}catch(_){return []}}
 function rememberWorld(code,name){const list=joinedWorlds().filter(x=>x.code!==code);list.unshift({code,name:String(name||'マルチワールド').slice(0,28)});localStorage.setItem(ACTIVE_WORLDS_KEY,JSON.stringify(list.slice(0,10)));}
@@ -1197,7 +1274,8 @@ async function launchMultiplayerWorld(){
  const r=onlineRoomData;if(!r?.started||!r.settings)return onlineStatus('まだワールドを開始できません。');
  const str=r.settings.seed;let n=0;for(const c of str)n=(Math.imul(n,31)+c.charCodeAt(0))|0;
  closeRoomSubscriptions();wrSharedPins=[];onlineRemotePlayers.clear();onlineRemoteMotion.clear();onlinePublishQueued=null;onlineLastMoveX=NaN;onlineLastMoveY=NaN;onlineLastMoveStamp=-1000000;onlineMoveAt=-1000000;currentWorldSlot=-1;worldName=r.settings.name;gameMode=r.settings.mode;newGame(n,str);onlineRoomCode=r.code||onlineRoomCode;onlineLocalLoad();
- const code=onlineRoomCode,cloud=getMulti();onlineRoomData=r;
+ const code=onlineRoomCode,cloud=getMulti();onlineRoomData=r;wrHasWorldSnapshot=false;wrWorldStateAt=performance.now();
+ cloud.getBedAssignment?.(code).then(v=>{if(v&&v.x>=0&&v.y>=0){bedSpawn={x:v.x+.5,y:v.y,bx:v.x,by:v.y};}}).catch(e=>console.warn("ベッドの登録読み込み:",e));
  onlineRoomUnsubs.push(cloud.watchRoom(code,r=>{if(!r||!r.members.includes(cloud.uid)){const deleted=!r;if(deleted)forgetWorld(code);leaveOnlineRoom();toast(deleted?'ワールドが削除されました':'ホストにより退出させられました');showMultiplayerEntry();return}onlineRoomData=r}));
  onlineRoomUnsubs.push(cloud.watchBlocks(code,(x,y,t)=>{onlineSuppressEdit=true;put(x,y,t);onlineSuppressEdit=false}));
  onlineRoomUnsubs.push(cloud.watchPlayers(code,players=>{receiveOnlinePlayers(players,cloud.uid)}));
@@ -1214,13 +1292,26 @@ async function launchMultiplayerWorld(){
   if(activeChest===key&&mode==='storage')return; // Don't overwrite a chest while it is being edited locally.
   storageChests.set(key,contents);
  }));
- attachOnlineChat(code);toast('🌐 マルチワールドに参加しました');
+ attachOnlineChat(code);wrChatSystemEvent(getLocalProfile().name+' がワールドに参加しました',code);toast('🌐 マルチワールドに参加しました');
+}
+const WR_SYSTEM_MARK='【お知らせ】';
+function wrChatSystemEvent(text,code=onlineRoomCode){
+ if(!code||!window.WRCloud?.sendChat)return;
+ // Events are informational only. Avoid injecting untrusted HTML in chat.
+ window.WRCloud.sendChat(code,(WR_SYSTEM_MARK+String(text)).slice(0,200),'システム').catch(e=>console.warn('World event:',e));
+}
+function wrChatOpen(){
+ if(!onlineRoomCode)return;
+ const panel=document.getElementById('onlineChatPanel'),input=document.getElementById('onlineChatInput');
+ if(!panel||!input)return;
+ panel.style.display='block';input.focus({preventScroll:true});
 }
 function attachOnlineChat(code){
  const toggle=document.getElementById('onlineChatToggle'),panel=document.getElementById('onlineChatPanel');toggle.style.display='block';panel.style.display='none';
- toggle.onclick=()=>{panel.style.display=panel.style.display==='block'?'none':'block'};
+ toggle.onclick=()=>{panel.style.display=panel.style.display==='block'?'none':'block';if(panel.style.display==='block')document.getElementById('onlineChatInput').focus({preventScroll:true})};
+ const inputBox=document.getElementById('onlineChatInput');inputBox.onkeydown=e=>{if(e.code==='Escape'){e.stopPropagation();e.preventDefault();panel.style.display='none';inputBox.blur()}};
  const form=document.getElementById('onlineChatForm');form.onsubmit=async e=>{e.preventDefault();const input=document.getElementById('onlineChatInput'),msg=input.value.trim();if(!msg)return;input.value='';try{await getMulti().sendChat(code,msg,getLocalProfile().name)}catch(err){toast('チャット失敗：'+(err.code||err.message))}};
- onlineChatUnsub=getMulti().watchChat(code,items=>{const el=document.getElementById('onlineChatLog');el.innerHTML=items.map(m=>'<div><b>'+onlineSafe(m.name)+':</b> '+onlineSafe(m.text)+'</div>').join('');el.scrollTop=el.scrollHeight;});
+ onlineChatUnsub=getMulti().watchChat(code,items=>{const el=document.getElementById('onlineChatLog');el.innerHTML=items.map(m=>{const special=String(m.text||'').startsWith(WR_SYSTEM_MARK);return special?'<div class="wrWorldNotice">'+onlineSafe(String(m.text).slice(WR_SYSTEM_MARK.length))+'</div>':'<div><b>'+onlineSafe(m.name)+':</b> '+onlineSafe(m.text)+'</div>';}).join('');el.scrollTop=el.scrollHeight;});
 }
 // Firestore snapshots arrive at irregular intervals: cache velocity then render every frame.
 function receiveOnlinePlayers(players,selfUid){
@@ -1390,7 +1481,7 @@ function worldMenu(slot=0){
   newGame(n,value);save(true);
  };
 }
-function newGame(s,label){genVersion=11;bedSpawn=null;treasuresOpened.clear();lavaCooldown=0;seed=s;session=label;edits.clear();wallEdits.clear();chunks.clear();ground0=heightAt(W/2);spawn={x:W/2+.5,y:ground0-2.1};player={x:spawn.x,y:spawn.y,vx:0,vy:0,w:.68,h:1.45,hp:100,mp:20,food:100,water:100,oxygen:100,ground:false,face:1,anim:0,coyote:0,jumpBuffer:0,invuln:0};furnaces.clear();storageChests.clear();projectiles=[];enemies=[];fx=[];worldDrops=[];killCount=0;armor=[null,null,null];makeInv();graves=[];crops.clear();weather='clear';weatherTimer=65;weatherPhase=0;active=0;
+function newGame(s,label){genVersion=11;bedSpawn=null;wrBedUsersLocal.clear();treasuresOpened.clear();lavaCooldown=0;seed=s;session=label;edits.clear();wallEdits.clear();chunks.clear();ground0=heightAt(W/2);spawn={x:W/2+.5,y:ground0-2.1};player={x:spawn.x,y:spawn.y,vx:0,vy:0,w:.68,h:1.45,hp:100,mp:20,food:100,water:100,oxygen:100,ground:false,face:1,anim:0,coyote:0,jumpBuffer:0,invuln:0};furnaces.clear();storageChests.clear();projectiles=[];enemies=[];fx=[];worldDrops=[];killCount=0;armor=[null,null,null];makeInv();graves=[];crops.clear();weather='clear';weatherTimer=65;weatherPhase=0;active=0;
  if(label===SECRET_SEED){let lx=Math.floor(spawn.x)+3,ly=ground0-1;for(let dx=0;dx<2;dx++){put(lx+dx,ly,0);put(lx+dx,ly-1,0)}put(lx,ly,110);let rare=[64,72,78,37,62,63,77,84,85,30,31,40,20,19,48,47,45,96,113];let amounts=[1,1,1,99,99,99,99,99,99,99,99,99,99,99,99,99,30,30,20];storageChests.set(lx+','+ly,rare.map((id,i)=>({id,n:amounts[i],...(durabilityMax(id)?{dur:durabilityMax(id)}:{})})).concat(Array.from({length:17},()=>null)));}time=8*60;zoom=zoomClamp(titlePrefs.zoom*(touchDevice?mobileZoomFactor():1));cam.x=player.x*T;cam.y=player.y*T;startPlay();toast('ワールド生成完了！ Cでクラフト、作業台を設置しよう')}
 function startPlay(){if(touchDevice&&zoom>3*mobileZoomFactor())zoom=zoomClamp(2*mobileZoomFactor());document.body.classList.remove('titleScene');modal.classList.remove('mapModal','wrCraftModal','wrPauseModal','wrStorageModal');hideTip();mode='playing';overlay.classList.add('hidden');lastSpaceTap=-10000;keys.clear();mouse.left=mouse.right=false;updateBar();last=performance.now();}
 function save(silent=false){if(!player||!session||currentWorldSlot<0)return;try{let data={v:17,worldName,savedAt:Date.now(),graves:graves.map(g=>({...g,items:g.items.map(t=>t?{...t}:null),armor:g.armor.map(t=>t?{...t}:null)})),gameMode,spectator,timeFrozen,boatRiding,crops:[...crops],weather,weatherTimer,weatherPhase,bedSpawn,storageChests:[...storageChests],worldDrops:worldDrops.map(d=>({...d})),genVersion,seed,session,treasuresOpened:[...treasuresOpened],edits:[...edits],wallEdits:[],furnaces:[...furnaces],inv,player:{x:player.x,y:player.y,hp:player.hp,mp:player.mp,food:player.food,water:player.water,oxygen:player.oxygen??100},time,zoom:touchDevice?zoom/mobileZoomFactor():zoom,killCount,armor};localStorage.setItem(worldSaveKey(currentWorldSlot),JSON.stringify(data));if(!silent)toast('ワールドを保存しました')}catch(e){toast('保存に失敗しました。ブラウザの保存容量を確認してください')}}
@@ -1410,7 +1501,7 @@ function reconcileSavedItems(){
  }
  for(let j=0;j<armor.length;j++)if(armor[j]?.id===61)armor[j]=null;
 }
-function load(slot=currentWorldSlot){currentWorldSlot=slot;let raw=localStorage.getItem(worldSaveKey(slot));if(!raw){modal.innerHTML='<h2>セーブがありません</h2><button id="back">戻る</button>';document.getElementById('back').onclick=showWorldSlots;return}try{let d=JSON.parse(raw);if(![1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17].includes(d.v)||!Array.isArray(d.edits)||!Array.isArray(d.inv))throw Error('format');worldName=d.worldName||d.session||('ワールド '+(slot+1));gameMode=d.gameMode||'survival';spectator=!!d.spectator&&gameMode==='sandbox';timeFrozen=!!d.timeFrozen&&gameMode==='sandbox';boatRiding=false;graves=(Array.isArray(d.graves)?d.graves:[]).filter(g=>Number.isInteger(g.x)&&Number.isInteger(g.y)&&Array.isArray(g.items)).map(g=>({...g,items:g.items.map(t=>t?{...t}:null),armor:(Array.isArray(g.armor)?g.armor:[null,null,null]).map(t=>t?{...t}:null)}));graveSerial=Math.max(0,...graves.map(g=>g.id||0));genVersion=d.genVersion||1;crops=new Map(d.crops||[]);weather=d.weather||'clear';weatherTimer=d.weatherTimer||0;weatherPhase=d.weatherPhase||0;bedSpawn=d.bedSpawn||null;treasuresOpened=new Set(d.treasuresOpened||[]);lavaCooldown=0;seed=d.seed;session=d.session;edits=new Map(d.edits);if(d.v<17){for(const [k,v] of edits){if(v===121)edits.delete(k)}}wallEdits=new Map(d.wallEdits||[]);furnaces=new Map(d.furnaces||[]);storageChests=new Map(d.storageChests||[]);worldDrops=(Array.isArray(d.worldDrops)?d.worldDrops:[]).filter(v=>Number.isInteger(v.id)&&v.id>0&&v.id<names.length&&Number.isFinite(v.x)&&Number.isFinite(v.y)&&Number.isFinite(v.n)&&v.n>0).slice(0,900).map(v=>({...v,age:v.age||0,delay:v.delay||0,life:v.life??1800,vx:v.vx||0,vy:v.vy||0,bob:v.bob||0}));projectiles=[];enemies=[];fx=[];killCount=d.killCount||0;armor=Array.isArray(d.armor)?d.armor.slice(0,3):[null,null,null];chunks.clear();ground0=heightAt(W/2);spawn={x:W/2+.5,y:ground0-2.1};player={x:d.player.x,y:d.player.y,vx:0,vy:0,w:.68,h:1.45,hp:Math.max(1,d.player.hp??100),mp:d.player.mp??20,food:d.player.food??100,water:d.player.water??100,oxygen:d.player.oxygen??100,ground:false,face:1,anim:0,coyote:0,jumpBuffer:0,invuln:0};inv=wrUpgradeInventory(d.inv.map(it=>normalizeStack(it&&it.id===26?{...it,id:3}:it)));time=d.time;zoom=zoomClamp((d.zoom||2)*(touchDevice?mobileZoomFactor():1));cam.x=player.x*T;cam.y=player.y*T;active=0;reconcileSavedItems();startPlay();toast('セーブを読み込みました')}catch(e){modal.innerHTML='<h2>セーブの読み込みに失敗</h2><p>保存データが破損している可能性があります。</p><button id="back">戻る</button>';document.getElementById('back').onclick=showWorldSlots;}}
+function load(slot=currentWorldSlot){currentWorldSlot=slot;let raw=localStorage.getItem(worldSaveKey(slot));if(!raw){modal.innerHTML='<h2>セーブがありません</h2><button id="back">戻る</button>';document.getElementById('back').onclick=showWorldSlots;return}try{let d=JSON.parse(raw);if(![1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17].includes(d.v)||!Array.isArray(d.edits)||!Array.isArray(d.inv))throw Error('format');worldName=d.worldName||d.session||('ワールド '+(slot+1));gameMode=d.gameMode||'survival';spectator=!!d.spectator&&gameMode==='sandbox';timeFrozen=!!d.timeFrozen&&gameMode==='sandbox';boatRiding=false;graves=(Array.isArray(d.graves)?d.graves:[]).filter(g=>Number.isInteger(g.x)&&Number.isInteger(g.y)&&Array.isArray(g.items)).map(g=>({...g,items:g.items.map(t=>t?{...t}:null),armor:(Array.isArray(g.armor)?g.armor:[null,null,null]).map(t=>t?{...t}:null)}));graveSerial=Math.max(0,...graves.map(g=>g.id||0));genVersion=d.genVersion||1;crops=new Map(d.crops||[]);weather=d.weather||'clear';weatherTimer=d.weatherTimer||0;weatherPhase=d.weatherPhase||0;bedSpawn=d.bedSpawn||null;wrBedUsersLocal.clear();if(bedSpawn)wrBedUsersLocal.set(wrBedKey(Math.floor(bedSpawn.x),Math.floor(bedSpawn.y)),[{uid:"single",name:"プレイヤー"}]);treasuresOpened=new Set(d.treasuresOpened||[]);lavaCooldown=0;seed=d.seed;session=d.session;edits=new Map(d.edits);if(d.v<17){for(const [k,v] of edits){if(v===121)edits.delete(k)}}wallEdits=new Map(d.wallEdits||[]);furnaces=new Map(d.furnaces||[]);storageChests=new Map(d.storageChests||[]);worldDrops=(Array.isArray(d.worldDrops)?d.worldDrops:[]).filter(v=>Number.isInteger(v.id)&&v.id>0&&v.id<names.length&&Number.isFinite(v.x)&&Number.isFinite(v.y)&&Number.isFinite(v.n)&&v.n>0).slice(0,900).map(v=>({...v,age:v.age||0,delay:v.delay||0,life:v.life??1800,vx:v.vx||0,vy:v.vy||0,bob:v.bob||0}));projectiles=[];enemies=[];fx=[];killCount=d.killCount||0;armor=Array.isArray(d.armor)?d.armor.slice(0,3):[null,null,null];chunks.clear();ground0=heightAt(W/2);spawn={x:W/2+.5,y:ground0-2.1};player={x:d.player.x,y:d.player.y,vx:0,vy:0,w:.68,h:1.45,hp:Math.max(1,d.player.hp??100),mp:d.player.mp??20,food:d.player.food??100,water:d.player.water??100,oxygen:d.player.oxygen??100,ground:false,face:1,anim:0,coyote:0,jumpBuffer:0,invuln:0};inv=wrUpgradeInventory(d.inv.map(it=>normalizeStack(it&&it.id===26?{...it,id:3}:it)));time=d.time;zoom=zoomClamp((d.zoom||2)*(touchDevice?mobileZoomFactor():1));cam.x=player.x*T;cam.y=player.y*T;active=0;reconcileSavedItems();startPlay();toast('セーブを読み込みました')}catch(e){modal.innerHTML='<h2>セーブの読み込みに失敗</h2><p>保存データが破損している可能性があります。</p><button id="back">戻る</button>';document.getElementById('back').onclick=showWorldSlots;}}
 
 const SANDBOX_ITEM_CATEGORIES=[['tools','⛏ ツール類'],['weapons','⚔ 武器'],['armor','🛡 防具類'],['materials','💎 素材類'],['nature','🌿 自然類'],['misc','📦 その他']];
 function sandboxItemCategory(id){
@@ -1467,7 +1558,7 @@ function wrDrawTeammatesOnMap(g,originX,originY,blocksPerPixel,w,h,small=false){
  g.restore();
 }
 function drawMapSymbols(g,originX,originY,blocksPerPixel,w,h,miniMap=false){
- const landmarks=[...worldLandmarks(),...graves.map(v=>({x:v.x+.5,y:v.y+.5,name:'墓',kind:'grave',symbol:'☠',color:'#ff7575'}))];g.save();g.textAlign='center';g.textBaseline='middle';
+ const landmarks=[...worldLandmarks(),...graves.map(v=>({x:v.x+.5,y:v.y+.5,name:'墓',kind:'grave',symbol:'☠',color:'#ff7575'})),...(wrBedValid()?[{x:bedSpawn.x,y:bedSpawn.y,name:'リスポーン',kind:'bed',symbol:'⌂',color:'#a8ffcf'}]:[])];g.save();g.textAlign='center';g.textBaseline='middle';
  for(const l of landmarks){
   const x=(l.x-originX)/blocksPerPixel,y=(l.y-originY)/blocksPerPixel;
   if(x<8||x>w-8||y<8||y>h-8)continue;
@@ -1548,7 +1639,7 @@ function wrAddPin(){const pins=wrGetPins();if(pins.length>=40){toast('ピンの�
 function wrRemovePin(index){const pins=wrGetPins();pins.splice(index,1);wrSetPins(pins);drawWorldMap();}
 function wrShowPinList(){const root=document.getElementById('wrMapPinList');if(!root)return;root.replaceChildren();wrGetPins().forEach((pin,index)=>{const b=document.createElement('button');b.textContent='📍 '+pin.name+' ('+pin.x+','+pin.y+')';b.title='クリックでピンへ移動、削除は右クリック';b.onclick=()=>{mapCenterX=pin.x;mapCenterY=pin.y;renderWorldMap()};b.oncontextmenu=e=>{e.preventDefault();wrGameDialog('ピンを削除','「'+pin.name+'」を削除しますか？',{ok:'削除する',danger:true}).then(ok=>{if(ok!==null)wrRemovePin(index)})};root.append(b)})}
 function wrDrawPins(g,originX,originY,scale){const pins=wrGetPins();g.save();g.textAlign='center';g.textBaseline='middle';g.font='bold 11px sans-serif';for(const pin of pins){const x=(pin.x-originX)/scale,y=(pin.y-originY)/scale;if(x<4||y<4||x>g.canvas.width-4||y>g.canvas.height-4)continue;g.fillStyle='#ffd271';g.fillText('◆',x,y);g.fillStyle='#fff7d5';g.fillText(pin.name.slice(0,8),x,y-11)}g.restore()}
-function drawWorldMap(){modal.classList.add('mapModal');modal.innerHTML='<h2>ワールドマップ</h2><p class="mapLegend">🟡 現在地　⌂ 初期リスポーン　<span class="mapSymbolLabel">◆ 遺跡・神殿　✦ ダンジョン　☠ 墓</span><br>ホイール：拡大縮小 / ドラッグ：移動'+(gameMode==='sandbox'?' / <strong>左クリック：テレポート先を選択</strong>':'')+'</p><canvas id="worldMapCanvas" width="480" height="255"></canvas><p class="mapLegend" id="mapStatus"></p><div class="wrMapPin"><button id="wrAddMapPin">📍 現在地をピン登録</button><span class="small">右クリックでピン削除</span></div><div class="wrMapPinList" id="wrMapPinList"></div><button id="mapCenter">現在地へ</button><button id="mapClose">冒険へ戻る (M)</button>';
+function drawWorldMap(){modal.classList.add('mapModal');modal.innerHTML='<h2>ワールドマップ</h2><p class="mapLegend">🟡 現在地　⌂ 初期リスポーン　<span style="color:#a8ffcf">⌂ ベッドのリスポーン地点</span>　<span class="mapSymbolLabel">◆ 遺跡・神殿　✦ ダンジョン　☠ 墓</span><br>ホイール：拡大縮小 / ドラッグ：移動'+(gameMode==='sandbox'?' / <strong>左クリック：テレポート先を選択</strong>':'')+'</p><canvas id="worldMapCanvas" width="480" height="255"></canvas><p class="mapLegend" id="mapStatus"></p><div class="wrMapPin"><button id="wrAddMapPin">📍 現在地をピン登録</button><span class="small">右クリックでピン削除</span></div><div class="wrMapPinList" id="wrMapPinList"></div><button id="mapCenter">現在地へ</button><button id="mapClose">冒険へ戻る (M)</button>';
  document.getElementById('mapClose').onclick=closeWorldMap;document.getElementById('wrAddMapPin').onclick=wrAddPin;wrShowPinList();
  document.getElementById('mapCenter').onclick=()=>{mapCenterX=player.x;mapCenterY=player.y;renderWorldMap()};
  const c=document.getElementById('worldMapCanvas');let pointer=null;
@@ -1588,7 +1679,7 @@ function showPauseScreen(){
   const host=onlineRoomData?.host===window.WRCloud?.uid;
   if(host){const b=document.createElement('button');b.textContent='👑 ホスト';b.onclick=showMultiHostControls;actions.insertBefore(b,document.getElementById('saveAndQuit'));}
   document.getElementById('saveAndQuit').textContent='🚪 ワールドから退出';
-  document.getElementById('saveAndQuit').onclick=async()=>{const code=onlineRoomCode;onlineLocalSave();try{await getMulti().leaveWorld(code)}catch(e){console.warn('退出の更新失敗',e)}leaveOnlineRoom();showMenu()};
+  document.getElementById('saveAndQuit').onclick=async()=>{const code=onlineRoomCode;wrChatSystemEvent(getLocalProfile().name+' がワールドから退出しました',code);onlineLocalSave();try{await getMulti().leaveWorld(code)}catch(e){console.warn('退出の更新失敗',e)}leaveOnlineRoom();showMenu()};
  }
  document.getElementById('pauseSettings').onclick=()=>openUnifiedSettings('game','general');
  if(!onlineRoomCode)document.getElementById('saveAndQuit').onclick=()=>{save(true);showMenu()};
@@ -1608,7 +1699,7 @@ async function showMultiHostControls(){
  }; 
  document.getElementById('hostDeleteWorld').onclick=async()=>{if((await wrGameDialog('ワールド削除','削除すると元に戻せません。',{ok:'完全に削除',danger:true}))===null)return;try{await getMulti().deleteRoom(code);forgetWorld(code);leaveOnlineRoom();showMultiplayerEntry()}catch(e){onlineStatus('削除失敗：'+(e.code||e.message))}};
  const root=document.getElementById('hostMembers');root.textContent='読み込み中…';
- const members=onlineRoomData.members||[];root.replaceChildren();for(const uid of members){const row=document.createElement('div');row.className='multiMember';const name=document.createElement('span');name.textContent=(uid===window.WRCloud.uid?'👑 自分':friendPref(uid).nickname||uid.slice(0,10));row.append(name);if(uid!==window.WRCloud.uid){const btn=document.createElement('button');btn.textContent='退出させる';btn.onclick=async()=>{if((await wrGameDialog('プレイヤーを退出','このプレイヤーを退出させますか？',{ok:'退出させる',danger:true}))===null)return;try{await getMulti().kickPlayer(code,uid);row.remove()}catch(e){onlineStatus('退出処理失敗：'+(e.code||e.message))}};row.append(btn);getMulti().findPlayer(uid).then(p=>{name.textContent=friendPref(uid).nickname||p?.name||uid.slice(0,10)}).catch(()=>{})}root.append(row)}
+ const members=onlineRoomData.members||[];root.replaceChildren();for(const uid of members){const row=document.createElement('div');row.className='multiMember';const name=document.createElement('span');name.textContent=(uid===window.WRCloud.uid?'👑 自分':friendPref(uid).nickname||uid.slice(0,10));row.append(name);if(uid!==window.WRCloud.uid){const btn=document.createElement('button');btn.textContent='退出させる';btn.onclick=async()=>{if((await wrGameDialog('プレイヤーを退出','このプレイヤーを退出させますか？',{ok:'退出させる',danger:true}))===null)return;try{await getMulti().kickPlayer(code,uid);wrChatSystemEvent('プレイヤーがホストにより退出させられました',code);row.remove()}catch(e){onlineStatus('退出処理失敗：'+(e.code||e.message))}};row.append(btn);getMulti().findPlayer(uid).then(p=>{name.textContent=friendPref(uid).nickname||p?.name||uid.slice(0,10)}).catch(()=>{})}root.append(row)}
 }
 function pause(){
  if(mode==='sandbox'||mode==='craft'){startPlay();return;}
@@ -1907,6 +1998,7 @@ function chooseGraveCell(){
 }
 function respawn(reason){
  if(gameMode==='sandbox'||mode==='dead')return;
+ if(onlineRoomCode)wrChatSystemEvent(getLocalProfile().name+' が死亡しました');
  const cell=chooseGraveCell();
  const items=inv.map(v=>v?{...v}:null),gear=armor.map(v=>v?{...v}:null);
  graves.push({id:++graveSerial,x:cell.x,y:cell.y,items,armor:gear});
@@ -1916,7 +2008,7 @@ function respawn(reason){
  modal.innerHTML='<h2 style="color:#ff7c7c">☠ 死亡しました</h2><p>'+reason+'</p><p>所持品は死亡地点の墓に保存されます。墓を左クリックで破壊すると元のスロット配置で回収できます。</p><p class="small">マップとミニマップには墓の位置が ☠ で表示されます。</p><button id="graveRespawn">リスポーン</button>';
  document.getElementById('graveRespawn').onclick=()=>{
   player.hp=100;player.mp=20;player.food=70;player.water=70;player.oxygen=100;
-  player.x=bedSpawn?.x??spawn.x;player.y=bedSpawn?.y??spawn.y;player.vx=0;player.vy=0;player.invuln=2;
+  const resp=wrBedRespawnSpot();player.x=resp.x;player.y=resp.y;player.vx=0;player.vy=0;player.invuln=2;
   enemies=[];cam.x=player.x*T;cam.y=player.y*T;startPlay();save(true);toast('墓の場所をマップで確認しよう');
  };
  save(true);updateHP();updateBar();
@@ -1969,7 +2061,7 @@ function survivalAndEnvironment(dt){if(gameMode==='sandbox'){player.hp=100;playe
  if(player.oxygen===0)respawn('水中で息が続かなかった！');
  if(weather==='storm'&&Math.random()<dt*.018&&player.y<=heightAt(player.x)+3&&!solid(get(Math.floor(player.x),Math.floor(player.y-3)))){hurtPlayer(8,player.x-1);toast('落雷！');}
 }
-function drinkAndEatTick(dt){if(gameMode==='sandbox')return;player.food=Math.max(0,player.food-dt*.085);player.water=Math.max(0,player.water-dt*.12);if(player.food<=0||player.water<=0)respawn(player.food<=0?'空腹で倒れた！':'脱水で倒れた！')}
+let wrRegenHudClock=0;function drinkAndEatTick(dt){if(gameMode==='sandbox')return;const wrRegenerating=player.hp>0&&player.hp<100&&player.food>0&&player.water>0;if(wrRegenerating){player.hp=Math.min(100,player.hp+dt*.75);wrRegenHudClock+=dt;if(wrRegenHudClock>.22){wrRegenHudClock=0;updateHP()}}player.food=Math.max(0,player.food-dt*.085*(wrRegenerating?2:1));player.water=Math.max(0,player.water-dt*.12);if(player.food<=0||player.water<=0)respawn(player.food<=0?'空腹で倒れた！':'脱水で倒れた！')}
 function act(dt){if(mouse.left&&[93,96,98,103,104,105,113].includes(inv[active]?.id)&&actionCooldown<=0){eatOrDrink();mouse.left=false;actionCooldown=.35;return}if(mouse.left&&inv[active]?.id===45&&actionCooldown<=0){drinkPotion();mouse.left=false;actionCooldown=.35;return}actionCooldown=Math.max(0,actionCooldown-dt);let {tx,ty,reachable,front,back}=tileTarget();if(!reachable){mineProgress=0;return}
  if(mouse.left&&graveAt(tx,ty)){recoverGrave(tx,ty);mouse.left=false;mineProgress=0;return}
  if(mouse.left&&inv[active]?.id===59){if(attackCooldown<=0){const id=inv[active].id;fireProjectile(id);lastAttackInterval=attackInterval(id);attackCooldown=lastAttackInterval;mouse.left=false}mineProgress=0;return}
@@ -1982,7 +2074,7 @@ function act(dt){if(mouse.left&&[93,96,98,103,104,105,113].includes(inv[active]?
  if(mouse.left){if(isWaterTile(front)){mineProgress=0;return}if(front===34||front===75){mineProgress=0;return}let t=front;let target='front';// Only mine foreground tiles, never the natural cave backdrop.
  if(t){if(mineX!==tx||mineY!==ty||mineLayer!==target){mineX=tx;mineY=ty;mineLayer=target;mineProgress=0}mineProgress+=dt;if(mineProgress>=digTime(t,inv[active]?.id)){if(t===4&&toolType(inv[active]?.id)==='axe')fellTree(tx,ty);else{if(t===58||t===110){let items=storageChests.get(tx+','+ty)||[];if(items.some(Boolean)){toast('チェストの中身を空にしてから壊してください');mineProgress=0;return}storageChests.delete(tx+','+ty)}put(tx,ty,0);if(gameMode!=='sandbox'){spawnDrop(t===1?2:t,1,tx+.5,ty+.5);if(t===5&&Math.random()<.30)spawnDrop(120,1,tx+.5,ty+.3);if(t===1&&Math.random()<.28)spawnDrop(Math.random()<.65?100:101,1,tx+.5,ty+.35);}crops.delete(tx+','+(ty-1));spawnFx(tx,ty,colors[t]||'#b7ac9b',7)}if(target==='front'&&toolType(inv[active]?.id)!=='hand')wear(active,1);swing=.18;attackVisual={kind:'tool',elapsed:0,duration:.26,face:player.face};mineProgress=0;updateBar()}}else mineProgress=0
  }else mineProgress=0;
- if(mouse.right&&actionCooldown<=0){if(graveAt(tx,ty)){recoverGrave(tx,ty);mouse.right=false;return}if(front===34||front===75){mouse.right=false;openTreasure(tx,ty);actionCooldown=.25;return}if(front===58||front===110){mouse.right=false;openStorage(tx,ty);return}if(front===91){mouse.right=false;bedSpawn={x:tx+.5,y:ty};let hour=time/60;if(hour>=6&&hour<18){time=19*60;toast('ベッドで休んだ。夜になった！')}else{time=8*60;toast('ぐっすり眠った。朝になった！')}enemies=[];return}if(front===92){mouse.right=false;openCraft(false);return}if(isWaterTile(front)&&inv[active]?.id===115){mouse.right=false;toast('水入りバケツ：水面を選んで設置してみよう');return}if(isWaterTile(front)&&inv[active]?.id===106){mouse.right=false;for(let [k,c] of crops){let [cx,cy]=k.split(',').map(Number);if(Math.abs(cx-tx)<=3&&Math.abs(cy-ty)<=3)c.moist=1;}toast('周囲の畑に水をやった！');return}if(isWaterTile(front)&&inv[active]?.id===94){mouse.right=false;consume(94,1);if(!addItem(96,1))addItem(94,1);toast('池の淡水を水筒に汲んだ');updateBar();return}if(front===12||front===18){mouse.right=false;if(front===18)openFurnace(tx,ty);else openCraft(true);return}// Harvesting crops is possible even when holding no item.
+ if(mouse.right&&actionCooldown<=0){if(graveAt(tx,ty)){recoverGrave(tx,ty);mouse.right=false;return}if(front===34||front===75){mouse.right=false;openTreasure(tx,ty);actionCooldown=.25;return}if(front===58||front===110){mouse.right=false;openStorage(tx,ty);return}if(front===91){mouse.right=false;wrBedMenu(tx,ty);return}if(front===92){mouse.right=false;openCraft(false);return}if(isWaterTile(front)&&inv[active]?.id===115){mouse.right=false;toast('水入りバケツ：水面を選んで設置してみよう');return}if(isWaterTile(front)&&inv[active]?.id===106){mouse.right=false;for(let [k,c] of crops){let [cx,cy]=k.split(',').map(Number);if(Math.abs(cx-tx)<=3&&Math.abs(cy-ty)<=3)c.moist=1;}toast('周囲の畑に水をやった！');return}if(isWaterTile(front)&&inv[active]?.id===94){mouse.right=false;consume(94,1);if(!addItem(96,1))addItem(94,1);toast('池の淡水を水筒に汲んだ');updateBar();return}if(front===12||front===18){mouse.right=false;if(front===18)openFurnace(tx,ty);else openCraft(true);return}// Harvesting crops is possible even when holding no item.
  if(front===0&&crops.has(tx+','+ty)){let plant=crops.get(tx+','+ty);if(plant.age<3){mouse.right=false;return toast('まだ育っていない')}addItem(plant.kind===100?102:103,2+Math.floor(Math.random()*3));addItem(plant.kind,1);crops.delete(tx+','+ty);mouse.right=false;updateBar();toast('作物を収穫した！');return}
  let it=inv[active];if(!it||it.n<=0)return;
  let id=it.id;
@@ -2453,10 +2545,11 @@ let previewDrawAt=0, gameDrawAt=0, hudDrawAt=0;
 // Adaptive frame pacing: try 60 FPS when the device can sustain it.
 // Back off gently on weak devices to avoid the long stalls caused by
 // continuously starting a new expensive render before the next frame.
-let smoothRenderCost=9, smoothFrameInterval=1000/60, smoothFrameSamples=0;
+let smoothRenderCost=9, smoothFrameInterval=1000/60, smoothFrameSamples=0,wrDropStepClock=0;
 function renderFrameBudget(){
- const target=smoothRenderCost<12.2?1000/60:smoothRenderCost<18?1000/45:1000/30;
- smoothFrameInterval+=(target-smoothFrameInterval)*.07;
+ // Favor a stable cadence. Switch only when rendering cost remains very high.
+ const target=smoothRenderCost>28?1000/30:1000/60;
+ smoothFrameInterval+=(target-smoothFrameInterval)*.015;
 }
 
 function loop(ts){
@@ -2485,7 +2578,10 @@ function loop(ts){
    const step=1/60;
    updateFlowWater(step);survivalAndEnvironment(step);if(mode==='dead'){accumulator=0;break;}
    physics(step);if(mode==='dead'){accumulator=0;break;}
-   updateWorldDrops(step);drinkAndEatTick(step);if(mode==='dead'){accumulator=0;break;}
+   // 30Hz item physics is sufficient; avoid collision tests 60 times per second.
+   wrDropStepClock+=step;
+   if(wrDropStepClock>=1/30){updateWorldDrops(Math.min(.067,wrDropStepClock));wrDropStepClock=0;}
+   drinkAndEatTick(step);if(mode==='dead'){accumulator=0;break;}
    if(interactive){onlineCaptureEdits=!!onlineRoomCode;try{act(step)}finally{onlineCaptureEdits=false}}
    updateEnemies(step);wrEnemyVisualUpdate(step);if(mode==='dead'){accumulator=0;break;}
    updateProjectiles(step);if(mode==='dead'){accumulator=0;break;}
@@ -2707,7 +2803,7 @@ canvas.addEventListener('pointerup',touchRelease,{passive:false});
 canvas.addEventListener('pointercancel',touchRelease,{passive:false});
 window.addEventListener('orientationchange',()=>{keys.clear();mouse.left=mouse.right=false;resize();applyTouchLayout()});
 window.addEventListener('resize',()=>{resize();applyTouchLayout()});window.addEventListener('blur',()=>{keys.clear();mouse.left=mouse.right=false;if(mode==='playing')pause()});
-window.addEventListener('keydown',e=>{const code=toGameKey(e.code);if(['Space','ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Tab'].includes(code))e.preventDefault();if(code==='Space'&&gameMode==='sandbox'&&mode==='playing'&&!e.repeat){let now=performance.now();if(now-lastSpaceTap<330){spectator=!spectator;boatRiding=false;player.jumpBuffer=0;lastSpaceTap=-10000;toast(spectator?'スペクテイター：壁を通り抜けて飛行できます':'通常の移動に戻りました');return;}lastSpaceTap=now;}if(code==='KeyM'&&(mode==='playing'||mode==='worldmap')){e.preventDefault();if(mode==='worldmap')closeWorldMap();else openWorldMap();return}if((code==='Equal'||code==='Minus')&&mode==='playing'){zoom=zoomClamp(zoom+(code==='Equal'?.25:-.25)*(touchDevice?mobileZoomFactor():1));return;}if(code==='Escape'){if(mode==='touchEdit'){closeTouchEditor();return}if(mode==='gameControls'){openSettings('playing');return}if(mode==='worldRename'){showWorldSlots();return}if(['worldSlots','worldCreate','titleSettings','titleControls'].includes(mode)){showMenu();return}if(mode==='settings'){if(settingsReturn==='menu')showMenu();else startPlay();return}if(mode!=='menu')pause();return}if(code==='KeyE'){if(mode==='storage'){startPlay();return}if(mode==='inventory')closeInventory();else if(mode==='craft'){mode='inventory';renderInventory()}else if(mode==='playing')openInventory();return}if(code==='KeyC'){if(mode==='craft')startPlay();else if(mode==='playing'||mode==='inventory')openCraft();return}if(mode!=='playing')return;if(e.code===keyBinds.mine)mouse.left=true;if(e.code===keyBinds.place)mouse.right=true;keys.add(code);if(!e.repeat&&(code==='Space'||code==='KeyW')&&!spectator)player.jumpBuffer=.12;if(code==='KeyF')save();if(code==='KeyQ'&&!e.repeat){e.preventDefault();dropSelected(e.ctrlKey);return;}if(/^Digit[0-9]$/.test(code)){active=code==='Digit0'?9:Number(code.slice(5))-1;updateBar()}});
+window.addEventListener('keydown',e=>{if(e.code==='Enter'&&!e.repeat&&!e.isComposing&&onlineRoomCode&&mode==='playing'&&!e.target.closest('input,textarea,select,[contenteditable]')){e.preventDefault();wrChatOpen();return;}const code=toGameKey(e.code);if(['Space','ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Tab'].includes(code))e.preventDefault();if(code==='Space'&&gameMode==='sandbox'&&mode==='playing'&&!e.repeat){let now=performance.now();if(now-lastSpaceTap<330){spectator=!spectator;boatRiding=false;player.jumpBuffer=0;lastSpaceTap=-10000;toast(spectator?'スペクテイター：壁を通り抜けて飛行できます':'通常の移動に戻りました');return;}lastSpaceTap=now;}if(code==='KeyM'&&(mode==='playing'||mode==='worldmap')){e.preventDefault();if(mode==='worldmap')closeWorldMap();else openWorldMap();return}if((code==='Equal'||code==='Minus')&&mode==='playing'){zoom=zoomClamp(zoom+(code==='Equal'?.25:-.25)*(touchDevice?mobileZoomFactor():1));return;}if(code==='Escape'){if(mode==='touchEdit'){closeTouchEditor();return}if(mode==='gameControls'){openSettings('playing');return}if(mode==='worldRename'){showWorldSlots();return}if(['worldSlots','worldCreate','titleSettings','titleControls'].includes(mode)){showMenu();return}if(mode==='settings'){if(settingsReturn==='menu')showMenu();else startPlay();return}if(mode!=='menu')pause();return}if(code==='KeyE'){if(mode==='storage'){startPlay();return}if(mode==='inventory')closeInventory();else if(mode==='craft'){mode='inventory';renderInventory()}else if(mode==='playing')openInventory();return}if(code==='KeyC'){if(mode==='craft')startPlay();else if(mode==='playing'||mode==='inventory')openCraft();return}if(mode!=='playing')return;if(e.code===keyBinds.mine)mouse.left=true;if(e.code===keyBinds.place)mouse.right=true;keys.add(code);if(!e.repeat&&(code==='Space'||code==='KeyW')&&!spectator)player.jumpBuffer=.12;if(code==='KeyF')save();if(code==='KeyQ'&&!e.repeat){e.preventDefault();dropSelected(e.ctrlKey);return;}if(/^Digit[0-9]$/.test(code)){active=code==='Digit0'?9:Number(code.slice(5))-1;updateBar()}});
 window.addEventListener('keyup',e=>{keys.delete(toGameKey(e.code));if(e.code===keyBinds.mine)mouse.left=false;if(e.code===keyBinds.place)mouse.right=false;});canvas.addEventListener('mousemove',e=>{let r=canvas.getBoundingClientRect();let sx=canvas.width/r.width,sy=canvas.height/r.height;mouse.x=(e.clientX-r.left)*sx;mouse.y=(e.clientY-r.top)*sy;mouse.inside=true});canvas.addEventListener('mouseleave',()=>{mouse.inside=false;mouse.left=mouse.right=false});canvas.addEventListener('mousedown',e=>{if(touchDevice&&e.sourceCapabilities?.firesTouchEvents)return;if(mode!=='playing')return;if('Mouse'+e.button===keyBinds.mine)mouse.left=true;if('Mouse'+e.button===keyBinds.place)mouse.right=true});window.addEventListener('mouseup',e=>{if('Mouse'+e.button===keyBinds.mine)mouse.left=false;if('Mouse'+e.button===keyBinds.place)mouse.right=false});canvas.addEventListener('contextmenu',e=>e.preventDefault());canvas.addEventListener('wheel',e=>{if(mode!=='playing')return;e.preventDefault();if(e.ctrlKey){active=(active+(e.deltaY>0?1:9))%10;updateBar()}else{zoom=zoomClamp(zoom+(e.deltaY>0?-.25:.25)*(touchDevice?mobileZoomFactor():1))}},{passive:false});
 mini.addEventListener('click',()=>{if(mode==='playing')openWorldMap()});document.getElementById('quickInventory').onclick=()=>{if(mode==='playing')openInventory()};document.getElementById('quickCraft').onclick=()=>{if(mode==='playing')openCraft()};document.getElementById('quickMap').onclick=()=>{if(mode==='playing')openWorldMap()};document.getElementById('quickSettings').onclick=()=>{if(mode==='playing')pause()};resize();wrRelayout();showMenu();requestAnimationFrame(loop);
 })();
@@ -2857,8 +2953,9 @@ window.WRCloud={
    ...(Number.isFinite(d.dur)?{dur:d.dur}:{}),by:auth.currentUser.uid,createdAt:serverTimestamp()
   });
  },
- watchDrops(code,cb){return onSnapshot(collection(db,'rooms',code,'drops'),snap=>{
-  cb(snap.docs.map(d=>({docId:d.id,...d.data()})));
+ watchDrops(code,cb){const cache=new Map();return onSnapshot(collection(db,'rooms',code,'drops'),snap=>{
+  for(const change of snap.docChanges()){if(change.type==='removed')cache.delete(change.doc.id);else cache.set(change.doc.id,{docId:change.doc.id,...change.doc.data()});}
+  cb([...cache.values()]);
  },e=>console.warn('Drop watch:',e));},
  async claimDrop(code,id){
   const ref=doc(db,'rooms',code,'drops',id);
@@ -2866,6 +2963,21 @@ window.WRCloud={
    const snap=await tx.get(ref);if(!snap.exists())return false;
    tx.delete(ref);return true;
   });
+ },
+ async saveBedAssignment(code,data){
+  const uid=auth.currentUser?.uid;if(!uid)throw Error('未接続');
+  await setDoc(doc(db,'rooms',code,'bedAssignments',uid),{uid,name:String(data.name||'プレイヤー').slice(0,20),x:data.x,y:data.y,updatedAt:serverTimestamp()});
+ },
+ async deleteBedAssignment(code){
+  const uid=auth.currentUser?.uid;if(uid)await deleteDoc(doc(db,'rooms',code,'bedAssignments',uid));
+ },
+ async getBedAssignment(code){
+  const uid=auth.currentUser?.uid;if(!uid)return null;
+  const snap=await getDoc(doc(db,'rooms',code,'bedAssignments',uid));return snap.exists()?snap.data():null;
+ },
+ async listBedAssignments(code){
+  const snap=await getDocs(collection(db,'rooms',code,'bedAssignments'));
+  return snap.docs.map(d=>d.data());
  },
  async writePin(code,p){await setDoc(doc(db,'rooms',code,'pins',p.id),{x:p.x,y:p.y,name:p.name,by:auth.currentUser.uid,updatedAt:serverTimestamp()});},
  async deletePin(code,id){await deleteDoc(doc(db,'rooms',code,'pins',id));},
