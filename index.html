@@ -142,7 +142,36 @@ body.touchEditing #overlay{display:none!important}
 #quickActions .quickButton .symbol,#quickActionsRight .quickButton .symbol{font-size:19px}
 #quickActions .quickButton .keyhint,#quickActionsRight .quickButton .keyhint{display:none}
 @media(max-width:780px) and (pointer:fine){#quickActions{top:115px!important;left:12px}#quickActionsRight{top:115px!important;right:12px}}
-</style></head><body><canvas id="game"></canvas><div id="hud"><div id="top"><div id="stats"><div class="stat">❤ HP <span id="hp">100 / 100</span></div><div class="bar"><div id="hpfill" class="fill" style="width:100%"></div></div><div class="stat">✦ MP <span id="mpnum">20 / 20</span></div><div class="bar"><div class="fill" id="mpfill" style="width:100%;background:#67a5f2"></div></div><div class="stat">🫧 酸素 <span id="oxynum">100 / 100</span></div><div class="bar"><div class="fill" id="oxyfill" style="width:100%;background:#a0e2f5"></div></div><div class="stat">🍖 食料 <span id="foodnum">100 / 100</span></div><div class="bar"><div class="fill" id="foodfill" style="width:100%;background:#d59752"></div></div><div class="stat">💧 水分 <span id="waternum">100 / 100</span></div><div class="bar" style="margin-bottom:0"><div class="fill" id="waterfill" style="width:100%;background:#55b3dc"></div></div></div><div id="info">地表 / 森林　|　深度: <span id="depth">0</span><br>座標: <span id="coords">0, 0</span><br>ズーム: <span id="zoomtext">2.0</span>x<br>光量: <span id="lighttext">100%</span> · 撃破: <span id="kills">0</span></div></div><canvas id="map" width="224" height="224" title="全体マップを表示 (M)"></canvas><div id="clock">☀ 08:00</div><div id="toast"></div><div id="quickActions"><button type="button" class="quickButton" id="quickInventory" title="持ち物を開く (E)"><span class="keyhint">E</span><span class="symbol">🎒</span><span>持ち物</span></button><button type="button" class="quickButton" id="quickCraft" title="クラフト (C)"><span class="keyhint">C</span><span class="symbol">📖</span><span>クラフト</span></button></div><div id="quickActionsRight" class="right"><button type="button" class="quickButton" id="quickMap" title="全体マップ (M)"><span class="keyhint">M</span><span class="symbol">🗺️</span><span>マップ</span></button><button type="button" class="quickButton" id="quickSettings" title="設定・操作説明 (Esc)"><span class="keyhint">Esc</span><span class="symbol">⚙️</span><span>設定</span></button></div><div id="hotbar"></div></div><div id="rotateNotice">📱 横画面にしてください<small>WILDROOTのスマホ版は横向き専用です。<br>端末を横に回転してプレイしてください。</small></div><div id="touchControls" aria-label="スマホ操作"><div id="touchMove"><button id="touchLeft" aria-label="左へ移動">◀</button><button id="touchRight" aria-label="右へ移動">▶</button><button id="touchStick" aria-label="移動スティック"><span id="stickKnob"></span></button></div><div id="touchSpecial"><button id="touchDrop" aria-label="アイテムを捨てる">Q</button><button id="touchDown" aria-label="下へ">▼</button><button id="touchJump" aria-label="ジャンプ">⤒</button><button id="touchZoomIn" aria-label="拡大">＋</button><button id="touchZoomOut" aria-label="縮小">－</button></div><div id="touchGuide">短押し：設置・攻撃　長押し：採掘</div></div><div id="touchEditBar"><strong>📱 スマホ操作配置</strong><label>移動 <select id="touchStyle"><option value="buttons">左右ボタン</option><option value="stick">スティック</option></select></label><label>サイズ <input id="touchSize" type="range" min="38" max="140" step="2" value="72"></label><span id="touchEditSelection">ボタンを選択・ドラッグ</span><button id="touchLayoutReset">初期化</button><button id="touchEditDone">保存して戻る</button></div><div id="itemTooltip" role="tooltip"></div><div id="overlay"><div id="modal"></div></div><script>
+
+/* unified title/pause settings */
+.settingsTabs{display:flex;gap:9px;margin:12px 0 20px;justify-content:center}
+.settingsTabs button{flex:1;max-width:230px;padding:10px;border:2px solid #728c8a;border-radius:8px;background:#253d40;color:#e2eee8}
+.settingsTabs button.active{border-color:#f4ce83;color:#ffe6af;background:#36544a;box-shadow:inset 0 -3px #7da996}
+.unifiedSettings{max-height:min(92dvh,800px);overflow:auto;width:min(880px,94vw)}
+.settingsOptions{max-width:680px;margin:10px auto;text-align:left}.settingsOptions select{width:auto;min-width:120px}
+.unifiedSettings .controlGrid{max-height:51dvh;overflow:auto;padding:5px}
+.settingsBottom{margin-top:15px}.touchSettingsInfo{padding:16px 8px 26px}
+.touchSettingsInfo .worldPrimary{width:auto;max-width:100%}
+.pausePanel{width:min(450px,90vw);margin:auto;text-align:center}.pauseActions{display:flex;flex-direction:column;align-items:stretch;gap:10px;margin:16px auto}.pauseActions button{margin:0;min-height:48px}
+@media(pointer:coarse) and (orientation:landscape){
+ #top{transform:scale(.70);transform-origin:top left}
+ #clock{transform:scale(.80);transform-origin:top right;right:calc(128px + env(safe-area-inset-right));top:5px}
+ #map{width:min(20vw,130px)!important;height:min(28vh,110px)!important;right:calc(5px + env(safe-area-inset-right))!important;top:5px!important}
+ #hotbar{bottom:8px!important;max-width:58vw!important;gap:2px!important}
+ #hotbar .slot{width:clamp(24px,3.8vw,39px)!important;height:clamp(29px,4vw,42px)!important}
+ #hotbar .slot canvas{width:23px!important;height:23px!important}
+ body.touchPlaying .quickButton,body.touchEditing .quickButton{font-size:8px!important;padding:2px!important}
+ .quickButton .symbol{font-size:15px!important}
+ #touchControls button{font-size:clamp(18px,4vh,25px)!important}
+ body.touchEditing #touchEditBar{top:clamp(62px,16vh,76px)!important;max-width:96vw;max-height:30vh;overflow:auto;flex-wrap:wrap;justify-content:center;padding:5px 7px;gap:4px 8px}
+ #toast{top:23%!important;max-width:70vw;white-space:normal;text-align:center;font-size:12px!important}
+}
+@media(pointer:coarse) and (orientation:landscape) and (max-height:480px){
+ #top{transform:scale(.57)}
+ #map{width:95px!important;height:75px!important}
+ #hotbar .slot{width:clamp(22px,3.6vw,34px)!important;height:31px!important}
+}
+</style></head><body><canvas id="game"></canvas><div id="hud"><div id="top"><div id="stats"><div class="stat">❤ HP <span id="hp">100 / 100</span></div><div class="bar"><div id="hpfill" class="fill" style="width:100%"></div></div><div class="stat">✦ MP <span id="mpnum">20 / 20</span></div><div class="bar"><div class="fill" id="mpfill" style="width:100%;background:#67a5f2"></div></div><div class="stat">🫧 酸素 <span id="oxynum">100 / 100</span></div><div class="bar"><div class="fill" id="oxyfill" style="width:100%;background:#a0e2f5"></div></div><div class="stat">🍖 食料 <span id="foodnum">100 / 100</span></div><div class="bar"><div class="fill" id="foodfill" style="width:100%;background:#d59752"></div></div><div class="stat">💧 水分 <span id="waternum">100 / 100</span></div><div class="bar" style="margin-bottom:0"><div class="fill" id="waterfill" style="width:100%;background:#55b3dc"></div></div></div><div id="info">地表 / 森林　|　深度: <span id="depth">0</span><br>座標: <span id="coords">0, 0</span><br>ズーム: <span id="zoomtext">2.0</span>x<br>光量: <span id="lighttext">100%</span> · 撃破: <span id="kills">0</span></div></div><canvas id="map" width="224" height="224" title="全体マップを表示 (M)"></canvas><div id="clock">☀ 08:00</div><div id="toast"></div><div id="quickActions"><button type="button" class="quickButton" id="quickInventory" title="持ち物を開く (E)"><span class="keyhint">E</span><span class="symbol">🎒</span><span>持ち物</span></button><button type="button" class="quickButton" id="quickCraft" title="クラフト (C)"><span class="keyhint">C</span><span class="symbol">📖</span><span>クラフト</span></button></div><div id="quickActionsRight" class="right"><button type="button" class="quickButton" id="quickMap" title="全体マップ (M)"><span class="keyhint">M</span><span class="symbol">🗺️</span><span>マップ</span></button><button type="button" class="quickButton" id="quickSettings" title="一時停止 (Esc)"><span class="keyhint">Esc</span><span class="symbol">⏸</span><span>一時停止</span></button></div><div id="hotbar"></div></div><div id="rotateNotice">📱 横画面にしてください<small>WILDROOTのスマホ版は横向き専用です。<br>端末を横に回転してプレイしてください。</small></div><div id="touchControls" aria-label="スマホ操作"><div id="touchMove"><button id="touchLeft" aria-label="左へ移動">◀</button><button id="touchRight" aria-label="右へ移動">▶</button><button id="touchStick" aria-label="移動スティック"><span id="stickKnob"></span></button></div><div id="touchSpecial"><button id="touchDrop" aria-label="アイテムを捨てる">Q</button><button id="touchDown" aria-label="下へ">▼</button><button id="touchJump" aria-label="ジャンプ">⤒</button><button id="touchZoomIn" aria-label="拡大">＋</button><button id="touchZoomOut" aria-label="縮小">－</button></div><div id="touchGuide">短押し：設置・攻撃　長押し：採掘</div></div><div id="touchEditBar"><strong>📱 スマホ操作配置</strong><label>移動 <select id="touchStyle"><option value="buttons">左右ボタン</option><option value="stick">スティック</option></select></label><label>サイズ <input id="touchSize" type="range" min="38" max="140" step="2" value="72"></label><span id="touchEditSelection">ボタンを選択・ドラッグ</span><button id="touchLayoutReset">初期化</button><button id="touchEditDone">保存して戻る</button></div><div id="itemTooltip" role="tooltip"></div><div id="overlay"><div id="modal"></div></div><script>
 
 'use strict';
 (()=>{
@@ -541,59 +570,57 @@ function positionTip(e){let x=e.clientX+18,y=e.clientY+20;let w=itemTooltip.offs
 function hideTip(){itemTooltip.style.display='none'}
 function attachTip(node,id,getCount=()=>null,recipe=null){node.addEventListener('pointerenter',e=>{itemTooltip.innerHTML=infoHTML(id,getCount(),recipe);itemTooltip.style.display='block';positionTip(e)});node.addEventListener('pointermove',e=>{itemTooltip.innerHTML=infoHTML(id,getCount(),recipe);positionTip(e)});node.addEventListener('pointerleave',hideTip)}
 function toast(s){toastEl.textContent=s;toastEl.style.opacity='1';clearTimeout(toastTimeout);toastTimeout=setTimeout(()=>toastEl.style.opacity='0',2200)}
-function openSettings(from='playing'){
- const wasPaused=mode==='pause';
- hideTip();settingsPauseWorld=wasPaused;settingsReturn=from==='menu'?'menu':'playing';mode='settings';mouse.left=mouse.right=false;overlay.classList.remove('hidden');
- const groups=[
- ['🕹 移動・視点',[['移動','A / D、← / →'],['ジャンプ・泳ぐ','Space / W'],['走る','Shift'],['ズーム','マウスホイール'],['ホットバー','1 ～ 9']]],
- ['⚔ 採掘・建築',[['掘る・攻撃','左クリック'],['置く・使用','右クリック'],['アイテムを捨てる','Q：1個 / Ctrl+Q：スタック全部'],['アイテムを拾う','落ちているアイテムに触れる'],['松明','右クリックで前景に設置（通り抜け可能）'],['持ち物','E'],['クラフト','C']]],
- ['📱 スマホ（横画面）',[['移動','画面左下の ◀ / ▶'],['ジャンプ','右下の ⤒'],['ブロック破壊','ブロックを約0.3秒長押し'],['ブロック設置・使用','設置位置を短くタップ'],['武器攻撃','敵を狙って短くタップ'],['武器カーソル','タップ中と攻撃待機中に表示'],['装備変更','ホットバーをタップ'],['持ち物・クラフト・マップ・設定','画面の各ボタンから開く'],['アイテムを捨てる','Q ボタン'],['スペクテイター','ジャンプボタンを素早く2回押す']]],
- ['🧭 探索・生活',[['全体マップ','M'],['セーブ','F'],['一時停止・戻る','Esc']]],
- ['✨ サンドボックス専用',[['全アイテム・管理','E → 全アイテム・管理'],['スペクテイター','Space を素早く2回'],['飛行','W / A / S / D'],['高速飛行','Shift'],['時間・天候・召喚','P パネル内']]]
- ];
- const sections=groups.map(([title,rows])=>'<section class="settingsSection"><h3>'+title+'</h3>'+rows.map(([n,k])=>'<div class="keyRow"><span>'+n+'</span><kbd>'+k+'</kbd></div>').join('')+'</section>').join('');
- modal.innerHTML='<h2>⚙️ 設定・操作ガイド</h2><p>画面上の操作案内はコンパクトに。詳しい操作はここで確認できます。</p><div class="settingsSections">'+sections+'</div><section class="settingsSection" style="text-align:left"><h3>🌱 冒険のヒント</h3><p class="small">種は耕した土に右クリックで植えられます。小麦を持って動物を右クリックすると繁殖できます。炉は鉱石と石炭の精錬専用です。サンドボックスでは E → 全アイテム・管理からアイテム・時間・天候・召喚を操作できます。</p></section><div class="inventoryActions"><button id="settingsBack">'+(settingsReturn==='menu'?'タイトルへ戻る':'冒険へ戻る')+'</button>'+(settingsReturn==='menu'?'':'<button id="settingsSave">💾 セーブ</button><button id="settingsTitle">タイトルへ</button>')+'</div>';
- const changeControls=document.createElement('button');changeControls.textContent='🎮 キー割り当てを変更';changeControls.onclick=()=>openControlSettings('game');modal.querySelector('.inventoryActions').prepend(changeControls);if(touchDevice){const touchButton=document.createElement('button');touchButton.textContent='📱 スマホ操作設定';touchButton.onclick=startTouchEditor;modal.querySelector('.inventoryActions').prepend(touchButton);}document.getElementById('settingsBack').onclick=()=>settingsReturn==='menu'?showMenu():startPlay();
- if(settingsReturn!=='menu'){document.getElementById('settingsSave').onclick=()=>save();document.getElementById('settingsTitle').onclick=()=>{save(true);showMenu()};}
-}
-let settingsReturn='playing',settingsPauseWorld=false;
-
-function openTitleSettings(){
- mode='titleSettings';document.body.classList.add('titleScene');overlay.classList.remove('hidden');
- modal.innerHTML='<div class="titlePanel"><h2>⚙️ 設定</h2><p>ゲーム中の表示と初期ズームを変更できます。</p><div class="settingsSection" style="text-align:left"><label class="keyRow">ミニマップを表示 <input type="checkbox" id="settingMini" '+(titlePrefs.mini?'checked':'')+'></label><label class="keyRow">ゲーム中の操作ヒントを表示 <input type="checkbox" id="settingHelp" '+(titlePrefs.help?'checked':'')+'></label><label class="keyRow">新しいワールドの初期ズーム <select id="settingZoom" style="width:auto"><option value="1">1.0 倍</option><option value="1.5">1.5 倍</option><option value="2">2.0 倍</option><option value="2.5">2.5 倍</option><option value="3">3.0 倍</option></select></label></div><div class="worldActions"><button id="titleSettingsBack">タイトルへ戻る</button></div></div>';
- document.getElementById('settingMini').onchange=e=>{titlePrefs.mini=e.target.checked;saveTitlePrefs()};
- document.getElementById('settingHelp').onchange=e=>{titlePrefs.help=e.target.checked;saveTitlePrefs()};
- document.getElementById('settingZoom').value=String(titlePrefs.zoom);
- document.getElementById('settingZoom').onchange=e=>{titlePrefs.zoom=Number(e.target.value);saveTitlePrefs()};
- document.getElementById('titleSettingsBack').onclick=showMenu;
-}
-let controlsReturn='title';
-function openControlSettings(back='title'){
- controlsReturn=back==='game'?'game':'title';
- mode=controlsReturn==='game'?'gameControls':'titleControls';keys.clear();mouse.left=mouse.right=false;
- if(controlsReturn==='title')document.body.classList.add('titleScene');
- overlay.classList.remove('hidden');
- const labels=[['left','左移動'],['right','右移動'],['up','上移動・泳ぐ'],['down','下移動'],['jump','ジャンプ'],['dash','ダッシュ'],['mine','破壊・攻撃'],['place','設置・使用'],['inventory','インベントリ'],['craft','クラフト'],['map','マップ'],['save','セーブ'],['drop','アイテムを捨てる'],['zoomIn','ズームイン'],['zoomOut','ズームアウト'],['pause','一時停止'],...Array.from({length:9},(_,i)=>['hotbar'+(i+1),'ホットバー '+(i+1)])];
- const keyLabel=code=>code.startsWith('Mouse')?'マウス'+({Mouse0:'左',Mouse1:'中央',Mouse2:'右'}[code]||code):code==='Space'?'Space':code==='Escape'?'Esc':code.replace('Key','').replace('Digit','').replace('Arrow','矢印');
- modal.innerHTML='<div class="titlePanel"><h2>🎮 操作設定</h2><p>ボタンを押して、新しいキーまたはマウスボタンを入力してください。変更はPC・ゲーム内で共通です。</p><div class="controlGrid">'+labels.map(([id,label])=>'<div class="controlRow"><strong>'+label+'</strong><button type="button" data-bind="'+id+'">'+keyLabel(keyBinds[id])+'</button></div>').join('')+'</div><p id="bindNotice" class="small">ESCで変更をキャンセルできます。</p><div class="worldActions"><button id="resetControls">初期設定に戻す</button><button id="titleControlsBack">戻る</button></div></div>';
- let cleanup=()=>{};
- const refresh=()=>openControlSettings(controlsReturn);
- for(const button of modal.querySelectorAll('button[data-bind]'))button.onclick=()=>{
-  const action=button.dataset.bind;button.textContent='入力待ち…';
-  const capture=e=>{e.preventDefault();e.stopImmediatePropagation();const code=e.type==='mousedown'?'Mouse'+e.button:e.code;
-   cleanup();if(code!=='Escape'&&code!=='Tab'){
-    // Resolve conflicts by swapping instead of leaving two actions on one key.
-    const other=Object.keys(keyBinds).find(k=>k!==action&&keyBinds[k]===code);
-    if(other)keyBinds[other]=keyBinds[action];
-    keyBinds[action]=code;try{localStorage.setItem('wildroot_controls_v1',JSON.stringify(keyBinds))}catch(err){}
-   }refresh();
+// Unified title/in-game settings: two tabs, shared controls and preferences.
+let settingsReturn='playing',settingsPauseWorld=false,controlsReturn='title';
+let bindingCleanup=()=>{};
+const BIND_LABELS=[['left','左移動'],['right','右移動'],['up','上移動・泳ぐ'],['down','下移動'],['jump','ジャンプ'],['dash','ダッシュ'],['mine','破壊・攻撃'],['place','設置・使用'],['inventory','インベントリ'],['craft','クラフト'],['map','マップ'],['save','セーブ'],['drop','アイテムを捨てる'],['zoomIn','ズームイン'],['zoomOut','ズームアウト'],['pause','一時停止'],...Array.from({length:9},(_,i)=>['hotbar'+(i+1),'ホットバー '+(i+1)])];
+function displayBinding(code){if(!code)return '未割当';if(code==='WheelUp')return 'ホイール↑';if(code==='WheelDown')return 'ホイール↓';if(code.startsWith('Mouse'))return 'マウス'+({Mouse0:'左',Mouse1:'中央',Mouse2:'右'}[code]||code);return code==='Space'?'Space':code==='Escape'?'Esc':code.replace('Key','').replace('Digit','').replace('Arrow','矢印');}
+function settingsOrigin(){return settingsReturn==='menu'?'title':'game';}
+function openSettings(from='playing'){openUnifiedSettings(from==='menu'?'title':'game','general');}
+function openTitleSettings(){openUnifiedSettings('title','general');}
+function openControlSettings(back='title'){openUnifiedSettings(back==='game'?'game':'title','controls');}
+function openUnifiedSettings(origin='title',tab='general'){
+ if(tab==='controls'&&touchDevice){startTouchEditor(origin);return;}
+ bindingCleanup();bindingCleanup=()=>{};
+ const onTitle=origin==='title';settingsReturn=onTitle?'menu':'playing';settingsPauseWorld=!onTitle;
+ mode=onTitle?'titleSettings':'settings';keys.clear();mouse.left=mouse.right=false;
+ document.body.classList.toggle('titleScene',onTitle);
+ overlay.classList.remove('hidden');modal.classList.remove('mapModal');
+ const tabBar='<div class="settingsTabs"><button type="button" data-settings-tab="general" class="'+(tab==='general'?'active':'')+'">⚙ 一般設定</button><button type="button" data-settings-tab="controls" class="'+(tab==='controls'?'active':'')+'">🎮 操作設定</button></div>';
+ let content='';
+ if(tab==='general'){
+  content='<p>ゲームの表示と初期ズームを調整します。</p><div class="settingsSection settingsOptions"><label class="keyRow">ミニマップを表示 <input type="checkbox" id="settingMini" '+(titlePrefs.mini?'checked':'')+'></label><label class="keyRow">操作ヒントを表示 <input type="checkbox" id="settingHelp" '+(titlePrefs.help?'checked':'')+'></label><label class="keyRow">新しいワールドの初期ズーム <select id="settingZoom"><option value="1">1.0 倍</option><option value="1.5">1.5 倍</option><option value="2">2.0 倍</option><option value="2.5">2.5 倍</option><option value="3">3.0 倍</option></select></label></div>';
+ }else if(touchDevice){
+  content='<div class="touchSettingsInfo"><h3>📱 スマホ操作設定</h3><p>ゲーム画面を見ながら、ボタンをドラッグして移動・サイズ調整できます。移動方式も左右ボタン／スティックから選べます。</p><button class="worldPrimary" id="editTouchLayout">📱 操作ボタンの配置を編集する</button></div>';
+ }else{
+  content='<p>変更する操作を選び、キー・マウスボタン・マウスホイールを入力してください。</p><div class="controlGrid">'+BIND_LABELS.map(([id,label])=>'<div class="controlRow"><strong>'+label+'</strong><button type="button" data-bind="'+id+'">'+displayBinding(keyBinds[id])+'</button></div>').join('')+'</div><p id="bindNotice" class="small">入力待ち中はホイールでスクロールしません。Escで割り当てをキャンセル。</p><div class="worldActions"><button id="resetControls">キー割り当てを初期化</button></div>';
+ }
+ modal.innerHTML='<main class="titlePanel unifiedSettings"><h2>⚙ 設定</h2>'+tabBar+content+'<div class="worldActions settingsBottom"><button id="settingsBack">'+(onTitle?'タイトルへ戻る':'一時停止へ戻る')+'</button></div></main>';
+ modal.querySelectorAll('[data-settings-tab]').forEach(b=>b.onclick=()=>openUnifiedSettings(origin,b.dataset.settingsTab));
+ document.getElementById('settingsBack').onclick=()=>{bindingCleanup();if(onTitle)showMenu();else showPauseScreen()};
+ if(tab==='general'){
+  document.getElementById('settingMini').onchange=e=>{titlePrefs.mini=e.target.checked;saveTitlePrefs()};
+  document.getElementById('settingHelp').onchange=e=>{titlePrefs.help=e.target.checked;saveTitlePrefs()};
+  const select=document.getElementById('settingZoom');select.value=String(titlePrefs.zoom);select.onchange=e=>{titlePrefs.zoom=Number(e.target.value);saveTitlePrefs()};
+ }else if(touchDevice){
+  document.getElementById('editTouchLayout').onclick=()=>startTouchEditor(origin);
+ }else{
+  for(const button of modal.querySelectorAll('button[data-bind]'))button.onclick=()=>{
+   bindingCleanup();const action=button.dataset.bind;button.textContent='入力待ち…';
+   const finish=(code)=>{bindingCleanup();bindingCleanup=()=>{};
+    if(code&&code!=='Escape'&&code!=='Tab'){
+     const other=Object.keys(keyBinds).find(k=>k!==action&&keyBinds[k]===code);
+     if(other)keyBinds[other]=keyBinds[action];
+     keyBinds[action]=code;try{localStorage.setItem('wildroot_controls_v1',JSON.stringify(keyBinds))}catch(e){}
+    }openUnifiedSettings(origin,'controls');};
+   const capture=e=>{e.preventDefault();e.stopImmediatePropagation();finish(e.type==='wheel'?(e.deltaY<0?'WheelUp':'WheelDown'):e.type==='mousedown'?'Mouse'+e.button:e.code)};
+   const prevent=e=>{e.preventDefault();e.stopImmediatePropagation()};
+   window.addEventListener('keydown',capture,true);window.addEventListener('mousedown',capture,true);
+   window.addEventListener('wheel',capture,{capture:true,passive:false});window.addEventListener('contextmenu',prevent,true);
+   bindingCleanup=()=>{window.removeEventListener('keydown',capture,true);window.removeEventListener('mousedown',capture,true);window.removeEventListener('wheel',capture,true);window.removeEventListener('contextmenu',prevent,true)};
   };
-  cleanup=()=>{window.removeEventListener('keydown',capture,true);window.removeEventListener('mousedown',capture,true);window.removeEventListener('contextmenu',cancelContext,true);};
-  const cancelContext=e=>e.preventDefault();
-  window.addEventListener('keydown',capture,true);window.addEventListener('mousedown',capture,true);window.addEventListener('contextmenu',cancelContext,true);
- };
- document.getElementById('resetControls').onclick=()=>{cleanup();keyBinds={...DEFAULT_BINDS};try{localStorage.setItem('wildroot_controls_v1',JSON.stringify(keyBinds))}catch(e){}refresh()};
- if(touchDevice){const mobile=document.createElement('button');mobile.textContent='📱 スマホボタン配置を編集';mobile.onclick=()=>{cleanup();startTouchEditor()};modal.querySelector('.worldActions').prepend(mobile);}document.getElementById('titleControlsBack').onclick=()=>{cleanup();if(controlsReturn==='game')openSettings('playing');else showMenu()};
+  document.getElementById('resetControls').onclick=()=>{bindingCleanup();bindingCleanup=()=>{};keyBinds={...DEFAULT_BINDS};try{localStorage.setItem('wildroot_controls_v1',JSON.stringify(keyBinds))}catch(e){}openUnifiedSettings(origin,'controls')};
+ }
 }
 
 function prepareTitlePreview(){
@@ -606,10 +633,9 @@ function showMenu(){
  hideTip();mode='menu';document.body.classList.add('titleScene');overlay.classList.remove('hidden');
  prepareTitlePreview();
  modal.classList.remove('mapModal');
- modal.innerHTML='<main class="titleHome"><h1>WILDROOT</h1><p class="subTitle">2D PIXEL SURVIVAL</p><div class="titleMenuButtons"><button id="start">▶ プレイ</button><button id="titleSettings">⚙ 設定</button><button id="titleControls">🎮 操作設定</button></div><p class="titleFooter">掘る、作る、生き延びる。自分だけの世界へ。</p></main>';
+ modal.innerHTML='<main class="titleHome"><h1>WILDROOT</h1><p class="subTitle">2D PIXEL SURVIVAL</p><div class="titleMenuButtons"><button id="start">▶ プレイ</button><button id="titleSettings">⚙ 設定</button></div><p class="titleFooter">掘る、作る、生き延びる。自分だけの世界へ。</p></main>';
  document.getElementById('start').onclick=showWorldSlots;
  document.getElementById('titleSettings').onclick=openTitleSettings;
- document.getElementById('titleControls').onclick=openControlSettings;
 }
 function showWorldSlots(){
  migrateOldWorld();mode='worldSlots';document.body.classList.add('titleScene');overlay.classList.remove('hidden');
@@ -621,8 +647,14 @@ function showWorldSlots(){
  }).join('')+'</div><div class="worldActions"><button id="worldSlotsBack">タイトルへ戻る</button></div></main>';
  modal.querySelectorAll('[data-world-open]').forEach(b=>b.onclick=()=>{const i=Number(b.dataset.worldOpen);if(readWorldSlot(i))load(i);else worldMenu(i)});
  modal.querySelectorAll('[data-world-edit]').forEach(b=>b.onclick=()=>showRenameWorld(Number(b.dataset.worldEdit)));
- modal.querySelectorAll('[data-world-delete]').forEach(b=>b.onclick=()=>{const i=Number(b.dataset.worldDelete),d=readWorldSlot(i);if(!confirm('「'+(d?.name||'ワールド')+'」を完全に削除しますか？\nこの操作は元に戻せません。'))return;try{localStorage.removeItem(worldSaveKey(i));if(i===0)localStorage.removeItem(SAVEKEY)}catch(e){alert('削除できませんでした')}showWorldSlots()});
+ modal.querySelectorAll('[data-world-delete]').forEach(b=>b.onclick=()=>showWorldDeleteConfirmation(Number(b.dataset.worldDelete)));
  document.getElementById('worldSlotsBack').onclick=showMenu;
+}
+function showWorldDeleteConfirmation(slot){
+ const data=readWorldSlot(slot);mode='worldDelete';document.body.classList.add('titleScene');overlay.classList.remove('hidden');
+ modal.innerHTML='<main class="titlePanel deletePanel"><h2>⚠ ワールドを削除しますか？</h2><p>「'+escapeHTML(data?.name||'ワールド')+'」を削除すると元に戻せません。</p><div class="worldActions"><button id="deleteWorldCancel">キャンセル</button><button id="deleteWorldConfirm" class="removeWorld">完全に削除</button></div><p class="worldError" id="deleteWorldError"></p></main>';
+ document.getElementById('deleteWorldCancel').onclick=showWorldSlots;
+ document.getElementById('deleteWorldConfirm').onclick=()=>{try{localStorage.removeItem(worldSaveKey(slot));if(slot===0)localStorage.removeItem(SAVEKEY);showWorldSlots()}catch(err){document.getElementById('deleteWorldError').textContent='削除に失敗しました。'}};
 }
 function showRenameWorld(slot){
  const d=readWorldSlot(slot);if(!d||d.invalid){toast('このワールドは編集できません');return;}
@@ -791,7 +823,24 @@ function renderWorldMap(){let c=document.getElementById('worldMapCanvas');if(!c)
  g.putImageData(pixels,0,0);drawMapSymbols(g,originX,originY,mapZoom,w,h,false);let mx=(player.x-originX)/mapZoom,my=(player.y-originY)/mapZoom;g.fillStyle='#ffe786';g.strokeStyle='#271b12';g.lineWidth=1.5;g.beginPath();g.arc(mx,my,4,0,Math.PI*2);g.fill();g.stroke();g.strokeStyle='#ffe78699';g.strokeRect((cam.x/T-originX)/mapZoom-canvas.width/(T*zoom)/mapZoom/2,(cam.y/T-originY)/mapZoom-canvas.height/(T*zoom)/mapZoom/2,canvas.width/(T*zoom)/mapZoom,canvas.height/(T*zoom)/mapZoom);
  const status=document.getElementById('mapStatus');if(status)status.textContent='現在地：'+Math.floor(player.x)+', '+Math.floor(player.y)+'　表示縮尺：1px = '+mapZoom.toFixed(1)+'ブロック';}
 function closeWorldMap(){modal.classList.remove('mapModal');startPlay()}
-function pause(){hideTip();if(mode==='sandbox'){startPlay();return;}if(mode==='craft'){startPlay();return}if(mode==='worldmap'){closeWorldMap();return}if(mode==='playing'){save(true);mode='pause';overlay.classList.remove('hidden');modal.innerHTML='<h2>一時停止</h2><p>モード: '+(gameMode==='sandbox'?'サンドボックス':'サバイバル')+'</p><p>ワールドシード: '+escapeHTML(session)+'</p><button id="continue">冒険に戻る</button><button id="save">セーブ</button><button id="pauseSettings">⚙️ 設定・操作ガイド</button><button id="menu">タイトルへ</button><p class="small">Fキーでいつでもセーブできます。</p>';document.getElementById('continue').onclick=startPlay;document.getElementById('save').onclick=()=>save();document.getElementById('pauseSettings').onclick=()=>openSettings('playing');document.getElementById('menu').onclick=()=>{save(true);showMenu()}}else if(mode==='pause')startPlay();else if(mode==='inventory')closeInventory();else if(mode==='furnace'||mode==='storage')startPlay()}
+function showPauseScreen(){
+ hideTip();settingsPauseWorld=true;mode='pause';keys.clear();mouse.left=mouse.right=false;
+ document.body.classList.remove('titleScene');overlay.classList.remove('hidden');
+ modal.classList.remove('mapModal');
+ modal.innerHTML='<div class="pausePanel"><h2>⏸ 一時停止</h2><p>ワールド：'+escapeHTML(worldName)+'</p><div class="pauseActions"><button id="continue">▶ ゲームに戻る</button><button id="pauseSettings">⚙ 設定</button><button id="saveAndQuit">💾 セーブして終了</button></div></div>';
+ document.getElementById('continue').onclick=startPlay;
+ document.getElementById('pauseSettings').onclick=()=>openUnifiedSettings('game','general');
+ document.getElementById('saveAndQuit').onclick=()=>{save(true);showMenu()};
+}
+function pause(){
+ if(mode==='sandbox'||mode==='craft'){startPlay();return;}
+ if(mode==='worldmap'){closeWorldMap();return;}
+ if(mode==='playing'){save(true);showPauseScreen();return;}
+ if(mode==='pause'){startPlay();return;}
+ if(mode==='settings'){showPauseScreen();return;}
+ if(mode==='inventory'){closeInventory();return;}
+ if(mode==='furnace'||mode==='storage'){startPlay();return;}
+}
 function escapeHTML(str){return String(str).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 let selectedInventory=-1,dragItem=-1;
 function openInventory(){if(mode!=='playing')return;save(true);mode='inventory';overlay.classList.remove('hidden');renderInventory()}
@@ -1453,7 +1502,7 @@ function loop(ts){
  requestAnimationFrame(loop);
  if(touchDevice)document.body.classList.toggle('touchPlaying',mode==='playing'||mode==='touchEdit');
  const dt=Math.min(.05,(ts-last)/1000||0);last=ts;
- if(['menu','worldSlots','worldCreate','worldRename','titleSettings','titleControls'].includes(mode)){if(player){titlePreviewFrame+=dt;cam.x=titleViewX*T+Math.sin(titlePreviewFrame*.14)*T*1.5;cam.y=(heightAt(titleViewX)-3)*T;worldRender(true);}return;}if(!player)return;
+ if(['menu','worldSlots','worldCreate','worldRename','worldDelete','titleSettings','titleControls'].includes(mode)){if(player){titlePreviewFrame+=dt;cam.x=titleViewX*T+Math.sin(titlePreviewFrame*.14)*T*1.5;cam.y=(heightAt(titleViewX)-3)*T;worldRender(true);}return;}if(!player)return;
  // Only Esc pause (and its settings screen) or the death screen stops the world.
  const pauseWorld=mode==='pause'||mode==='dead'||(mode==='settings'&&(settingsPauseWorld||settingsReturn==='menu'));
  if(!pauseWorld){
@@ -1488,14 +1537,14 @@ function loop(ts){
 
 // Persist touch control coordinates as percentages so they survive device rotation/resize.
 const TOUCH_IDS=['touchLeft','touchRight','touchStick','touchDrop','touchDown','touchJump','touchZoomIn','touchZoomOut','quickInventory','quickCraft','quickMap','quickSettings'];
-const TOUCH_DEFAULTS={touchLeft:[9,78,76],touchRight:[22,78,76],touchStick:[14,77,112],touchDrop:[70,79,58],touchDown:[79,79,60],touchJump:[90,78,76],touchZoomIn:[91,48,48],touchZoomOut:[91,63,48],quickInventory:[36,9,49],quickCraft:[43,9,49],quickMap:[57,9,49],quickSettings:[64,9,49]};
+const TOUCH_DEFAULTS={touchLeft:[8,79,68],touchRight:[20,79,68],touchStick:[14,78,98],touchDrop:[76,63,50],touchDown:[83,80,54],touchJump:[93,79,68],touchZoomIn:[94,43,44],touchZoomOut:[94,58,44],quickInventory:[40,8,46],quickCraft:[46,8,46],quickMap:[54,8,46],quickSettings:[60,8,46]};
 let mobileLayout={type:'buttons',positions:{}};
 try{let v=JSON.parse(localStorage.getItem('wildroot_mobile_layout_v2')||'{}');if(v&&typeof v==='object')mobileLayout={type:v.type==='stick'?'stick':'buttons',positions:v.positions||{}}}catch(e){}
 function getTouchPlacement(id){let v=mobileLayout.positions[id];return Array.isArray(v)&&v.length===3&&v.every(Number.isFinite)?v:TOUCH_DEFAULTS[id];}
 function applyTouchLayout(){
  const w=innerWidth,h=innerHeight;
  for(const id of TOUCH_IDS){const b=document.getElementById(id);if(!b)continue;
-  const [px,py,size]=getTouchPlacement(id);const dim=Math.max(36,Math.min(140,size));
+  const [px,py,size]=getTouchPlacement(id);const maxDim=Math.max(42,Math.min(140,h*.19));const dim=Math.max(34,Math.min(maxDim,size));
   b.style.left=`${Math.max(0,Math.min(w-dim,w*px/100-dim/2))}px`;
   b.style.top=`${Math.max(0,Math.min(h-dim,h*py/100-dim/2))}px`;
   b.style.width=dim+'px';b.style.height=dim+'px';
@@ -1505,8 +1554,8 @@ function applyTouchLayout(){
 }
 function saveTouchLayout(){try{localStorage.setItem('wildroot_mobile_layout_v2',JSON.stringify(mobileLayout))}catch(e){}}
 let touchEditorReturn='game',editingTouchId='touchLeft';
-function startTouchEditor(){
- touchEditorReturn=(mode==='titleControls'||mode==='titleSettings'||mode==='menu')?'title':'game';
+function startTouchEditor(origin=null){
+ touchEditorReturn=origin==='title'||origin==='game'?origin:(mode==='titleControls'||mode==='titleSettings'||mode==='menu'?'title':'game');
  if(!player)prepareTitlePreview();
  if(touchEditorReturn==='title')document.body.classList.remove('titleScene');
  mode='touchEdit';mouse.left=mouse.right=false;keys.clear();overlay.classList.add('hidden');
@@ -1524,8 +1573,8 @@ function closeTouchEditor(){
  document.body.classList.remove('touchEditing');
  for(const id of TOUCH_IDS)document.getElementById(id).classList.remove('editSelected');
  saveTouchLayout();keys.clear();mouse.left=mouse.right=false;
- if(touchEditorReturn==='title'){document.body.classList.add('titleScene');openControlSettings('title')}
- else openSettings('playing');
+ if(touchEditorReturn==='title'){document.body.classList.add('titleScene');openUnifiedSettings('title','general')}
+ else openUnifiedSettings('game','general');
 }
 document.getElementById('touchStyle').addEventListener('change',e=>{mobileLayout.type=e.target.value;applyTouchLayout();selectTouchControl(mobileLayout.type==='stick'?'touchStick':'touchLeft');saveTouchLayout()});
 document.getElementById('touchSize').addEventListener('input',e=>{mobileLayout.positions[editingTouchId]=[...getTouchPlacement(editingTouchId).slice(0,2),Number(e.target.value)];applyTouchLayout()});
@@ -1628,7 +1677,7 @@ window.addEventListener('orientationchange',()=>{keys.clear();mouse.left=mouse.r
 window.addEventListener('resize',()=>{resize();applyTouchLayout()});window.addEventListener('blur',()=>{keys.clear();mouse.left=mouse.right=false;if(mode==='playing')pause()});
 window.addEventListener('keydown',e=>{const code=toGameKey(e.code);if(['Space','ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Tab'].includes(code))e.preventDefault();if(code==='Space'&&gameMode==='sandbox'&&mode==='playing'&&!e.repeat){let now=performance.now();if(now-lastSpaceTap<330){spectator=!spectator;boatRiding=false;player.jumpBuffer=0;lastSpaceTap=-10000;toast(spectator?'スペクテイター：壁を通り抜けて飛行できます':'通常の移動に戻りました');return;}lastSpaceTap=now;}if(code==='KeyM'&&(mode==='playing'||mode==='worldmap')){e.preventDefault();if(mode==='worldmap')closeWorldMap();else openWorldMap();return}if((code==='Equal'||code==='Minus')&&mode==='playing'){zoom=Math.max(1,Math.min(3,Math.round((zoom+(code==='Equal'?.25:-.25))*4)/4));return;}if(code==='Escape'){if(mode==='touchEdit'){closeTouchEditor();return}if(mode==='gameControls'){openSettings('playing');return}if(mode==='worldRename'){showWorldSlots();return}if(['worldSlots','worldCreate','titleSettings','titleControls'].includes(mode)){showMenu();return}if(mode==='settings'){if(settingsReturn==='menu')showMenu();else startPlay();return}if(mode!=='menu')pause();return}if(code==='KeyE'){if(mode==='storage'){startPlay();return}if(mode==='inventory')closeInventory();else if(mode==='craft'){mode='inventory';renderInventory()}else if(mode==='playing')openInventory();return}if(code==='KeyC'){if(mode==='craft')startPlay();else if(mode==='playing'||mode==='inventory')openCraft();return}if(mode!=='playing')return;if(e.code===keyBinds.mine)mouse.left=true;if(e.code===keyBinds.place)mouse.right=true;keys.add(code);if(!e.repeat&&(code==='Space'||code==='KeyW')&&!spectator)player.jumpBuffer=.12;if(code==='KeyF')save();if(code==='KeyQ'&&!e.repeat){e.preventDefault();dropSelected(e.ctrlKey);return;}if(/^Digit[1-9]$/.test(code)){active=Number(code.slice(5))-1;updateBar()}});
 window.addEventListener('keyup',e=>{keys.delete(toGameKey(e.code));if(e.code===keyBinds.mine)mouse.left=false;if(e.code===keyBinds.place)mouse.right=false;});canvas.addEventListener('mousemove',e=>{let r=canvas.getBoundingClientRect();let sx=canvas.width/r.width,sy=canvas.height/r.height;mouse.x=(e.clientX-r.left)*sx;mouse.y=(e.clientY-r.top)*sy;mouse.inside=true});canvas.addEventListener('mouseleave',()=>{mouse.inside=false;mouse.left=mouse.right=false});canvas.addEventListener('mousedown',e=>{if(touchDevice&&e.sourceCapabilities?.firesTouchEvents)return;if(mode!=='playing')return;if('Mouse'+e.button===keyBinds.mine)mouse.left=true;if('Mouse'+e.button===keyBinds.place)mouse.right=true});window.addEventListener('mouseup',e=>{if('Mouse'+e.button===keyBinds.mine)mouse.left=false;if('Mouse'+e.button===keyBinds.place)mouse.right=false});canvas.addEventListener('contextmenu',e=>e.preventDefault());canvas.addEventListener('wheel',e=>{if(mode!=='playing')return;e.preventDefault();if(e.ctrlKey){active=(active+(e.deltaY>0?1:8))%9;updateBar()}else{zoom=Math.max(1,Math.min(3,Math.round((zoom+(e.deltaY>0?-.25:.25))*4)/4))}},{passive:false});
-mini.addEventListener('click',()=>{if(mode==='playing')openWorldMap()});document.getElementById('quickInventory').onclick=()=>{if(mode==='playing')openInventory()};document.getElementById('quickCraft').onclick=()=>{if(mode==='playing')openCraft()};document.getElementById('quickMap').onclick=()=>{if(mode==='playing')openWorldMap()};document.getElementById('quickSettings').onclick=()=>{if(mode==='playing'){save(true);openSettings('playing')}};resize();showMenu();requestAnimationFrame(loop);
+mini.addEventListener('click',()=>{if(mode==='playing')openWorldMap()});document.getElementById('quickInventory').onclick=()=>{if(mode==='playing')openInventory()};document.getElementById('quickCraft').onclick=()=>{if(mode==='playing')openCraft()};document.getElementById('quickMap').onclick=()=>{if(mode==='playing')openWorldMap()};document.getElementById('quickSettings').onclick=()=>{if(mode==='playing')pause()};resize();showMenu();requestAnimationFrame(loop);
 })();
 
 </script></body></html>
