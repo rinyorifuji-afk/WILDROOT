@@ -720,12 +720,48 @@ function openUnifiedSettings(origin='title',tab='general'){
  }
 }
 
+// The title screen and touch-layout editor use a completely separate, read-only
+// demonstration world. Never show the last played world's seed, terrain or edits.
+const PREVIEW_WORLD_SEED=1357911;
+const previewWorldChunks=new Map();
+const previewWorldEdits=new Map();
+const previewWorldWalls=new Map();
+const previewWorldCrops=new Map();
+const previewWorldCenter=W/2;
 function prepareTitlePreview(){
- if(!player){seed=1357911;genVersion=10;edits.clear();chunks.clear();const gy=heightAt(W/2);player={x:W/2+.5,y:gy-2,vx:0,vy:0,w:.68,h:1.45,ground:true,face:1,anim:0,invuln:0,hp:100,mp:20,food:100,water:100,oxygen:100};}
- titleViewX=Math.max(100,Math.min(W-100,Math.floor(player.x)));
- cam.x=titleViewX*T;cam.y=(heightAt(titleViewX)-3)*T;
- time=780;zoom=1.6;weather='clear';
+ titleViewX=previewWorldCenter;
 }
+function renderDedicatedPreview(showCharacter=false){
+ // Save all procedural-world references so no settings view changes an active save.
+ const old={seed,genVersion,edits,wallEdits,chunks,crops,player,time,zoom,
+   camX:cam.x,camY:cam.y,weather,weatherPhase};
+ try{
+  seed=PREVIEW_WORLD_SEED;genVersion=10;
+  edits=previewWorldEdits;wallEdits=previewWorldWalls;
+  chunks=previewWorldChunks;crops=previewWorldCrops;
+  weather='clear';weatherPhase=0;time=8*60+titlePreviewFrame*.5;
+  // A stable zoom and spawn location for both the title and layout editor.
+  zoom=1.15;
+  let gy=heightAt(previewWorldCenter);
+  player={x:previewWorldCenter+.5,y:gy-.08,w:.68,h:1.45,ground:true,
+    face:1,anim:0,invuln:0,hp:100,mp:20,food:100,water:100,oxygen:100};
+  cam.x=previewWorldCenter*T;
+  cam.y=(gy-4)*T;
+  worldRender(true);
+  if(showCharacter){
+   const px=(player.x*T-cam.x)*zoom+canvas.width/2;
+   const py=(player.y*T-cam.y)*zoom+canvas.height/2;
+   character(px,py,32*zoom);
+  }
+ }finally{
+  seed=old.seed;genVersion=old.genVersion;edits=old.edits;
+  wallEdits=old.wallEdits;chunks=old.chunks;crops=old.crops;
+  player=old.player;time=old.time;zoom=old.zoom;
+  cam.x=old.camX;cam.y=old.camY;weather=old.weather;
+  weatherPhase=old.weatherPhase;
+ }
+}
+
 function showMenu(){
  if(onlineRoomCode)leaveOnlineRoom();
  hideTip();mode='menu';document.body.classList.add('titleScene');overlay.classList.remove('hidden');
@@ -1783,7 +1819,7 @@ function loop(ts){
  requestAnimationFrame(loop);
  if(touchDevice)document.body.classList.toggle('touchPlaying',mode==='playing'||mode==='touchEdit');
  const dt=Math.min(.05,(ts-last)/1000||0);last=ts;lightingFrameDt=Math.max(.001,dt);
- if(['menu','worldSlots','worldCreate','worldRename','worldDelete','titleSettings','titleControls','multiplayerEntry','multiLobby','friendsEntry','profile'].includes(mode)){if(player){titlePreviewFrame+=dt;cam.x=titleViewX*T+Math.sin(titlePreviewFrame*.14)*T*1.5;cam.y=(heightAt(titleViewX)-3)*T;worldRender(true);}return;}if(!player)return;
+ if(['menu','worldSlots','worldCreate','worldRename','worldDelete','titleSettings','titleControls','multiplayerEntry','multiLobby','friendsEntry','profile'].includes(mode)){titlePreviewFrame+=dt;renderDedicatedPreview(false);return;}if(mode==='touchEdit'){titlePreviewFrame+=dt;renderDedicatedPreview(true);return;}if(!player)return;
  // Only Esc pause (and its settings screen) or the death screen stops the world.
  const pauseWorld=mode==='pause'||mode==='dead'||(mode==='settings'&&(settingsPauseWorld||settingsReturn==='menu'));
  if(!pauseWorld){
@@ -1834,27 +1870,9 @@ function applyTouchLayout(){
   if(id==='touchStick')dim=Math.max(66,Math.min(110,h*.29));
   if(id.startsWith('quick'))dim=Math.max(38,Math.min(51,h*.13));
   let x=ox+w*px/100-dim/2,y=oy+h*py/100-dim/2;
-  if(id.startsWith('quick')){
-   // Four buttons centered in the gap between the status panel and mini-map.
-   const stats=document.getElementById('stats').getBoundingClientRect();
-   const map=document.getElementById('map').getBoundingClientRect();
-   const areaLeft=Math.max(ox+12,stats.right+10),areaRight=Math.min(ox+w-12,map.left-12);
-   const stride=dim+5,groupWidth=stride*4-5;
-   const center=areaRight-areaLeft>groupWidth? (areaLeft+areaRight)/2:ox+w/2;
-   const index=['quickInventory','quickCraft','quickMap','quickSettings'].indexOf(id);
-   x=center-groupWidth/2+index*stride;
-   y=oy+8;
-  }
-  if(id==='touchStick'||id==='touchLeft'||id==='touchRight'){
-   // Keep movement on the left side, out of the inventory slots.
-   x=Math.min(x,ox+w*.28-dim);
-   y=Math.max(y,oy+h*.57);
-  }
-  if(['touchDrop','touchDash','touchDown','touchJump','touchZoomIn','touchZoomOut'].includes(id)){
-   // Keep actions on the right side, away from the center hotbar.
-   x=Math.max(x,ox+w*.70);
-   x=Math.min(x,ox+w-dim-7);
-  }
+  // Use exactly the same saved coordinates in gameplay and in the editor.
+  // Do not silently recenter quick buttons or force action buttons to edges;
+  // that made configured layouts look different on actual smartphones.
   x=Math.max(ox+3,Math.min(ox+w-dim-3,x));
   y=Math.max(oy+3,Math.min(oy+h-dim-3,y));
   b.style.setProperty('left',x+'px','important');
@@ -1869,7 +1887,7 @@ function saveTouchLayout(){try{localStorage.setItem('wildroot_mobile_layout_v3',
 let touchEditorReturn='game',editingTouchId='touchLeft';
 function startTouchEditor(origin=null){
  touchEditorReturn=origin==='title'||origin==='game'?origin:(mode==='titleControls'||mode==='titleSettings'||mode==='menu'?'title':'game');
- if(!player)prepareTitlePreview();
+ prepareTitlePreview();
  if(touchEditorReturn==='title')document.body.classList.remove('titleScene');
  mode='touchEdit';mouse.left=mouse.right=false;keys.clear();overlay.classList.add('hidden');
  document.body.classList.add('touchEditing');document.body.classList.add('touchPlaying');
