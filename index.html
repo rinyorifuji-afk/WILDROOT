@@ -457,7 +457,7 @@ button,.quickButton,.invSlot,.recipe,select,input{touch-action:manipulation;-web
 #miniZoomControl{position:fixed;z-index:3;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;width:27px;background:#172638df;border:2px solid #718896;border-radius:6px;padding:5px 2px;pointer-events:auto;touch-action:none}
 #miniZoomSlider{writing-mode:vertical-lr;direction:rtl;appearance:slider-vertical;-webkit-appearance:slider-vertical;width:18px;height:85px;padding:0;margin:0;touch-action:none;cursor:pointer;accent-color:#90d6b2}
 #miniZoomControl span{font-size:10px;line-height:1}body.titleScene #miniZoomControl{display:none}
-</style></head><body><canvas id="game"></canvas><div id="hud"><div id="top"><div id="stats"><div class="stat">❤ HP <span id="hp">100 / 100</span></div><div class="bar"><div id="hpfill" class="fill" style="width:100%"></div></div><div class="stat">✦ MP <span id="mpnum">20 / 20</span></div><div class="bar"><div class="fill" id="mpfill" style="width:100%;background:#67a5f2"></div></div><div class="stat">🫧 酸素 <span id="oxynum">100 / 100</span></div><div class="bar"><div class="fill" id="oxyfill" style="width:100%;background:#a0e2f5"></div></div><div class="stat">🍖 食料 <span id="foodnum">100 / 100</span></div><div class="bar"><div class="fill" id="foodfill" style="width:100%;background:#d59752"></div></div><div class="stat">💧 水分 <span id="waternum">100 / 100</span></div><div class="bar" style="margin-bottom:0"><div class="fill" id="waterfill" style="width:100%;background:#55b3dc"></div></div></div><div id="info">地表 / 森林　|　深度: <span id="depth">0</span><br>座標: <span id="coords">0, 0</span><br>ズーム: <span id="zoomtext">2.0</span>x<br>光量: <span id="lighttext">100%</span> · 撃破: <span id="kills">0</span></div></div><canvas id="map" width="224" height="224" title="全体マップを表示 (M)"></canvas><div id="miniZoomControl" aria-label="ミニマップの拡大縮小"><input id="miniZoomSlider" type="range" min="0.7" max="6" step="0.1" value="2" aria-label="ミニマップ拡大率"><span>🔎</span></div><div id="clock">☀ 08:00</div><div id="toast"></div><div id="quickActions"><button type="button" class="quickButton" id="quickInventory" title="持ち物を開く (E)"><span class="keyhint">E</span><span class="symbol">🎒</span><span>持ち物</span></button><button type="button" class="quickButton" id="quickCraft" title="クラフト (C)"><span class="keyhint">C</span><span class="symbol">📖</span><span>クラフト</span></button></div><div id="quickActionsRight" class="right"><button type="button" class="quickButton" id="quickMap" title="全体マップ (M)"><span class="keyhint">M</span><span class="symbol">🗺️</span><span>マップ</span></button><button type="button" class="quickButton" id="quickSettings" title="一時停止 (Esc)"><span class="keyhint">Esc</span><span class="symbol">⏸</span><span>一時停止</span></button></div><div id="hotbar"></div></div><div id="rotateNotice">📱 横画面にしてください<small>WILDROOTのスマホ版は横向き専用です。<br>端末を横に回転してプレイしてください。</small></div><div id="touchControls" aria-label="スマホ操作"><div id="touchMove"><button id="touchLeft" aria-label="左へ移動">◀</button><button id="touchRight" aria-label="右へ移動">▶</button><button id="touchStick" aria-label="移動スティック"><span id="stickKnob"></span></button></div><div id="touchSpecial"><button id="touchDrop" aria-label="アイテムを捨てる">🗑</button><button id="touchDash" aria-label="ダッシュ">⇧</button><button id="touchDown" aria-label="下へ">▼</button><button id="touchJump" aria-label="ジャンプ">⤒</button><button id="touchZoomIn" aria-label="拡大">＋</button><button id="touchZoomOut" aria-label="縮小">－</button></div><div id="touchGuide">短押し：設置・攻撃　長押し：採掘</div></div><div id="touchEditBar"><strong>📱 スマホ操作配置</strong><label>移動 <select id="touchStyle"><option value="buttons">左右ボタン</option><option value="stick">スティック</option></select></label><label>サイズ <input id="touchSize" type="range" min="38" max="140" step="2" value="72"></label><span id="touchEditSelection">ボタンを選択・ドラッグ</span><button id="touchLayoutReset">初期化</button><button id="touchEditDone">保存して戻る</button></div><div id="itemTooltip" role="tooltip"></div><div id="overlay"><div id="modal"></div></div><script>
+</style></head><body><canvas id="game"></canvas><div id="hud"><div id="top"><div id="stats"><div class="stat">❤ HP <span id="hp">100 / 100</span></div><div class="bar"><div id="hpfill" class="fill" style="width:100%"></div></div><div class="stat">✦ MP <span id="mpnum">20 / 20</span></div><div class="bar"><div class="fill" id="mpfill" style="width:100%;background:#67a5f2"></div></div><div class="stat">🫧 酸素 <span id="oxynum">100 / 100</span></div><div class="bar"><div class="fill" id="oxyfill" style="width:100%;background:#a0e2f5"></div></div><div class="stat">🍖 食料 <span id="foodnum">100 / 100</span></div><div class="bar"><div class="fill" id="foodfill" style="width:100%;background:#d59752"></div></div><div class="stat">💧 水分 <span id="waternum">100 / 100</span></div><div class="bar" style="margin-bottom:0"><div class="fill" id="waterfill" style="width:100%;background:#55b3dc"></div></div></div><div id="info">地表 / 森林　|　深度: <span id="depth">0</span><br>座標: <span id="coords">0, 0</span><br>ズーム: <span id="zoomtext">2.0</span>x<br>光量: <span id="lighttext">100%</span> · 撃破: <span id="kills">0</span></div></div><canvas id="map" width="224" height="224" title="全体マップを表示 (M)"></canvas><div id="miniZoomControl" aria-label="ミニマップの拡大縮小"><input id="miniZoomSlider" type="range" min="0.7" max="6" step="0.1" value="2" aria-label="ミニマップ拡大率"><span>🔎</span></div><div id="clock">☀ 08:00</div><div id="toast"></div><div id="quickActions"><button type="button" class="quickButton" id="quickInventory" title="持ち物を開く (E)"><span class="keyhint">E</span><span class="symbol">🎒</span><span>持ち物</span></button><button type="button" class="quickButton" id="quickCraft" title="クラフト (C)"><span class="keyhint">C</span><span class="symbol">📖</span><span>クラフト</span></button></div><div id="quickActionsRight" class="right"><button type="button" class="quickButton" id="quickMap" title="全体マップ (M)"><span class="keyhint">M</span><span class="symbol">🗺️</span><span>マップ</span></button><button type="button" class="quickButton" id="quickSettings" title="メニュー (Esc)"><span class="keyhint">Esc</span><span class="symbol">⏸</span><span>メニュー</span></button></div><div id="hotbar"></div></div><div id="rotateNotice">📱 横画面にしてください<small>WILDROOTのスマホ版は横向き専用です。<br>端末を横に回転してプレイしてください。</small></div><div id="touchControls" aria-label="スマホ操作"><div id="touchMove"><button id="touchLeft" aria-label="左へ移動">◀</button><button id="touchRight" aria-label="右へ移動">▶</button><button id="touchStick" aria-label="移動スティック"><span id="stickKnob"></span></button></div><div id="touchSpecial"><button id="touchDrop" aria-label="アイテムを捨てる">🗑</button><button id="touchDash" aria-label="ダッシュ">⇧</button><button id="touchDown" aria-label="下へ">▼</button><button id="touchJump" aria-label="ジャンプ">⤒</button><button id="touchZoomIn" aria-label="拡大">＋</button><button id="touchZoomOut" aria-label="縮小">－</button></div><div id="touchGuide">短押し：設置・攻撃　長押し：採掘</div></div><div id="touchEditBar"><strong>📱 スマホ操作配置</strong><label>移動 <select id="touchStyle"><option value="buttons">左右ボタン</option><option value="stick">スティック</option></select></label><label>サイズ <input id="touchSize" type="range" min="38" max="140" step="2" value="72"></label><span id="touchEditSelection">ボタンを選択・ドラッグ</span><button id="touchLayoutReset">初期化</button><button id="touchEditDone">保存して戻る</button></div><div id="itemTooltip" role="tooltip"></div><div id="overlay"><div id="modal"></div></div><script>
 
 'use strict';
 (()=>{
@@ -791,7 +791,11 @@ function spawnDrop(id,n,x,y,opts={}){
    vy:Number.isFinite(opts.vy)?opts.vy:-2.5-Math.random()*1.8,
    age:0,delay:opts.delay??.33,bob:Math.random()*6.283,life:opts.life??1800};
  if(Number.isFinite(opts.dur))d.dur=opts.dur;
- worldDrops.push(d);
+ if(onlineRoomCode&&!opts.remote&&!opts.localOnly&&window.WRCloud?.createDrop){
+   d.wrId='d'+(crypto.randomUUID?crypto.randomUUID().replaceAll('-',''):Math.random().toString(36).slice(2));d.wrPublished=false;
+   window.WRCloud.createDrop(onlineRoomCode,d).then(()=>{d.wrPublished=true}).catch(e=>{console.warn('Shared drop create:',e);d.wrId=null;});
+  }
+  worldDrops.push(d);
  if(worldDrops.length>900)worldDrops.splice(0,worldDrops.length-900);
 }
 const STACK_MAX=99;
@@ -814,12 +818,24 @@ function updateWorldDrops(dt){
   d.x=Math.max(.15,Math.min(W-.15,nx));d.y=Math.max(.25,Math.min(H-1,ny));
   if(d.delay>0){d.delay-=dt;continue}
   if(!spectator&&Math.abs(player.x-d.x)<.82&&Math.abs((player.y-.68)-d.y)<1.13&&canStoreDrop(d)){
-    if(durabilityMax(d.id)){
-      const slot=inv.findIndex(v=>!v);if(slot<0)continue;
-      inv[slot]={id:d.id,n:1,dur:d.dur??durabilityMax(d.id)};
-    }else if(!addItem(d.id,d.n))continue;
-    worldDrops.splice(i,1);updateBar();
-  }
+     if(onlineRoomCode){
+       if(!d.wrId||!d.wrPublished||wrClaimingDrops.has(d.wrId))continue;
+       const id=d.wrId,room=onlineRoomCode;wrClaimingDrops.add(id);
+       window.WRCloud?.claimDrop(room,id).then(success=>{
+         if(!success||room!==onlineRoomCode)return;
+         // Award only after Firestore transaction confirms one winner.
+         if(durabilityMax(d.id)){const slot=inv.findIndex(v=>!v);if(slot>=0)inv[slot]={id:d.id,n:1,dur:d.dur??durabilityMax(d.id)}}
+         else addItem(d.id,d.n);
+         const ix=worldDrops.findIndex(v=>v.wrId===id);if(ix>=0)worldDrops.splice(ix,1);updateBar();
+       }).catch(e=>console.warn('Pick-up:',e)).finally(()=>wrClaimingDrops.delete(id));
+       continue;
+     }
+     if(durabilityMax(d.id)){
+       const slot=inv.findIndex(v=>!v);if(slot<0)continue;
+       inv[slot]={id:d.id,n:1,dur:d.dur??durabilityMax(d.id)};
+     }else if(!addItem(d.id,d.n))continue;
+     worldDrops.splice(i,1);updateBar();
+   }
  }
 }
 function drawGraves(cw,ch){
@@ -912,7 +928,7 @@ function toast(s){toastEl.textContent=s;toastEl.style.opacity='1';clearTimeout(t
 // Unified title/in-game settings: two tabs, shared controls and preferences.
 let settingsReturn='playing',settingsPauseWorld=false,controlsReturn='title';
 let bindingCleanup=()=>{};
-const BIND_LABELS=[['left','左移動'],['right','右移動'],['up','上移動・泳ぐ'],['down','下移動'],['jump','ジャンプ'],['dash','ダッシュ'],['mine','破壊・攻撃'],['place','設置・使用'],['inventory','インベントリ'],['craft','クラフト'],['map','マップ'],['save','セーブ'],['drop','アイテムを捨てる'],['zoomIn','ズームイン'],['zoomOut','ズームアウト'],['pause','一時停止'],...Array.from({length:10},(_,i)=>['hotbar'+(i+1),'ホットバー '+(i===9?0:i+1)])];
+const BIND_LABELS=[['left','左移動'],['right','右移動'],['up','上移動・泳ぐ'],['down','下移動'],['jump','ジャンプ'],['dash','ダッシュ'],['mine','破壊・攻撃'],['place','設置・使用'],['inventory','インベントリ'],['craft','クラフト'],['map','マップ'],['save','セーブ'],['drop','アイテムを捨てる'],['zoomIn','ズームイン'],['zoomOut','ズームアウト'],['pause','メニュー'],...Array.from({length:10},(_,i)=>['hotbar'+(i+1),'ホットバー '+(i===9?0:i+1)])];
 function displayBinding(code){if(!code)return '未割当';if(code==='WheelUp')return 'ホイール↑';if(code==='WheelDown')return 'ホイール↓';if(code.startsWith('Mouse'))return 'マウス'+({Mouse0:'左',Mouse1:'中央',Mouse2:'右'}[code]||code);return code==='Space'?'Space':code==='Escape'?'Esc':code.replace('Key','').replace('Digit','').replace('Arrow','矢印');}
 function settingsOrigin(){return settingsReturn==='menu'?'title':'game';}
 function openSettings(from='playing'){openUnifiedSettings(from==='menu'?'title':'game','general');}
@@ -935,7 +951,7 @@ function openUnifiedSettings(origin='title',tab='general'){
   content='<p>変更する操作を選び、キー・マウスボタン・マウスホイールを入力してください。</p><div class="controlGrid">'+BIND_LABELS.map(([id,label])=>'<div class="controlRow"><strong>'+label+'</strong><button type="button" data-bind="'+id+'">'+displayBinding(keyBinds[id])+'</button></div>').join('')+'</div><p id="bindNotice" class="small">入力待ち中はホイールでスクロールしません。Escで割り当てをキャンセル。</p><div class="worldActions"><button id="resetControls">キー割り当てを初期化</button></div>';
  }
  modal.classList.toggle('inGameSettings',!onTitle);
- modal.innerHTML='<main class="titlePanel unifiedSettings"><h2>⚙ 設定</h2>'+tabBar+content+'<div class="worldActions settingsBottom"><button id="settingsBack">'+(onTitle?'タイトルへ戻る':'一時停止へ戻る')+'</button></div></main>';
+ modal.innerHTML='<main class="titlePanel unifiedSettings"><h2>⚙ 設定</h2>'+tabBar+content+'<div class="worldActions settingsBottom"><button id="settingsBack">'+(onTitle?'タイトルへ戻る':'メニューへ戻る')+'</button></div></main>';
  modal.querySelectorAll('[data-settings-tab]').forEach(b=>b.onclick=()=>openUnifiedSettings(origin,b.dataset.settingsTab));
  document.getElementById('settingsBack').onclick=()=>{bindingCleanup();if(onTitle)showMenu();else showPauseScreen()};
  if(tab==='general'){
@@ -1039,13 +1055,43 @@ function showPlayerProfile(){
 let onlineRoomCode='',onlineRoomData=null,onlineRoomUnsubs=[],onlineRemotePlayers=new Map(),onlineCaptureEdits=false,onlineSuppressEdit=false,onlineMoveAt=0,onlineLastMoveX=NaN,onlineLastMoveY=NaN,onlineLastMoveStamp=-1000000,onlineChatUnsub=null;
 // Keep remote rendering independent of Firestore snapshot cadence.
 let onlineRemoteMotion=new Map(),onlinePublishPending=false,onlinePublishQueued=null,onlineLastFace=1,onlineLastAnim='';
-const ONLINE_SEND_MOVING_MS=300,ONLINE_SEND_IDLE_MS=2000;
+const ONLINE_SEND_MOVING_MS=190,ONLINE_SEND_IDLE_MS=1350;
 let worldInvitesUnsub=null;
 function stopWorldInviteWatch(){if(worldInvitesUnsub){worldInvitesUnsub();worldInvitesUnsub=null}}
 const onlineSafe=v=>escapeHTML(String(v||''));
 function onlineStatus(t){const el=document.getElementById('multiStatus');if(el)el.textContent=t;else toast(t);}
 function getMulti(){if(!window.WRCloud?.uid||!window.WRCloud.createRoom)throw Error('先にプロフィールからオンライン接続してください。');return window.WRCloud;}
 let wrEnemySyncAt=0,wrEnemySyncPending=false,wrRemoteEnemySyncAt=0,wrEnemyHitsSeen=new Set(),wrPvpSeen=new Set();
+
+let wrWorldStateAt=0,wrWorldStatePending=false,wrOnlineTimeTarget=null;
+let wrClaimingDrops=new Set();
+function wrReceiveSharedDrops(list){
+ if(!onlineRoomCode||!Array.isArray(list))return;
+ const seen=new Set();
+ for(const item of list){
+  if(!item||typeof item.docId!=='string'||!Number.isInteger(item.id)||!Number.isFinite(item.x)||!Number.isFinite(item.y))continue;
+  seen.add(item.docId);
+  let d=worldDrops.find(v=>v.wrId===item.docId);
+  if(!d){d={wrId:item.docId,id:item.id,n:item.n,x:item.x,y:item.y,vx:item.vx||0,vy:item.vy||0,age:0,delay:.35,bob:Math.random()*6.28,life:1800,...(Number.isFinite(item.dur)?{dur:item.dur}:{})};worldDrops.push(d);}
+  d.wrPublished=true;
+ }
+ // Only remove shared drops after a server snapshot confirms their removal.
+ for(let i=worldDrops.length-1;i>=0;i--){const d=worldDrops[i];if(d.wrId&&d.wrPublished&&!seen.has(d.wrId))worldDrops.splice(i,1)}
+}
+function wrPublishWorldState(ts){
+ if(!wrIsOnlineHost()||wrWorldStatePending||ts-wrWorldStateAt<5000)return;
+ wrWorldStateAt=ts;wrWorldStatePending=true;
+ window.WRCloud?.publishWorldState?.(onlineRoomCode,{time:+time.toFixed(3),weather,weatherPhase:+weatherPhase.toFixed(2),weatherTimer:+weatherTimer.toFixed(2)}).catch(e=>console.warn('World state:',e)).finally(()=>wrWorldStatePending=false);
+}
+function wrApplyWorldState(state){
+ if(!onlineRoomCode||wrIsOnlineHost()||!state||!Number.isFinite(state.time))return;
+ const v=(state.time%1440+1440)%1440;
+ const delta=((v-time+2160)%1440)-720;
+ if(Math.abs(delta)>15)time=v;else time=(time+delta*.6+1440)%1440;
+ if(['clear','rain','storm','snow'].includes(state.weather))weather=state.weather;
+ if(Number.isFinite(state.weatherPhase))weatherPhase=state.weatherPhase;
+ if(Number.isFinite(state.weatherTimer))weatherTimer=state.weatherTimer;
+}
 function wrIsOnlineHost(){return !!onlineRoomCode&&onlineRoomData?.host===window.WRCloud?.uid;}
 function wrApplyEnemySnapshot(data){
  if(!onlineRoomCode||wrIsOnlineHost()||!Array.isArray(data))return;
@@ -1097,7 +1143,7 @@ function closeRoomSubscriptions(){for(const fn of onlineRoomUnsubs.splice(0)){tr
 window.addEventListener('pagehide',()=>{if(onlineRoomCode)onlineLocalSave()});
 function onlineLocalSave(){if(!onlineRoomCode||!player||!window.WRCloud?.uid)return;try{localStorage.setItem('wildroot_multi_player_'+onlineRoomCode+'_'+window.WRCloud.uid,JSON.stringify({inv,armor,hp:player.hp,food:player.food,water:player.water,x:player.x,y:player.y}))}catch(_){}}
 function onlineLocalLoad(){try{const d=JSON.parse(localStorage.getItem('wildroot_multi_player_'+onlineRoomCode+'_'+window.WRCloud.uid)||'null');if(!d)return;if(Array.isArray(d.inv))inv=wrUpgradeInventory(d.inv);if(Array.isArray(d.armor)&&d.armor.length===3)armor=d.armor;for(const k of ['hp','food','water','x','y'])if(Number.isFinite(d[k]))player[k]=d[k];updateBar();}catch(_){}}
-function leaveOnlineRoom(){onlineLocalSave();closeRoomSubscriptions();onlineRoomCode='';onlineRoomData=null;onlineRemotePlayers.clear();onlineRemoteMotion.clear();onlinePublishQueued=null;document.getElementById('onlineChatToggle')?.style.setProperty('display','none');document.getElementById('onlineChatPanel')?.style.setProperty('display','none');}
+function leaveOnlineRoom(){wrClaimingDrops.clear();wrOnlineTimeTarget=null;onlineLocalSave();closeRoomSubscriptions();onlineRoomCode='';onlineRoomData=null;onlineRemotePlayers.clear();onlineRemoteMotion.clear();onlinePublishQueued=null;document.getElementById('onlineChatToggle')?.style.setProperty('display','none');document.getElementById('onlineChatPanel')?.style.setProperty('display','none');}
 const ACTIVE_WORLDS_KEY='wildroot_joined_worlds_v2';
 function joinedWorlds(){try{return JSON.parse(localStorage.getItem(ACTIVE_WORLDS_KEY)||'[]').filter(x=>x&&/^[A-Z2-9]{8}$/.test(x.code))}catch(_){return []}}
 function rememberWorld(code,name){const list=joinedWorlds().filter(x=>x.code!==code);list.unshift({code,name:String(name||'マルチワールド').slice(0,28)});localStorage.setItem(ACTIVE_WORLDS_KEY,JSON.stringify(list.slice(0,10)));}
@@ -1150,11 +1196,14 @@ async function enterMultiplayerRoom(code){
 async function launchMultiplayerWorld(){
  const r=onlineRoomData;if(!r?.started||!r.settings)return onlineStatus('まだワールドを開始できません。');
  const str=r.settings.seed;let n=0;for(const c of str)n=(Math.imul(n,31)+c.charCodeAt(0))|0;
- closeRoomSubscriptions();onlineRemotePlayers.clear();onlineRemoteMotion.clear();onlinePublishQueued=null;onlineLastMoveX=NaN;onlineLastMoveY=NaN;onlineLastMoveStamp=-1000000;onlineMoveAt=-1000000;currentWorldSlot=-1;worldName=r.settings.name;gameMode=r.settings.mode;newGame(n,str);onlineRoomCode=r.code||onlineRoomCode;onlineLocalLoad();
+ closeRoomSubscriptions();wrSharedPins=[];onlineRemotePlayers.clear();onlineRemoteMotion.clear();onlinePublishQueued=null;onlineLastMoveX=NaN;onlineLastMoveY=NaN;onlineLastMoveStamp=-1000000;onlineMoveAt=-1000000;currentWorldSlot=-1;worldName=r.settings.name;gameMode=r.settings.mode;newGame(n,str);onlineRoomCode=r.code||onlineRoomCode;onlineLocalLoad();
  const code=onlineRoomCode,cloud=getMulti();onlineRoomData=r;
  onlineRoomUnsubs.push(cloud.watchRoom(code,r=>{if(!r||!r.members.includes(cloud.uid)){const deleted=!r;if(deleted)forgetWorld(code);leaveOnlineRoom();toast(deleted?'ワールドが削除されました':'ホストにより退出させられました');showMultiplayerEntry();return}onlineRoomData=r}));
  onlineRoomUnsubs.push(cloud.watchBlocks(code,(x,y,t)=>{onlineSuppressEdit=true;put(x,y,t);onlineSuppressEdit=false}));
  onlineRoomUnsubs.push(cloud.watchPlayers(code,players=>{receiveOnlinePlayers(players,cloud.uid)}));
+ onlineRoomUnsubs.push(cloud.watchWorldState(code,wrApplyWorldState));
+ onlineRoomUnsubs.push(cloud.watchDrops(code,wrReceiveSharedDrops));
+ onlineRoomUnsubs.push(cloud.watchPins(code,pins=>{wrSharedPins=pins;if(mode==='worldmap'){wrShowPinList();renderWorldMap()}}));
  if(r.host===cloud.uid){
   onlineRoomUnsubs.push(cloud.watchEnemyHits(code,wrHandleEnemyHit));
  }else{
@@ -1202,11 +1251,11 @@ function drawOnlinePlayers(cw,ch){
  const now=performance.now(),frameDt=Math.min(.05,Math.max(.001,lightingFrameDt||1/60));
  for(const p of onlineRemoteMotion.values()){
   // Never extrapolate more than a fraction of a second during network stalls.
-  const age=Math.min(.22,Math.max(0,(now-p.receiveAt)/1000));
+  const age=Math.min(.14,Math.max(0,(now-p.receiveAt)/1000));
   const tx=p.tx+p.vx*age,ty=p.ty+p.vy*age;
   const delta=Math.hypot(tx-p.x,ty-p.y);
   if(delta>8){p.x=tx;p.y=ty}else{
-   const blend=1-Math.exp(-frameDt*15);
+   const blend=1-Math.exp(-frameDt*21);
    p.x+=(tx-p.x)*blend;p.y+=(ty-p.y)*blend;
   }
   const x=(p.x*T-cam.x)*zoom+cw/2,y=(p.y*T-cam.y)*zoom+ch/2;
@@ -1464,11 +1513,40 @@ let mapZoom=8,mapCenterX=0,mapCenterY=0;
 function openWorldMap(){if(!player)return;hideTip();mode='worldmap';mouse.left=mouse.right=false;overlay.classList.remove('hidden');mapZoom=8;mapCenterX=player.x;mapCenterY=player.y;drawWorldMap();}
 // Personal map pins (device-local, scoped to each world).
 function wrPinsKey(){return 'wildroot_pins_v1_'+(onlineRoomCode||('single_'+String(currentWorldSlot)+'_'+String(seed)))}
-function wrGetPins(){try{return JSON.parse(localStorage.getItem(wrPinsKey())||'[]').filter(p=>Number.isFinite(p.x)&&Number.isFinite(p.y)).slice(0,40)}catch(e){return []}}
-function wrSetPins(pins){try{localStorage.setItem(wrPinsKey(),JSON.stringify(pins.slice(0,40)))}catch(e){}}
-function wrAddPin(){const pins=wrGetPins();if(pins.length>=40){toast('ピンの上限は40個です');return}const name=prompt('ピンの名前（最大16文字）','拠点');if(name===null)return;const clean=name.trim().slice(0,16);if(!clean)return; pins.push({x:Math.floor(player.x),y:Math.floor(player.y),name:clean});wrSetPins(pins);drawWorldMap();toast('マップにピンを追加しました');}
+
+// In-game dialog: never invokes browser prompt/confirm.
+function wrGameDialog(title,message,options={}){
+ return new Promise(resolve=>{
+  const shade=document.createElement('div');shade.className='wrGameDialog';
+  shade.style.cssText='position:fixed;inset:0;z-index:999999;background:#060d17c9;display:flex;align-items:center;justify-content:center;padding:16px;box-sizing:border-box;';
+  const panel=document.createElement('section');panel.style.cssText='width:min(92vw,440px);max-height:90vh;overflow:auto;background:#15212d;border:2px solid #799cad;border-radius:12px;color:#f4fbff;padding:20px;box-shadow:0 22px 80px #0009;font-family:inherit;';
+  const heading=document.createElement('h2');heading.textContent=title;heading.style.margin='0 0 12px';panel.append(heading);
+  const info=document.createElement('p');info.textContent=message;info.style.margin='0 0 14px';panel.append(info);
+  const field=options.input===undefined?null:document.createElement('input');if(field){field.value=String(options.input);field.maxLength=options.maxlength||28;field.style.cssText='box-sizing:border-box;width:100%;min-height:42px;margin-bottom:12px;background:#0a1623;border:1px solid #8fa8c3;color:white;padding:8px;border-radius:6px;font:inherit;';panel.append(field)}
+  const actions=document.createElement('div');actions.style.cssText='display:flex;justify-content:flex-end;gap:12px;flex-wrap:wrap';
+  const cancel=document.createElement('button');cancel.textContent='キャンセル';const ok=document.createElement('button');ok.textContent=options.ok||'OK';
+  for(const b of [cancel,ok]){b.style.cssText='min-height:42px;padding:8px 16px;border-radius:6px;cursor:pointer;color:white;border:1px solid #7e9bab;background:#273d50;'}
+  if(options.danger)ok.style.background='#8b2733';else ok.style.background='#226c69';actions.append(cancel,ok);panel.append(actions);shade.append(panel);document.body.append(shade);
+  function finish(v){shade.remove();resolve(v)}cancel.onclick=()=>finish(null);ok.onclick=()=>finish(field?field.value:true);
+  shade.addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Escape'){e.preventDefault();finish(null)}if(e.key==='Enter'&&e.target===field){e.preventDefault();finish(field.value)}});
+  if(field)setTimeout(()=>field.focus(),0);else ok.focus();
+ });
+}
+let wrSharedPins=[];
+function wrGetPins(){if(onlineRoomCode)return wrSharedPins.slice(0,40);try{return JSON.parse(localStorage.getItem(wrPinsKey())||'[]').filter(p=>Number.isFinite(p.x)&&Number.isFinite(p.y)).slice(0,40)}catch(e){return []}}
+function wrSetPins(pins){
+ if(onlineRoomCode){
+  const code=onlineRoomCode,prev=wrSharedPins;
+  const next=pins.slice(0,40).map(p=>({...p,id:p.id||'p'+(crypto.randomUUID?crypto.randomUUID().replaceAll('-',''):Math.random().toString(36).slice(2))}));
+  for(const p of next)if(!prev.some(v=>v.id===p.id))window.WRCloud?.writePin?.(code,p).catch(e=>toast('ピン共有失敗：'+(e.code||e.message)));
+  for(const p of prev)if(!next.some(v=>v.id===p.id))window.WRCloud?.deletePin?.(code,p.id).catch(e=>toast('ピン削除失敗：'+(e.code||e.message)));
+  wrSharedPins=next;return;
+ }
+ try{localStorage.setItem(wrPinsKey(),JSON.stringify(pins.slice(0,40)))}catch(e){}
+}
+function wrAddPin(){const pins=wrGetPins();if(pins.length>=40){toast('ピンの上限は40個です');return}wrGameDialog('📍 ピンを追加','ピンの名前を入力してください（最大16文字）',{input:'拠点',maxlength:16,ok:'ピンを設置'}).then(name=>{if(name===null)return;const clean=name.trim().slice(0,16);if(!clean)return toast('名前を入力してください');const pinsNow=wrGetPins();if(pinsNow.length>=40)return toast('ピンの上限です');pinsNow.push({x:Math.floor(player.x),y:Math.floor(player.y),name:clean});wrSetPins(pinsNow);drawWorldMap();toast('マップにピンを追加しました')});}
 function wrRemovePin(index){const pins=wrGetPins();pins.splice(index,1);wrSetPins(pins);drawWorldMap();}
-function wrShowPinList(){const root=document.getElementById('wrMapPinList');if(!root)return;root.replaceChildren();wrGetPins().forEach((pin,index)=>{const b=document.createElement('button');b.textContent='📍 '+pin.name+' ('+pin.x+','+pin.y+')';b.title='クリックでピンへ移動、削除は右クリック';b.onclick=()=>{mapCenterX=pin.x;mapCenterY=pin.y;renderWorldMap()};b.oncontextmenu=e=>{e.preventDefault();if(confirm('ピン「'+pin.name+'」を削除しますか？'))wrRemovePin(index)};root.append(b)})}
+function wrShowPinList(){const root=document.getElementById('wrMapPinList');if(!root)return;root.replaceChildren();wrGetPins().forEach((pin,index)=>{const b=document.createElement('button');b.textContent='📍 '+pin.name+' ('+pin.x+','+pin.y+')';b.title='クリックでピンへ移動、削除は右クリック';b.onclick=()=>{mapCenterX=pin.x;mapCenterY=pin.y;renderWorldMap()};b.oncontextmenu=e=>{e.preventDefault();wrGameDialog('ピンを削除','「'+pin.name+'」を削除しますか？',{ok:'削除する',danger:true}).then(ok=>{if(ok!==null)wrRemovePin(index)})};root.append(b)})}
 function wrDrawPins(g,originX,originY,scale){const pins=wrGetPins();g.save();g.textAlign='center';g.textBaseline='middle';g.font='bold 11px sans-serif';for(const pin of pins){const x=(pin.x-originX)/scale,y=(pin.y-originY)/scale;if(x<4||y<4||x>g.canvas.width-4||y>g.canvas.height-4)continue;g.fillStyle='#ffd271';g.fillText('◆',x,y);g.fillStyle='#fff7d5';g.fillText(pin.name.slice(0,8),x,y-11)}g.restore()}
 function drawWorldMap(){modal.classList.add('mapModal');modal.innerHTML='<h2>ワールドマップ</h2><p class="mapLegend">🟡 現在地　⌂ 初期リスポーン　<span class="mapSymbolLabel">◆ 遺跡・神殿　✦ ダンジョン　☠ 墓</span><br>ホイール：拡大縮小 / ドラッグ：移動'+(gameMode==='sandbox'?' / <strong>左クリック：テレポート先を選択</strong>':'')+'</p><canvas id="worldMapCanvas" width="480" height="255"></canvas><p class="mapLegend" id="mapStatus"></p><div class="wrMapPin"><button id="wrAddMapPin">📍 現在地をピン登録</button><span class="small">右クリックでピン削除</span></div><div class="wrMapPinList" id="wrMapPinList"></div><button id="mapCenter">現在地へ</button><button id="mapClose">冒険へ戻る (M)</button>';
  document.getElementById('mapClose').onclick=closeWorldMap;document.getElementById('wrAddMapPin').onclick=wrAddPin;wrShowPinList();
@@ -1502,10 +1580,10 @@ function showPauseScreen(){
  hideTip();settingsPauseWorld=true;mode='pause';keys.clear();mouse.left=mouse.right=false;
  document.body.classList.remove('titleScene');overlay.classList.remove('hidden');
  modal.classList.remove('mapModal','inGameSettings','wrCraftModal');modal.classList.add('wrPauseModal');
- modal.innerHTML='<div class="pausePanel wrPausePanel"><div class="wrPauseTop"><div class="wrPauseSymbol">⏸</div><div><h2>一時停止</h2><p class="wrPauseMeta">'+escapeHTML(worldName)+'</p></div></div><div class="wrPauseLabel">ワールド情報</div><div class="wrPauseStats"><div class="wrPauseStat"><small>プレイモード</small><strong>'+(onlineRoomCode?'🌐 マルチプレイ':gameMode==='sandbox'?'✨ サンドボックス':'🌲 サバイバル')+'</strong></div><div class="wrPauseStat"><small>ワールド名</small><strong>'+escapeHTML(worldName)+'</strong></div></div><div class="wrPauseLabel">メニュー</div><div class="pauseActions wrPauseActions"><button id="continue">▶ ゲームに戻る</button><button id="pauseSettings">⚙ 設定</button><button id="saveAndQuit">💾 セーブして終了</button></div></div>';
+ modal.innerHTML='<div class="pausePanel wrPausePanel"><div class="wrPauseTop"><div class="wrPauseSymbol">⏸</div><div><h2>メニュー</h2><p class="wrPauseMeta">'+escapeHTML(worldName)+'</p></div></div><div class="wrPauseLabel">ワールド情報</div><div class="wrPauseStats"><div class="wrPauseStat"><small>プレイモード</small><strong>'+(onlineRoomCode?'🌐 マルチプレイ':gameMode==='sandbox'?'✨ サンドボックス':'🌲 サバイバル')+'</strong></div><div class="wrPauseStat"><small>ワールド名</small><strong>'+escapeHTML(worldName)+'</strong></div></div><div class="wrPauseLabel">メニュー</div><div class="pauseActions wrPauseActions"><button id="continue">▶ ゲームに戻る</button><button id="pauseSettings">⚙ 設定</button><button id="saveAndQuit">💾 セーブして終了</button></div></div>';
  document.getElementById('continue').onclick=startPlay;
  if(onlineRoomCode){
-  document.querySelector('.pausePanel h2').textContent='🌐 マルチプレイメニュー';
+  document.querySelector('.pausePanel h2').textContent='🌐 メニュー';
   const actions=document.querySelector('.pauseActions');
   const host=onlineRoomData?.host===window.WRCloud?.uid;
   if(host){const b=document.createElement('button');b.textContent='👑 ホスト';b.onclick=showMultiHostControls;actions.insertBefore(b,document.getElementById('saveAndQuit'));}
@@ -1528,9 +1606,9 @@ async function showMultiHostControls(){
    for(const f of friends){const uid=f.sender===getMulti().uid?f.recipient:f.sender;const row=document.createElement('div');row.className='friendRow';const name=document.createElement('span');name.textContent=friendPref(uid).nickname||f.otherName||uid.slice(0,10);const button=document.createElement('button');button.textContent='招待';button.onclick=async()=>{button.disabled=true;try{await getMulti().inviteFriendToWorld(code,uid,onlineRoomData.settings?.name||worldName,getLocalProfile().name);button.textContent='招待済み'}catch(e){onlineStatus('招待失敗：'+(e.code||e.message));button.disabled=false}};row.append(name,button);list.append(row)}
   }catch(e){list.textContent='フレンド取得失敗：'+(e.code||e.message)}
  }; 
- document.getElementById('hostDeleteWorld').onclick=async()=>{if(!confirm('このワールドを削除しますか？'))return;try{await getMulti().deleteRoom(code);forgetWorld(code);leaveOnlineRoom();showMultiplayerEntry()}catch(e){onlineStatus('削除失敗：'+(e.code||e.message))}};
+ document.getElementById('hostDeleteWorld').onclick=async()=>{if((await wrGameDialog('ワールド削除','削除すると元に戻せません。',{ok:'完全に削除',danger:true}))===null)return;try{await getMulti().deleteRoom(code);forgetWorld(code);leaveOnlineRoom();showMultiplayerEntry()}catch(e){onlineStatus('削除失敗：'+(e.code||e.message))}};
  const root=document.getElementById('hostMembers');root.textContent='読み込み中…';
- const members=onlineRoomData.members||[];root.replaceChildren();for(const uid of members){const row=document.createElement('div');row.className='multiMember';const name=document.createElement('span');name.textContent=(uid===window.WRCloud.uid?'👑 自分':friendPref(uid).nickname||uid.slice(0,10));row.append(name);if(uid!==window.WRCloud.uid){const btn=document.createElement('button');btn.textContent='退出させる';btn.onclick=async()=>{if(!confirm('このプレイヤーを退出させますか？'))return;try{await getMulti().kickPlayer(code,uid);row.remove()}catch(e){onlineStatus('退出処理失敗：'+(e.code||e.message))}};row.append(btn);getMulti().findPlayer(uid).then(p=>{name.textContent=friendPref(uid).nickname||p?.name||uid.slice(0,10)}).catch(()=>{})}root.append(row)}
+ const members=onlineRoomData.members||[];root.replaceChildren();for(const uid of members){const row=document.createElement('div');row.className='multiMember';const name=document.createElement('span');name.textContent=(uid===window.WRCloud.uid?'👑 自分':friendPref(uid).nickname||uid.slice(0,10));row.append(name);if(uid!==window.WRCloud.uid){const btn=document.createElement('button');btn.textContent='退出させる';btn.onclick=async()=>{if((await wrGameDialog('プレイヤーを退出','このプレイヤーを退出させますか？',{ok:'退出させる',danger:true}))===null)return;try{await getMulti().kickPlayer(code,uid);row.remove()}catch(e){onlineStatus('退出処理失敗：'+(e.code||e.message))}};row.append(btn);getMulti().findPlayer(uid).then(p=>{name.textContent=friendPref(uid).nickname||p?.name||uid.slice(0,10)}).catch(()=>{})}root.append(row)}
 }
 function pause(){
  if(mode==='sandbox'||mode==='craft'){startPlay();return;}
@@ -1881,7 +1959,7 @@ function updateFlowWater(dt){
 function waterAt(x,y){return isWaterTile(get(Math.floor(x),Math.floor(y)))}
 function survivalAndEnvironment(dt){if(gameMode==='sandbox'){player.hp=100;player.food=100;player.water=100;player.oxygen=100;return;}
  weatherTimer+=dt;weatherPhase+=dt;breedingCooldown=Math.max(0,breedingCooldown-dt);
- if(weatherTimer>100){weatherTimer=0;let r=Math.random();weather=biomeAt(player.x)==='snow'?(r<.42?'snow':'clear'):(r<.24?'rain':r<.31?'storm':'clear');if(weather!=='clear')toast(weather==='snow'?'雪が降り始めた':weather==='storm'?'雷雨になった！':'雨が降り始めた');}
+ if(weatherTimer>100&&(!onlineRoomCode||wrIsOnlineHost())){weatherTimer=0;let r=Math.random();weather=biomeAt(player.x)==='snow'?(r<.42?'snow':'clear'):(r<.24?'rain':r<.31?'storm':'clear');if(weather!=='clear')toast(weather==='snow'?'雪が降り始めた':weather==='storm'?'雷雨になった！':'雨が降り始めた');}
  plantGrowth+=dt;if(plantGrowth>=1){plantGrowth=0;for(let [k,c] of crops){let [x,y]=k.split(',').map(Number);if(get(x,y+1)!==114){crops.delete(k);continue}if(weather==='rain'||weather==='storm')c.moist=1;c.moist=Math.max(0,c.moist-.007);if(c.moist>.06)c.age=Math.min(3,c.age+.014*(c.moist>.4?1.4:1));}}
  // Furnished shelter gives slow HP regeneration while resting near home furniture.
  if((nearStation(107)||nearStation(108))&&nearStation(109)&&player.hp<100&&player.food>25){player.hp=Math.min(100,player.hp+dt*.11)}
@@ -2002,12 +2080,12 @@ function character(x,y,s){
 }
 // Ver.0.7: biome-specific monsters, armor mitigation, weapons and loot.
 const MONSTERS={spider:{hp:38,damage:11,speed:2.9,drop:28,n:2,color:'#483c55'},shark:{hp:120,damage:24,speed:3.3,drop:117,n:2,color:'#6ca0b5'},slime:{hp:26,damage:9,speed:1.75,drop:28,n:2,color:'#59c78e'},night:{hp:48,damage:14,speed:2.5,drop:28,n:3,color:'#8e9b78'},cave:{hp:34,damage:10,speed:1.75,drop:28,n:2,color:'#6c8bc8'},scorpion:{hp:52,damage:17,speed:2.7,drop:46,n:2,color:'#d9a35e'},sandworm:{hp:75,damage:21,speed:3.3,drop:46,n:4,color:'#ae7654'},iceSlime:{hp:45,damage:13,speed:2.0,drop:47,n:2,color:'#85dff5'},snowWolf:{hp:68,damage:19,speed:3.2,drop:47,n:4,color:'#d4e9ec'},magma:{hp:90,damage:24,speed:2.3,drop:48,n:2,color:'#e9673b'},fireKnight:{hp:135,damage:30,speed:2.6,drop:48,n:4,color:'#ad3b39'},cow:{hp:35,damage:0,speed:1.0,drop:89,n:3,color:'#ac947a',passive:true},sheep:{hp:26,damage:0,speed:1.25,drop:90,n:2,color:'#e7e7df',passive:true},horse:{hp:52,damage:0,speed:2.4,drop:89,n:5,color:'#976849',passive:true}};
-function spawnEnemy(){if(enemies.length>=((weather==='rain'||weather==='storm')?13:9))return;let x=Math.floor(player.x+(Math.random()<.5?-1:1)*(12+Math.random()*11));if(x<8||x>W-8)return;
- let deep=player.y-heightAt(Math.floor(player.x))>18,underworld=player.y>=900,biome=biomeAt(player.x),night=time>=1080||time<360;if(!deep&&!underworld&&!night&&weather!=='rain'&&weather!=='storm'&&Math.random()<.38)return;
+function spawnEnemy(){if(enemies.length>=((weather==='rain'||weather==='storm')?13:9))return;const party=onlineRoomCode?[player,...[...onlineRemoteMotion.values()].filter(p=>Number.isFinite(p.x)&&Number.isFinite(p.y))]:[player];const base=party[Math.floor(Math.random()*party.length)]||player;let x=Math.floor(base.x+(Math.random()<.5?-1:1)*(12+Math.random()*11));if(x<8||x>W-8)return;
+ let deep=base.y-heightAt(Math.floor(base.x))>18,underworld=base.y>=900,biome=biomeAt(base.x),night=time>=1080||time<360;if(!deep&&!underworld&&!night&&weather!=='rain'&&weather!=='storm'&&Math.random()<.38)return;
  let type=underworld?(Math.random()<.27?'fireKnight':'magma'):deep?'cave':!night?['cow','sheep','horse'][Math.floor(Math.random()*3)]:biome==='desert'?(Math.random()<.28?'sandworm':'scorpion'):biome==='snow'?(Math.random()<.26?'snowWolf':'iceSlime'):(Math.random()<.72?'night':'slime');
- if(!deep&&!underworld&&biome==='coast')type=waterAt(player.x,player.y)?'shark':night?'slime':['cow','sheep','horse'][Math.floor(Math.random()*3)];
+ if(!deep&&!underworld&&biome==='coast')type=waterAt(base.x,base.y)?'shark':night?'slime':['cow','sheep','horse'][Math.floor(Math.random()*3)];
  // Rain and thunderstorms make surface spiders about four times as likely to spawn.
- if(!deep&&!underworld&&!waterAt(player.x,player.y)&&Math.random()<((weather==='rain'||weather==='storm')?.48:.12))type='spider';if(!deep&&!underworld&&night&&type==='slime'&&Math.random()<.72)return;let y=type==='shark'?Math.floor(player.y)-1:deep?Math.floor(player.y)-2:heightAt(x)-1;if(deep){let found=false;for(let k=0;k<22;k++){if(!solid(get(x,y))&&!solid(get(x,y-1))){found=true;break}y--;}if(!found)return}else if(get(x,y)!==0)return;
+ if(!deep&&!underworld&&!waterAt(base.x,base.y)&&Math.random()<((weather==='rain'||weather==='storm')?.48:.12))type='spider';if(!deep&&!underworld&&night&&type==='slime'&&Math.random()<.72)return;let y=type==='shark'?Math.floor(base.y)-1:deep?Math.floor(base.y)-2:heightAt(x)-1;if(deep){let found=false;for(let k=0;k<22;k++){if(!solid(get(x,y))&&!solid(get(x,y-1))){found=true;break}y--;}if(!found)return}else if(get(x,y)!==0)return;
  let cfg=MONSTERS[type];enemies.push({x:x+.5,y,vx:0,vy:0,hp:cfg.hp,maxHp:cfg.hp,type,ground:false,jump:Math.random(),hurt:0,alert:0,patrolSeed:hash(x,y)*20,attackCd:1.5+Math.random()*2,attackWindup:0});}
 function updateEnemies(dt){
  if(onlineRoomCode&&!wrIsOnlineHost())return;
@@ -2016,10 +2094,10 @@ function updateEnemies(dt){
   let e=enemies[i],cfg=MONSTERS[e.type]||MONSTERS.slime;
   e.hurt=Math.max(0,e.hurt-dt);e.flee=Math.max(0,(e.flee||0)-dt);e.baby=Math.max(0,(e.baby||0)-dt);e.stun=Math.max(0,(e.stun||0)-dt);e.attackWindup=Math.max(0,(e.attackWindup||0)-dt);
   if(Math.hypot(e.x-player.x,(e.y-player.y)*1.35)>48 && (!onlineRoomCode||![...onlineRemoteMotion.values()].some(p=>Math.hypot(e.x-p.x,(e.y-p.y)*1.35)<48))){enemies.splice(i,1);continue}
-  const dx=player.x-e.x,dist=Math.abs(dx),dy=player.y-e.y,dir=Math.sign(dx)||1;
+  const targets=onlineRoomCode?[player,...onlineRemoteMotion.values()]:[player];let target=player;for(const t of targets)if(t&&Number.isFinite(t.x)&&Number.isFinite(t.y)&&Math.hypot(e.x-t.x,e.y-t.y)<Math.hypot(e.x-target.x,e.y-target.y))target=t;const dx=target.x-e.x,dist=Math.abs(dx),dy=target.y-e.y,dir=Math.sign(dx)||1;
   const flying=e.type==='cave'||e.type==='shark',ranged=e.type==='fireKnight',fast=e.type==='snowWolf'||e.type==='sandworm';
   const detectRange=cfg.passive?5:(e.type==='fireKnight'?18:e.type==='snowWolf'?14:e.type==='cave'?13:e.type==='slime'?8:11);
-  const canSee=!spectator&&!cfg.passive&&Math.hypot(dx,dy)<detectRange&&clearEnemySight(e.x,e.y-.45,player.x,player.y-.7);
+  const canSee=!spectator&&!cfg.passive&&Math.hypot(dx,dy)<detectRange&&clearEnemySight(e.x,e.y-.45,target.x,target.y-.7);
   if(canSee){e.alert=4.0;e.lastDir=dir}else e.alert=Math.max(0,(e.alert||0)-dt);
   const pursuing=e.alert>0&&!cfg.passive,desired=cfg.passive?(e.flee>0?-dir*cfg.speed*1.7:Math.sin(enemyAnimTime*.35+(e.patrolSeed||0))*cfg.speed*.45):pursuing?(ranged&&dist<4?-dir*cfg.speed*.6:ranged&&dist<7?0:dir*cfg.speed):Math.sin(enemyAnimTime*.55+(e.patrolSeed||0))*cfg.speed*.24;
   e.vx+=(desired-e.vx)*Math.min(1,dt*(fast?5:3));
@@ -2029,16 +2107,16 @@ function updateEnemies(dt){
   const obstacle=solid(get(frontX,footY))||solid(get(frontX,footY-1));
   const dropAhead=!solid(get(frontX,Math.floor(e.y+.75)))&&!solid(get(frontX,Math.floor(e.y+1.5)));
   if((!pursuing&&dropAhead||cfg.passive&&waterAt(frontX,footY)||get(frontX,footY)===36)&&!flying)e.vx*=-.7;
-  if(flying){e.vy+=(Math.max(-4,Math.min(4,(player.y-1.1-e.y)*2)) -e.vy)*Math.min(1,dt*2.8);e.vy+=Math.sin(enemyAnimTime*5+e.x)*dt*2;}
+  if(flying){e.vy+=(Math.max(-4,Math.min(4,(target.y-1.1-e.y)*2)) -e.vy)*Math.min(1,dt*2.8);e.vy+=Math.sin(enemyAnimTime*5+e.x)*dt*2;}
   else{
-   if(e.jump<=0&&(obstacle||(pursuing&&dist<8)||e.type==='slime'||e.type==='iceSlime')&&(!dropAhead||pursuing)){
+   if(e.jump<=0&&(obstacle||(pursuing&&dist<8)||(e.type==='slime'||e.type==='iceSlime'))&&(!dropAhead||pursuing)){
     e.vy=-(fast?9.5:e.type==='fireKnight'?8.4:7.1);e.jump=(e.type==='night'?.7:fast?.75:1.35)+Math.random()*.6;
    }
    e.vy=Math.min(15,e.vy+25*dt)
   }
   for(let n=0;n<4;n++){
    let xx=e.x+e.vx*dt/4,yy=e.y+e.vy*dt/4;
-   if(!collision(xx,e.y,.72,.72,true))e.x=xx;else e.vx=0;
+   if(!collision(xx,e.y,.72,.72,true))e.x=xx;else if(!flying&&Math.abs(e.vx)>.1&&!collision(xx,e.y-.48,.72,.72,true)){e.x=xx;e.y-=.48;e.vy=Math.min(e.vy,0)}else e.vx=0;
    if(!collision(e.x,yy,.72,.72,true))e.y=yy;else e.vy=0;
   }
   // Fire knights telegraph a projectile attack; players can dodge or take cover.
@@ -2383,7 +2461,7 @@ function renderFrameBudget(){
 
 function loop(ts){
  requestAnimationFrame(loop);
- if(touchDevice)document.body.classList.toggle('touchPlaying',mode==='playing'||mode==='touchEdit');
+ if(touchDevice){const v=mode==='playing'||mode==='touchEdit';if(document.body.classList.contains('touchPlaying')!==v)document.body.classList.toggle('touchPlaying',v);}
  const dt=Math.min(.05,(ts-last)/1000||0);last=ts;lightingFrameDt=Math.max(.001,dt);
  if(['menu','worldSlots','worldCreate','worldRename','worldDelete','titleSettings','titleControls','multiplayerEntry','multiWorldCreate','multiLobby','friendsEntry','profile'].includes(mode)){
   titlePreviewFrame+=dt;
@@ -2422,7 +2500,7 @@ function loop(ts){
    const cx=player.x*T,cy=(player.y-player.h*.6)*T,a=1-Math.exp(-12*Math.max(0,dt));
    cam.x+=(cx-cam.x)*a;cam.y+=(cy-cam.y)*a;
    if(ts-hudDrawAt>=125){hudDrawAt=ts;hudUpdate();updateHP();}
-   renderMini(dt);if(onlineRoomCode)wrSendEnemyState(ts);if(onlineRoomCode&&mode==='playing'){const currentAnim=attackVisual.elapsed<attackVisual.duration?'attack':!player.ground?'jump':Math.abs(player.vx)>.35?'run':'idle';const moved=Math.hypot(player.x-onlineLastMoveX,player.y-onlineLastMoveY)>.018||player.face!==onlineLastFace||currentAnim!==onlineLastAnim;const interval=moved?ONLINE_SEND_MOVING_MS:ONLINE_SEND_IDLE_MS;if(ts-onlineMoveAt>=interval){onlineMoveAt=ts;onlineLastMoveStamp=ts;onlineLastMoveX=player.x;onlineLastMoveY=player.y;onlineLastFace=player.face;onlineLastAnim=currentAnim;publishOnlineMovement({x:player.x,y:player.y,face:player.face,anim:attackVisual.elapsed<attackVisual.duration?'attack':!player.ground?'jump':Math.abs(player.vx)>.35?'run':'idle',attack:attackVisual.elapsed<attackVisual.duration,name:getLocalProfile().name});}}
+   renderMini(dt);if(onlineRoomCode){wrSendEnemyState(ts);wrPublishWorldState(ts);}if(onlineRoomCode&&mode==='playing'){const currentAnim=attackVisual.elapsed<attackVisual.duration?'attack':!player.ground?'jump':Math.abs(player.vx)>.35?'run':'idle';const moved=Math.hypot(player.x-onlineLastMoveX,player.y-onlineLastMoveY)>.018||player.face!==onlineLastFace||currentAnim!==onlineLastAnim;const interval=moved?ONLINE_SEND_MOVING_MS:ONLINE_SEND_IDLE_MS;if(ts-onlineMoveAt>=interval){onlineMoveAt=ts;onlineLastMoveStamp=ts;onlineLastMoveX=player.x;onlineLastMoveY=player.y;onlineLastFace=player.face;onlineLastAnim=currentAnim;publishOnlineMovement({x:player.x,y:player.y,face:player.face,anim:attackVisual.elapsed<attackVisual.duration?'attack':!player.ground?'jump':Math.abs(player.vx)>.35?'run':'idle',attack:attackVisual.elapsed<attackVisual.duration,name:getLocalProfile().name});}}
    const inventoryClock=document.getElementById('inventoryClock');
    if(inventoryClock)inventoryClock.textContent=document.getElementById('clock').textContent;
   }
@@ -2767,6 +2845,31 @@ window.WRCloud={
   }
  },e=>console.warn('PvP watch:',e));},
 
+
+ async publishWorldState(code,state){
+  const data={time:state.time,weather:state.weather,weatherPhase:state.weatherPhase,weatherTimer:state.weatherTimer,by:auth.currentUser.uid,updatedAt:serverTimestamp()};
+  await setDoc(doc(db,'rooms',code,'state','world'),data);
+ },
+ watchWorldState(code,cb){return onSnapshot(doc(db,'rooms',code,'state','world'),snap=>{if(snap.exists())cb(snap.data())},e=>console.warn('World time watch:',e));},
+ async createDrop(code,d){
+  await setDoc(doc(db,'rooms',code,'drops',d.wrId),{
+   id:d.id,n:d.n,x:+d.x.toFixed(3),y:+d.y.toFixed(3),vx:+(d.vx||0).toFixed(2),vy:+(d.vy||0).toFixed(2),
+   ...(Number.isFinite(d.dur)?{dur:d.dur}:{}),by:auth.currentUser.uid,createdAt:serverTimestamp()
+  });
+ },
+ watchDrops(code,cb){return onSnapshot(collection(db,'rooms',code,'drops'),snap=>{
+  cb(snap.docs.map(d=>({docId:d.id,...d.data()})));
+ },e=>console.warn('Drop watch:',e));},
+ async claimDrop(code,id){
+  const ref=doc(db,'rooms',code,'drops',id);
+  return runTransaction(db,async tx=>{
+   const snap=await tx.get(ref);if(!snap.exists())return false;
+   tx.delete(ref);return true;
+  });
+ },
+ async writePin(code,p){await setDoc(doc(db,'rooms',code,'pins',p.id),{x:p.x,y:p.y,name:p.name,by:auth.currentUser.uid,updatedAt:serverTimestamp()});},
+ async deletePin(code,id){await deleteDoc(doc(db,'rooms',code,'pins',id));},
+ watchPins(code,cb){return onSnapshot(collection(db,'rooms',code,'pins'),snap=>cb(snap.docs.map(d=>({id:d.id,...d.data()}))),e=>console.warn('Pin watch:',e));},
  async removeFriend(id){
   const me=auth.currentUser?.uid;if(!me)throw Error('オンライン接続が必要です。');
   const ref=doc(db,'friendRequests',id),snap=await getDoc(ref);
