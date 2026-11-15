@@ -171,7 +171,14 @@ body.touchEditing #overlay{display:none!important}
  #map{width:95px!important;height:75px!important}
  #hotbar .slot{width:clamp(22px,3.6vw,34px)!important;height:31px!important}
 }
-</style></head><body><canvas id="game"></canvas><div id="hud"><div id="top"><div id="stats"><div class="stat">❤ HP <span id="hp">100 / 100</span></div><div class="bar"><div id="hpfill" class="fill" style="width:100%"></div></div><div class="stat">✦ MP <span id="mpnum">20 / 20</span></div><div class="bar"><div class="fill" id="mpfill" style="width:100%;background:#67a5f2"></div></div><div class="stat">🫧 酸素 <span id="oxynum">100 / 100</span></div><div class="bar"><div class="fill" id="oxyfill" style="width:100%;background:#a0e2f5"></div></div><div class="stat">🍖 食料 <span id="foodnum">100 / 100</span></div><div class="bar"><div class="fill" id="foodfill" style="width:100%;background:#d59752"></div></div><div class="stat">💧 水分 <span id="waternum">100 / 100</span></div><div class="bar" style="margin-bottom:0"><div class="fill" id="waterfill" style="width:100%;background:#55b3dc"></div></div></div><div id="info">地表 / 森林　|　深度: <span id="depth">0</span><br>座標: <span id="coords">0, 0</span><br>ズーム: <span id="zoomtext">2.0</span>x<br>光量: <span id="lighttext">100%</span> · 撃破: <span id="kills">0</span></div></div><canvas id="map" width="224" height="224" title="全体マップを表示 (M)"></canvas><div id="clock">☀ 08:00</div><div id="toast"></div><div id="quickActions"><button type="button" class="quickButton" id="quickInventory" title="持ち物を開く (E)"><span class="keyhint">E</span><span class="symbol">🎒</span><span>持ち物</span></button><button type="button" class="quickButton" id="quickCraft" title="クラフト (C)"><span class="keyhint">C</span><span class="symbol">📖</span><span>クラフト</span></button></div><div id="quickActionsRight" class="right"><button type="button" class="quickButton" id="quickMap" title="全体マップ (M)"><span class="keyhint">M</span><span class="symbol">🗺️</span><span>マップ</span></button><button type="button" class="quickButton" id="quickSettings" title="一時停止 (Esc)"><span class="keyhint">Esc</span><span class="symbol">⏸</span><span>一時停止</span></button></div><div id="hotbar"></div></div><div id="rotateNotice">📱 横画面にしてください<small>WILDROOTのスマホ版は横向き専用です。<br>端末を横に回転してプレイしてください。</small></div><div id="touchControls" aria-label="スマホ操作"><div id="touchMove"><button id="touchLeft" aria-label="左へ移動">◀</button><button id="touchRight" aria-label="右へ移動">▶</button><button id="touchStick" aria-label="移動スティック"><span id="stickKnob"></span></button></div><div id="touchSpecial"><button id="touchDrop" aria-label="アイテムを捨てる">Q</button><button id="touchDown" aria-label="下へ">▼</button><button id="touchJump" aria-label="ジャンプ">⤒</button><button id="touchZoomIn" aria-label="拡大">＋</button><button id="touchZoomOut" aria-label="縮小">－</button></div><div id="touchGuide">短押し：設置・攻撃　長押し：採掘</div></div><div id="touchEditBar"><strong>📱 スマホ操作配置</strong><label>移動 <select id="touchStyle"><option value="buttons">左右ボタン</option><option value="stick">スティック</option></select></label><label>サイズ <input id="touchSize" type="range" min="38" max="140" step="2" value="72"></label><span id="touchEditSelection">ボタンを選択・ドラッグ</span><button id="touchLayoutReset">初期化</button><button id="touchEditDone">保存して戻る</button></div><div id="itemTooltip" role="tooltip"></div><div id="overlay"><div id="modal"></div></div><script>
+
+/* Pause -> settings uses the same full-width centered layout as title settings. */
+#modal.inGameSettings{width:min(950px,96vw);max-height:94dvh;padding:clamp(8px,2vw,18px);display:flex;align-items:center;justify-content:center;overflow-y:auto;overflow-x:hidden}
+#modal.inGameSettings:before{display:none}
+#modal.inGameSettings>.unifiedSettings{width:100%;max-width:900px;margin:0 auto;max-height:min(88dvh,800px);overflow-y:auto;overflow-x:hidden;min-width:0}
+#modal.inGameSettings .controlGrid{max-height:46dvh;overscroll-behavior:contain}
+@media(max-height:540px){#modal.inGameSettings>.unifiedSettings{max-height:84dvh}#modal.inGameSettings .controlGrid{max-height:37dvh}}
+</style></head><body><canvas id="game"></canvas><div id="hud"><div id="top"><div id="stats"><div class="stat">❤ HP <span id="hp">100 / 100</span></div><div class="bar"><div id="hpfill" class="fill" style="width:100%"></div></div><div class="stat">✦ MP <span id="mpnum">20 / 20</span></div><div class="bar"><div class="fill" id="mpfill" style="width:100%;background:#67a5f2"></div></div><div class="stat">🫧 酸素 <span id="oxynum">100 / 100</span></div><div class="bar"><div class="fill" id="oxyfill" style="width:100%;background:#a0e2f5"></div></div><div class="stat">🍖 食料 <span id="foodnum">100 / 100</span></div><div class="bar"><div class="fill" id="foodfill" style="width:100%;background:#d59752"></div></div><div class="stat">💧 水分 <span id="waternum">100 / 100</span></div><div class="bar" style="margin-bottom:0"><div class="fill" id="waterfill" style="width:100%;background:#55b3dc"></div></div></div><div id="info">地表 / 森林　|　深度: <span id="depth">0</span><br>座標: <span id="coords">0, 0</span><br>ズーム: <span id="zoomtext">2.0</span>x<br>光量: <span id="lighttext">100%</span> · 撃破: <span id="kills">0</span></div></div><canvas id="map" width="224" height="224" title="全体マップを表示 (M)"></canvas><div id="clock">☀ 08:00</div><div id="toast"></div><div id="quickActions"><button type="button" class="quickButton" id="quickInventory" title="持ち物を開く (E)"><span class="keyhint">E</span><span class="symbol">🎒</span><span>持ち物</span></button><button type="button" class="quickButton" id="quickCraft" title="クラフト (C)"><span class="keyhint">C</span><span class="symbol">📖</span><span>クラフト</span></button></div><div id="quickActionsRight" class="right"><button type="button" class="quickButton" id="quickMap" title="全体マップ (M)"><span class="keyhint">M</span><span class="symbol">🗺️</span><span>マップ</span></button><button type="button" class="quickButton" id="quickSettings" title="一時停止 (Esc)"><span class="keyhint">Esc</span><span class="symbol">⏸</span><span>一時停止</span></button></div><div id="hotbar"></div></div><div id="rotateNotice">📱 横画面にしてください<small>WILDROOTのスマホ版は横向き専用です。<br>端末を横に回転してプレイしてください。</small></div><div id="touchControls" aria-label="スマホ操作"><div id="touchMove"><button id="touchLeft" aria-label="左へ移動">◀</button><button id="touchRight" aria-label="右へ移動">▶</button><button id="touchStick" aria-label="移動スティック"><span id="stickKnob"></span></button></div><div id="touchSpecial"><button id="touchDrop" aria-label="アイテムを捨てる">🗑</button><button id="touchDash" aria-label="ダッシュ">⇧</button><button id="touchDown" aria-label="下へ">▼</button><button id="touchJump" aria-label="ジャンプ">⤒</button><button id="touchZoomIn" aria-label="拡大">＋</button><button id="touchZoomOut" aria-label="縮小">－</button></div><div id="touchGuide">短押し：設置・攻撃　長押し：採掘</div></div><div id="touchEditBar"><strong>📱 スマホ操作配置</strong><label>移動 <select id="touchStyle"><option value="buttons">左右ボタン</option><option value="stick">スティック</option></select></label><label>サイズ <input id="touchSize" type="range" min="38" max="140" step="2" value="72"></label><span id="touchEditSelection">ボタンを選択・ドラッグ</span><button id="touchLayoutReset">初期化</button><button id="touchEditDone">保存して戻る</button></div><div id="itemTooltip" role="tooltip"></div><div id="overlay"><div id="modal"></div></div><script>
 
 'use strict';
 (()=>{
@@ -319,7 +326,41 @@ function hash(x,y,s=seed){let v=Math.imul(x|0,374761393)+Math.imul(y|0,668265263
 function smooth(t){return t*t*(3-2*t)}
 function noise1(x,scale,off=0){let a=Math.floor(x/scale),f=smooth(x/scale-a);return (hash(a,off)*(1-f)+hash(a+1,off)*f)*2-1}
 function noise2(x,y,scale,off=0){let fx=x/scale,fy=y/scale,a=Math.floor(fx),b=Math.floor(fy),u=smooth(fx-a),v=smooth(fy-b);let n00=hash(a,b+off),n10=hash(a+1,b+off),n01=hash(a,b+1+off),n11=hash(a+1,b+1+off);return (n00*(1-u)+n10*u)*(1-v)+(n01*(1-u)+n11*u)*v}
-function pondDepression(x){if(genVersion<7)return 0;let centers=[W/2-84,W/2+98];let depth=0;for(let c of centers){let d=Math.abs(x-c);if(d<12)depth=Math.max(depth,Math.round((1-d/12)*6));}return depth}
+// Only form fresh-water pools in naturally level spots, never on slopes.
+// Cache the sites per seed: heightAt() is called many times each frame.
+let pondSitesCache=null,pondSitesKey='';
+function pondSites(){
+ if(genVersion<7)return [];
+ const k=seed+':'+genVersion;
+ if(pondSitesKey===k&&pondSitesCache)return pondSitesCache;
+ const sites=[];
+ for(const origin of [W/2-84,W/2+98]){
+  let best=null;
+  for(let offset=-120;offset<=120;offset+=3){
+   const cx=Math.floor(origin+offset);
+   if(cx<35||cx>=W-35||beachAt(cx)||beachAt(cx-15)||beachAt(cx+15))continue;
+   let lo=Infinity,hi=-Infinity;
+   for(let d=-15;d<=15;d++){const y=rawHeightAt(cx+d);lo=Math.min(lo,y);hi=Math.max(hi,y)}
+   if(hi-lo>2)continue;
+   const score=(hi-lo)*60+Math.abs(offset)+Math.abs(rawHeightAt(cx-14)-rawHeightAt(cx+14))*15;
+   if(!best||score<best.score)best={cx,score,waterline:hi+1};
+  }
+  if(best&&sites.every(p=>Math.abs(p.cx-best.cx)>35))sites.push(best);
+ }
+ pondSitesKey=k;pondSitesCache=sites;
+ return sites;
+}
+function pondDepression(x){
+ for(const p of pondSites()){
+  const d=Math.abs(x-p.cx);
+  if(d>11)continue;
+  // The bowl rises smoothly towards both banks, leaving a solid rim.
+  const depth=d<=6?6:d<=8?4:d<=9?2:d<=10?1:0;
+  return Math.max(0,p.waterline+depth-rawHeightAt(x));
+ }
+ return 0;
+}
+function pondWaterline(x){for(const p of pondSites())if(Math.abs(x-p.cx)<=10)return p.waterline;return null}
 // In generation 10+, seeded coastlines can appear anywhere, not only at world boundaries.
 // Earlier generations must remain unchanged for existing saved worlds.
 let oceanCentersCache=null,oceanCentersCacheSeed=null;function oceanCenters(){if(oceanCentersCacheSeed===seed&&oceanCentersCache)return oceanCentersCache;let regions=[];for(let i=0;i<9;i++){let c=100+i*445+Math.floor(hash(i,6501)*165)-82;c=Math.max(125,Math.min(W-125,c));if(Math.abs(c-W/2)>210)regions.push({c,score:hash(i,6502)});}regions.sort((a,b)=>a.score-b.score);oceanCentersCache=regions.slice(0,4).map(v=>v.c).sort((a,b)=>a-b);oceanCentersCacheSeed=seed;return oceanCentersCache}
@@ -327,11 +368,12 @@ function coastDistance(x){let d=Infinity;for(const c of oceanCenters())d=Math.mi
 function closestOceanCenter(x){let best=0,d=Infinity;for(const c of oceanCenters()){if(Math.abs(x-c)<d){d=Math.abs(x-c);best=c}}return best}
 function oceanEdge(x){return genVersion>=10?coastDistance(x)<83:genVersion>=7&&(x<210||x>W-211)}
 function beachAt(x){return genVersion>=10?coastDistance(x)<123:genVersion>=7&&(x<310||x>W-311)}
-function heightAt(x){if(genVersion===1)return Math.max(160,Math.min(360,250+Math.round(noise1(x,175,17)*24+noise1(x,55,19)*10+noise1(x,13,21)*3)));
+function rawHeightAt(x){if(genVersion===1)return Math.max(160,Math.min(360,250+Math.round(noise1(x,175,17)*24+noise1(x,55,19)*10+noise1(x,13,21)*3)));
  let d=Math.abs(x-W/2),safe=Math.min(1,Math.max(0,(d-30)/100));let region=Math.max(0,noise1(x,520,17)*.85+noise1(x,240,24)*.65+.12);let mountain=Math.pow(region,1.65)*105*safe;
  let ridges=Math.pow(Math.abs(noise1(x,128,92)),2)*35*safe;let base=noise1(x,165,17)*19+noise1(x,56,19)*9+noise1(x,14,21)*2;
  let normal=Math.max(110,Math.min(390,Math.round(250+base-mountain-ridges-(genVersion>=4?Math.max(0,noise1(x,340,201)+.12)*24*safe:0))));
- if(genVersion>=7){let coastDist=genVersion>=10?coastDistance(x):Math.min(x,W-1-x);let shoreRadius=genVersion>=10?123:310;if(coastDist<shoreRadius){let blend=Math.max(0,Math.min(1,(shoreRadius-coastDist)/(genVersion>=10?65:160)));let floor=278+Math.round(noise1(x,73,874)*5);normal=Math.round(normal*(1-blend)+floor*blend)}normal+=pondDepression(x)}return normal}
+ if(genVersion>=7){let coastDist=genVersion>=10?coastDistance(x):Math.min(x,W-1-x);let shoreRadius=genVersion>=10?123:310;if(coastDist<shoreRadius){let blend=Math.max(0,Math.min(1,(shoreRadius-coastDist)/(genVersion>=10?65:160)));let floor=278+Math.round(noise1(x,73,874)*5);normal=Math.round(normal*(1-blend)+floor*blend)}/* pond bowl is applied by heightAt */}return normal}
+function heightAt(x){return rawHeightAt(x)+pondDepression(x)}
 function isCave(x,y,h){if(y<h+12||y>=H-5)return false;if(genVersion===1){let cave=noise2(x,y,38,131)*.58+noise2(x,y,17,249)*.32+noise2(x,y,8,411)*.1;return cave>.675&&y>h+13}
  // 複数のノイズを合成した自然洞窟。広い空洞、細い通路、深い縦穴を混在させる。
  let wide=noise2(x,y,44,131)*.55+noise2(x,y,21,249)*.32+noise2(x,y,10,411)*.13;
@@ -413,7 +455,7 @@ function extraStructure(x,y){
  }
  return -1;
 }
-function baseTile(x,y){if(x<0||x>=W||y<0)return 0;if(y>=H)return 3;let h=heightAt(x);if(genVersion>=9&&oceanEdge(x)&&Math.abs(x-(genVersion>=10?closestOceanCenter(x):(x<W/2?95:W-95)))<11&&y>=h+1&&y<h+8){let dx=Math.abs(x-(genVersion>=10?closestOceanCenter(x):(x<W/2?95:W-95)));if(y===h+7||dx===10||y===h+1&&dx>4)return 73;if(y===h+5&&dx===0)return 34;if(y===h+6&&dx<4)return 0;}if(genVersion>=8&&oceanEdge(x)&&y===h-1&&(genVersion>=10?Math.abs(x-closestOceanCenter(x))===10:(x===105||x===W-106)))return 34;if(genVersion>=8&&oceanEdge(x)&&y===h-1&&hash(x,3200)>.83)return hash(x,3201)>.77?112:111;if(genVersion>=7&&y<h){if(oceanEdge(x)&&y>=263)return 88;let pond=pondDepression(x);if(pond>0&&y>=h-pond)return 95;}if(genVersion>=3){if(y<h){let island=islandTile(x,y);if(island)return island}else if(y>h+30){let dungeon=dungeonTile(x,y);if(dungeon>=0)return dungeon;let ruin=ruinTile(x,y);if(ruin>=0)return ruin;}}if(genVersion>=6){let extra=extraStructure(x,y);if(extra>=0)return extra;}if(y<h){ // trees from deterministic positions
+function baseTile(x,y){if(x<0||x>=W||y<0)return 0;if(y>=H)return 3;let h=heightAt(x);if(genVersion>=9&&oceanEdge(x)&&Math.abs(x-(genVersion>=10?closestOceanCenter(x):(x<W/2?95:W-95)))<11&&y>=h+1&&y<h+8){let dx=Math.abs(x-(genVersion>=10?closestOceanCenter(x):(x<W/2?95:W-95)));if(y===h+7||dx===10||y===h+1&&dx>4)return 73;if(y===h+5&&dx===0)return 34;if(y===h+6&&dx<4)return 0;}if(genVersion>=8&&oceanEdge(x)&&y===h-1&&(genVersion>=10?Math.abs(x-closestOceanCenter(x))===10:(x===105||x===W-106)))return 34;if(genVersion>=8&&oceanEdge(x)&&y===h-1&&hash(x,3200)>.83)return hash(x,3201)>.77?112:111;if(genVersion>=7&&y<h){if(oceanEdge(x)&&y>=263)return 88;let pondLevel=pondWaterline(x);if(pondLevel!==null&&y>=pondLevel&&y<h)return 95;}if(genVersion>=3){if(y<h){let island=islandTile(x,y);if(island)return island}else if(y>h+30){let dungeon=dungeonTile(x,y);if(dungeon>=0)return dungeon;let ruin=ruinTile(x,y);if(ruin>=0)return ruin;}}if(genVersion>=6){let extra=extraStructure(x,y);if(extra>=0)return extra;}if(y<h){ // trees from deterministic positions
  if(y>=h-9){for(let tx=x-4;tx<=x+4;tx++){if(tx<0||tx>=W||biomeAt(tx)!=='forest'||Math.abs(tx-W/2)<12||hash(tx,70)>.035||hash(tx-1,70)<.035)continue;let th=heightAt(tx),ht=4+Math.floor(hash(tx,80)*5),top=th-ht;
  if(x===tx&&y>=top&&y<th)return 4;
  if(Math.abs(x-tx)<=3&&y>=top-3&&y<=top+2&&((x-tx)*(x-tx)*.4+(y-top)*(y-top)*.38)<5.2)return 5;
@@ -595,6 +637,7 @@ function openUnifiedSettings(origin='title',tab='general'){
  }else{
   content='<p>変更する操作を選び、キー・マウスボタン・マウスホイールを入力してください。</p><div class="controlGrid">'+BIND_LABELS.map(([id,label])=>'<div class="controlRow"><strong>'+label+'</strong><button type="button" data-bind="'+id+'">'+displayBinding(keyBinds[id])+'</button></div>').join('')+'</div><p id="bindNotice" class="small">入力待ち中はホイールでスクロールしません。Escで割り当てをキャンセル。</p><div class="worldActions"><button id="resetControls">キー割り当てを初期化</button></div>';
  }
+ modal.classList.toggle('inGameSettings',!onTitle);
  modal.innerHTML='<main class="titlePanel unifiedSettings"><h2>⚙ 設定</h2>'+tabBar+content+'<div class="worldActions settingsBottom"><button id="settingsBack">'+(onTitle?'タイトルへ戻る':'一時停止へ戻る')+'</button></div></main>';
  modal.querySelectorAll('[data-settings-tab]').forEach(b=>b.onclick=()=>openUnifiedSettings(origin,b.dataset.settingsTab));
  document.getElementById('settingsBack').onclick=()=>{bindingCleanup();if(onTitle)showMenu();else showPauseScreen()};
@@ -826,7 +869,7 @@ function closeWorldMap(){modal.classList.remove('mapModal');startPlay()}
 function showPauseScreen(){
  hideTip();settingsPauseWorld=true;mode='pause';keys.clear();mouse.left=mouse.right=false;
  document.body.classList.remove('titleScene');overlay.classList.remove('hidden');
- modal.classList.remove('mapModal');
+ modal.classList.remove('mapModal','inGameSettings');
  modal.innerHTML='<div class="pausePanel"><h2>⏸ 一時停止</h2><p>ワールド：'+escapeHTML(worldName)+'</p><div class="pauseActions"><button id="continue">▶ ゲームに戻る</button><button id="pauseSettings">⚙ 設定</button><button id="saveAndQuit">💾 セーブして終了</button></div></div>';
  document.getElementById('continue').onclick=startPlay;
  document.getElementById('pauseSettings').onclick=()=>openUnifiedSettings('game','general');
@@ -1078,8 +1121,13 @@ function act(dt){if(mouse.left&&[93,96,98,103,104,105,113].includes(inv[active]?
  if(mouse.left&&graveAt(tx,ty)){recoverGrave(tx,ty);mouse.left=false;mineProgress=0;return}
  if(mouse.left&&inv[active]?.id===59){if(attackCooldown<=0){const id=inv[active].id;fireProjectile(id);lastAttackInterval=attackInterval(id);attackCooldown=lastAttackInterval;mouse.left=false}mineProgress=0;return}
  if(mouse.left&&(inv[active]?.id in WEAPONS)){if(attackCooldown<=0){const id=inv[active].id;lastAttackInterval=attackInterval(id);attackCooldown=lastAttackInterval;attackEnemy()}mineProgress=0;return}
+ // Empty hands, tools, and ordinary held items can attack; only suppress mining when an enemy is targeted.
+ if(mouse.left&&enemies.some(e=>Math.hypot(e.x-mouse.wx/T,e.y-.55-mouse.wy/T)<=1.1)){
+  if(attackCooldown<=0){const id=inv[active]?.id;lastAttackInterval=id&&toolType(id)!=='hand'?.47:.55;if(attackEnemy())attackCooldown=lastAttackInterval;}
+  mineProgress=0;return;
+ }
  if(mouse.left){if(isWaterTile(front)){mineProgress=0;return}if(front===34||front===75){mineProgress=0;return}let t=front;let target='front';// Only mine foreground tiles, never the natural cave backdrop.
- if(t){if(mineX!==tx||mineY!==ty||mineLayer!==target){mineX=tx;mineY=ty;mineLayer=target;mineProgress=0}mineProgress+=dt;if(mineProgress>=digTime(t,inv[active]?.id)){if(t===4&&toolType(inv[active]?.id)==='axe')fellTree(tx,ty);else{if(t===58||t===110){let items=storageChests.get(tx+','+ty)||[];if(items.some(Boolean)){toast('チェストの中身を空にしてから壊してください');mineProgress=0;return}storageChests.delete(tx+','+ty)}put(tx,ty,0);spawnDrop(t===1?2:(t===13&&gameMode==='sandbox'?119:t),1,tx+.5,ty+.5);if(t===5&&Math.random()<.30)spawnDrop(120,1,tx+.5,ty+.3);if(t===1&&Math.random()<.28)spawnDrop(Math.random()<.65?100:101,1,tx+.5,ty+.35);crops.delete(tx+','+(ty-1));spawnFx(tx,ty,colors[t]||'#b7ac9b',7)}if(target==='front'&&toolType(inv[active]?.id)!=='hand')wear(active,1);swing=.18;attackVisual={kind:'tool',elapsed:0,duration:.26,face:player.face};mineProgress=0;updateBar()}}else mineProgress=0
+ if(t){if(mineX!==tx||mineY!==ty||mineLayer!==target){mineX=tx;mineY=ty;mineLayer=target;mineProgress=0}mineProgress+=dt;if(mineProgress>=digTime(t,inv[active]?.id)){if(t===4&&toolType(inv[active]?.id)==='axe')fellTree(tx,ty);else{if(t===58||t===110){let items=storageChests.get(tx+','+ty)||[];if(items.some(Boolean)){toast('チェストの中身を空にしてから壊してください');mineProgress=0;return}storageChests.delete(tx+','+ty)}put(tx,ty,0);if(gameMode!=='sandbox'){spawnDrop(t===1?2:t,1,tx+.5,ty+.5);if(t===5&&Math.random()<.30)spawnDrop(120,1,tx+.5,ty+.3);if(t===1&&Math.random()<.28)spawnDrop(Math.random()<.65?100:101,1,tx+.5,ty+.35);}crops.delete(tx+','+(ty-1));spawnFx(tx,ty,colors[t]||'#b7ac9b',7)}if(target==='front'&&toolType(inv[active]?.id)!=='hand')wear(active,1);swing=.18;attackVisual={kind:'tool',elapsed:0,duration:.26,face:player.face};mineProgress=0;updateBar()}}else mineProgress=0
  }else mineProgress=0;
  if(mouse.right&&actionCooldown<=0){if(graveAt(tx,ty)){recoverGrave(tx,ty);mouse.right=false;return}if(front===34||front===75){mouse.right=false;openTreasure(tx,ty);actionCooldown=.25;return}if(front===58||front===110){mouse.right=false;openStorage(tx,ty);return}if(front===91){mouse.right=false;bedSpawn={x:tx+.5,y:ty};let hour=time/60;if(hour>=6&&hour<18){time=19*60;toast('ベッドで休んだ。夜になった！')}else{time=8*60;toast('ぐっすり眠った。朝になった！')}enemies=[];return}if(front===92){mouse.right=false;openCraft(false);return}if(isWaterTile(front)&&inv[active]?.id===115){mouse.right=false;toast('水入りバケツ：水面を選んで設置してみよう');return}if(isWaterTile(front)&&inv[active]?.id===106){mouse.right=false;for(let [k,c] of crops){let [cx,cy]=k.split(',').map(Number);if(Math.abs(cx-tx)<=3&&Math.abs(cy-ty)<=3)c.moist=1;}toast('周囲の畑に水をやった！');return}if(isWaterTile(front)&&inv[active]?.id===94){mouse.right=false;consume(94,1);if(!addItem(96,1))addItem(94,1);toast('池の淡水を水筒に汲んだ');updateBar();return}if(front===12||front===18){mouse.right=false;if(front===18)openFurnace(tx,ty);else openCraft(true);return}// Harvesting crops is possible even when holding no item.
  if(front===0&&crops.has(tx+','+ty)){let plant=crops.get(tx+','+ty);if(plant.age<3){mouse.right=false;return toast('まだ育っていない')}addItem(plant.kind===100?102:103,2+Math.floor(Math.random()*3));addItem(plant.kind,1);crops.delete(tx+','+ty);mouse.right=false;updateBar();toast('作物を収穫した！');return}
@@ -1104,20 +1152,32 @@ function drawBlock(id,x,y,sz,wx,wy){if(id===0)return;const blockArt=(id===30||id
  }else if(id===1){ctx.fillStyle='#906c45';ctx.fillRect(x,y,sz,sz);ctx.fillStyle='#5a9c4b';ctx.fillRect(x,y,sz,Math.max(2,sz*.24));ctx.fillStyle='#88c361';ctx.fillRect(x+sz*.14,y,sz*.2,sz*.1)}else if(id===2){ctx.fillRect(x,y,sz,sz);ctx.fillStyle='#795837';ctx.fillRect(x+sz*.2,y+sz*.48,sz*.18,sz*.14);ctx.fillRect(x+sz*.72,y+sz*.1,sz*.12,sz*.21)}else if(id===3||id===6||id===7){ctx.fillStyle='#787e83';ctx.fillRect(x,y,sz,sz);ctx.fillStyle='#666b73';ctx.fillRect(x,y+sz*.68,sz*.6,sz*.27);ctx.fillStyle='#9c9e9b';ctx.fillRect(x+sz*.14,y+sz*.15,sz*.44,sz*.13);if(id!==3){ctx.fillStyle=id===6?'#c97b50':'#becbd4';for(let i=0;i<3;i++){let ox=hash(wx+i,wy+33)*.55+.15,oy=hash(wx+41,wy+i)*.53+.18;ctx.fillRect(x+sz*ox,y+sz*oy,sz*.15,sz*.18)}}}else if(id===4){ctx.fillRect(x,y,sz,sz);ctx.fillStyle='#755333';ctx.fillRect(x+sz*.3,y,sz*.12,sz);ctx.fillRect(x+sz*.72,y,sz*.09,sz)}else if(id===5){ctx.fillRect(x+sz*.05,y+sz*.06,sz*.90,sz*.88);ctx.fillStyle='#78b661';ctx.fillRect(x+sz*.1,y+sz*.1,sz*.45,sz*.24)}else if(id===8){ctx.fillStyle='#b98953';ctx.fillRect(x+sz*.45,y+sz*.38,sz*.12,sz*.53);ctx.fillStyle='#ffe885';ctx.fillRect(x+sz*.32,y+sz*.08,sz*.37,sz*.38);ctx.fillStyle='#ffab54';ctx.fillRect(x+sz*.43,y+sz*.21,sz*.13,sz*.22)}else if(id===12){ctx.fillStyle='#9a6d40';ctx.fillRect(x+sz*.10,y+sz*.20,sz*.80,sz*.19);ctx.fillRect(x+sz*.17,y+sz*.39,sz*.16,sz*.56);ctx.fillRect(x+sz*.67,y+sz*.39,sz*.16,sz*.56);ctx.fillStyle='#d8aa70';ctx.fillRect(x+sz*.1,y+sz*.13,sz*.80,sz*.12);ctx.fillStyle='#463f38';ctx.fillRect(x+sz*.18,y+sz*.14,sz*.06,sz*.05)}else if(id===18){ctx.fillStyle='#76706a';ctx.fillRect(x,y,sz,sz);ctx.fillStyle='#444447';ctx.fillRect(x+sz*.1,y+sz*.1,sz*.8,sz*.18);ctx.fillStyle='#1f252a';ctx.fillRect(x+sz*.20,y+sz*.36,sz*.6,sz*.52);ctx.fillStyle='#f18b45';ctx.fillRect(x+sz*.34,y+sz*.55,sz*.34,sz*.28)}else if(id===13){ctx.fillStyle='#797d82';ctx.fillRect(x,y,sz,sz);ctx.fillStyle='#565b63';ctx.fillRect(x+sz*.05,y+sz*.65,sz*.8,sz*.25);ctx.fillStyle='#252833';for(let i=0;i<4;i++){let a=hash(wx+i*9,wy+i*3);ctx.fillRect(x+sz*(.1+a*.6),y+sz*(.12+hash(wy+i,wx)*.6),sz*.19,sz*.18)}} }
 function drawWall(x,y,sz,wx,wy){const img=assetReady('stone_wall');if(img){ctx.save();ctx.globalAlpha=1;ctx.fillStyle='#242329';ctx.fillRect(x,y,sz,sz);ctx.drawImage(img,x,y,sz,sz);ctx.restore();return;}ctx.fillStyle='#28272d';ctx.fillRect(x,y,sz,sz);let v=hash(wx,wy,661);ctx.fillStyle=v>.52?'#3a3a41':'#1e1f25';ctx.fillRect(x+sz*.06,y+sz*.13,sz*.7,Math.max(1,sz*.13));ctx.fillStyle='#181a20';ctx.fillRect(x+sz*.61,y+sz*.58,sz*.25,sz*.12);ctx.fillStyle='#47474d';ctx.fillRect(x+sz*.15,y+sz*.72,sz*.29,sz*.07)}
 function spawnFx(tx,ty,color,n=8){for(let i=0;i<n;i++)fx.push({x:(tx+.5)*T,y:(ty+.5)*T,vx:(Math.random()-.5)*155,vy:-Math.random()*130-20,life:.35+Math.random()*.35,color,size:2+Math.random()*5})}
-function fellTree(tx,ty){let baseY=ty;while(get(tx,baseY+1)===4&&baseY<ty+25)baseY++;let top=ty;while(get(tx,top-1)===4&&top>ty-25)top--;let count=0;for(let y=top;y<=baseY;y++){if(get(tx,y)===4){put(tx,y,0);count++;spawnDrop(4,1,tx+.5,y+.5);spawnFx(tx,y,'#a47b4b',3)}}for(let y=top-4;y<=top+3;y++)for(let x=tx-3;x<=tx+3;x++)if(get(x,y)===5&&Math.hypot(x-tx,(y-top)*.85)<4.2){put(x,y,0);if(hash(x,y,88)>.65)spawnDrop(5,1,x+.5,y+.5);if(Math.random()<.30)spawnDrop(120,1,x+.5,y+.3);spawnFx(x,y,'#72aa54',2)}toast('木を伐採！ 木材 ×'+count)}
+function fellTree(tx,ty){let baseY=ty;while(get(tx,baseY+1)===4&&baseY<ty+25)baseY++;let top=ty;while(get(tx,top-1)===4&&top>ty-25)top--;let count=0;for(let y=top;y<=baseY;y++){if(get(tx,y)===4){put(tx,y,0);count++;if(gameMode!=='sandbox')spawnDrop(4,1,tx+.5,y+.5);spawnFx(tx,y,'#a47b4b',3)}}for(let y=top-4;y<=top+3;y++)for(let x=tx-3;x<=tx+3;x++)if(get(x,y)===5&&Math.hypot(x-tx,(y-top)*.85)<4.2){put(x,y,0);if(gameMode!=='sandbox'){if(hash(x,y,88)>.65)spawnDrop(5,1,x+.5,y+.5);if(Math.random()<.30)spawnDrop(120,1,x+.5,y+.3);}spawnFx(x,y,'#72aa54',2)}toast('木を伐採！ 木材 ×'+count)}
 function updateFx(dt){swing=Math.max(0,swing-dt);fx=fx.filter(p=>p.life>0);for(let p of fx){p.life-=dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=340*dt}}
 function drawFx(cw,ch){for(let p of fx){let x=(p.x-cam.x)*zoom+cw/2,y=(p.y-cam.y)*zoom+ch/2;ctx.globalAlpha=Math.min(1,p.life*2);ctx.fillStyle=p.color;ctx.fillRect(Math.floor(x),Math.floor(y),Math.ceil(p.size*zoom*.65),Math.ceil(p.size*zoom*.65))}ctx.globalAlpha=1}
 // 夜と地下の暗さは別々に計算し、深いほど周辺光を減らす。
 const shade=document.createElement('canvas'),shadeCtx=shade.getContext('2d');
+// Soft lighting uses a stable local surface height and temporal filtering.
+// This prevents abrupt flashing when passing over a one-tile slope or cave lip.
+let smoothedLightDepth=null, lightingFrameDt=1/60;
+function localLightDepth(){
+ const x=Math.floor(player.x),f=player.x-x;
+ let a=0,b=0;
+ for(let k=-2;k<=2;k++){a+=heightAt(Math.max(0,Math.min(W-1,x+k)));b+=heightAt(Math.max(0,Math.min(W-1,x+k+1)))}
+ const surface=(a*(1-f)+b*f)/5;
+ return Math.max(0,player.y-surface-4);
+}
+function darkAtDepth(d){const t=Math.max(0,Math.min(1,d/32));return .94*t*t*(3-2*t)}
 function drawLighting(cw,ch,left,right,top,bottom,day){if(gameMode==='sandbox'&&spectator)return;
- // Draw an actual dark overlay EVERY frame, after world/enemies but before HUD/crosshair.
- // Night is independent of depth. Underground darkness grows continuously with depth.
- const h=heightAt(Math.floor(player.x)),depth=Math.max(0,player.y-h-5);
+ const depthTarget=localLightDepth();
+ if(smoothedLightDepth===null||Math.abs(depthTarget-smoothedLightDepth)>60)smoothedLightDepth=depthTarget;
+ else smoothedLightDepth+=(depthTarget-smoothedLightDepth)*(1-Math.exp(-Math.min(.07,lightingFrameDt)*5));
  const night=Math.max(0,Math.min(1,(.44-day)*3.0))*.75;
- const underground=depth<=0?0:Math.min(.96,.27+depth*.011);
+ const underground=darkAtDepth(smoothedLightDepth);
  const alpha=Math.min(.97,1-(1-night)*(1-underground));
- if(alpha<.015)return;
- const quality=3,sw=Math.ceil(cw/quality),sh=Math.ceil(ch/quality);
+ if(alpha<.012)return;
+ // Offscreen lighting is rendered at one quarter resolution and scaled smoothly.
+ const quality=4,sw=Math.ceil(cw/quality),sh=Math.ceil(ch/quality);
  if(shade.width!==sw||shade.height!==sh){shade.width=sw;shade.height=sh}
  shadeCtx.globalCompositeOperation='source-over';shadeCtx.clearRect(0,0,sw,sh);
  shadeCtx.fillStyle='rgba(3,7,17,'+alpha.toFixed(3)+')';shadeCtx.fillRect(0,0,sw,sh);
@@ -1230,10 +1290,10 @@ function updateProjectiles(dt){for(let i=projectiles.length-1;i>=0;i--){let p=pr
 function drawProjectiles(cw,ch){for(let p of projectiles){let x=(p.x*T-cam.x)*zoom+cw/2,y=(p.y*T-cam.y)*zoom+ch/2;ctx.fillStyle=p.type==='hostile'?'#ff7244':p.type===59?'#f5dc9b':'#6bdcfa';ctx.beginPath();ctx.arc(x,y,(p.type===59?3:6)*zoom,0,Math.PI*2);ctx.fill();if(p.type==='hostile'){ctx.strokeStyle=p.type==='hostile'?'#ffb868':'#bff6ff';ctx.lineWidth=zoom;ctx.stroke()}}}
 function killEnemy(target){let k=enemies.indexOf(target);if(k>=0)enemies.splice(k,1);let cfg=MONSTERS[target.type];spawnDrop(cfg.drop,cfg.n+Math.floor(Math.random()*2),target.x,target.y-.5);if(target.type==='sheep')spawnDrop(89,2,target.x+.25,target.y-.6);if(target.type==='horse')spawnDrop(46,1,target.x-.25,target.y-.6);killCount++;toast('撃破！ 落ちたアイテムに触れて回収');updateBar()}
 function attackEnemy(){
- // The sword strikes a circle centered on the cursor, never the player's facing direction.
- if(!cursorInReach())return;
+ // Any held item, including empty hands, can strike an enemy at the cursor.
+ if(!cursorInReach())return 0;
  const cx=mouse.wx/T,cy=mouse.wy/T,radius=1.1;
- const weapon=inv[active]?.id,damage=WEAPONS[weapon]||10;
+ const weapon=inv[active]?.id,damage=WEAPONS[weapon]||(weapon&&toolType(weapon)!=='hand'?8:5);
  let hits=0;
  for(const target of [...enemies]){
   if(!enemies.includes(target))continue;
@@ -1248,7 +1308,8 @@ function attackEnemy(){
   hits++;
   if(target.hp<=0)killEnemy(target);
  }
- if(hits)wear(active,1);
+ if(hits){if(weapon&&durabilityMax(weapon))wear(active,1);}
+ return hits;
 }
 function drawAttack(cw,ch){/* Weapon and tool swings are drawn by character() only. */}
 function drawEnemies(cw,ch){for(let e of enemies){
@@ -1374,37 +1435,32 @@ function drawBackdrop(cw,ch){
  }
  const forestArt=assetReady('bg_forest');
  if(forestArt){
-  // Render a single uninterrupted forest layer. The old overlapping 92px clips
-  // caused visible dark vertical seams and multiplied semi-transparent pixels.
   const drawH=ch*.40,drawW=forestArt.naturalWidth*(drawH/forestArt.naturalHeight),baseY=horizon+ch*.01-drawH*.05;
   const startX=(((-cam.x*.16)%drawW)+drawW)%drawW-drawW;
-  if(forestLayer.width!==cw||forestLayer.height!==ch){forestLayer.width=cw;forestLayer.height=ch;}
-  if(forestMask.width!==cw||forestMask.height!==ch){forestMask.width=cw;forestMask.height=ch;}
-  forestMaskCtx.clearRect(0,0,cw,ch);
-  forestLayerCtx.clearRect(0,0,cw,ch);
-  forestLayerCtx.globalCompositeOperation='source-over';
-  forestLayerCtx.globalAlpha=1;
-  forestLayerCtx.imageSmoothingEnabled=false;
-  for(let dx=startX;dx<cw+drawW;dx+=drawW)forestLayerCtx.drawImage(forestArt,dx,baseY,drawW,drawH);
-  // At biome borders, smoothly mask the forest instead of overlaying strips.
-  // Within the forest, alpha is 100% (not affected by time of day).
-  const span=16;
-  const forestOpacity=sx=>{
-   const wx=player.x+(sx-cw/2)/tw*.82;
-   return Math.max(0,Math.min(1,biomeWeights(wx).forest));
-  };
-  for(let sx=0;sx<cw;sx+=span){
-   const end=Math.min(cw,sx+span),a=forestOpacity(sx),b=forestOpacity(end);
-   const gradient=forestMaskCtx.createLinearGradient(sx,0,end,0);
-   gradient.addColorStop(0,'rgba(255,255,255,'+a+')');
-   gradient.addColorStop(1,'rgba(255,255,255,'+b+')');
-   forestMaskCtx.fillStyle=gradient;
-   forestMaskCtx.fillRect(sx,0,end-sx,ch);
+  const forestOpacity=sx=>Math.max(0,Math.min(1,biomeWeights(player.x+(sx-cw/2)/tw*.82).forest));
+  const edgeA=forestOpacity(0),edgeB=forestOpacity(cw),middle=forestOpacity(cw/2);
+  // In an ordinary forest, draw the art straight onto the screen.
+  // Avoid two enormous offscreen canvases + alpha mask on every single frame.
+  if(edgeA>.998&&edgeB>.998&&middle>.998){
+   for(let dx=startX;dx<cw+drawW;dx+=drawW)ctx.drawImage(forestArt,dx,baseY,drawW,drawH);
+  }else if(edgeA>.002||edgeB>.002||middle>.002){
+   if(forestLayer.width!==cw||forestLayer.height!==ch){forestLayer.width=cw;forestLayer.height=ch;}
+   if(forestMask.width!==cw||forestMask.height!==ch){forestMask.width=cw;forestMask.height=ch;}
+   forestLayerCtx.clearRect(0,0,cw,ch);
+   forestLayerCtx.globalCompositeOperation='source-over';forestLayerCtx.imageSmoothingEnabled=false;
+   for(let dx=startX;dx<cw+drawW;dx+=drawW)forestLayerCtx.drawImage(forestArt,dx,baseY,drawW,drawH);
+   const span=48;
+   forestMaskCtx.clearRect(0,0,cw,ch);
+   for(let sx=0;sx<cw;sx+=span){
+    const end=Math.min(cw,sx+span),a=forestOpacity(sx),b=forestOpacity(end);
+    const gradient=forestMaskCtx.createLinearGradient(sx,0,end,0);
+    gradient.addColorStop(0,'rgba(255,255,255,'+a+')');
+    gradient.addColorStop(1,'rgba(255,255,255,'+b+')');
+    forestMaskCtx.fillStyle=gradient;forestMaskCtx.fillRect(sx,0,end-sx,ch);
+   }
+   forestLayerCtx.globalCompositeOperation='destination-in';forestLayerCtx.drawImage(forestMask,0,0);
+   forestLayerCtx.globalCompositeOperation='source-over';ctx.drawImage(forestLayer,0,0);
   }
-  forestLayerCtx.globalCompositeOperation='destination-in';
-  forestLayerCtx.drawImage(forestMask,0,0);
-  forestLayerCtx.globalCompositeOperation='source-over';
-  ctx.drawImage(forestLayer,0,0);
  }
 }
 // Mouse-held tools and weapons stay still: the pointer, not the player, displays the item.
@@ -1478,30 +1534,35 @@ function worldRender(sceneOnly=false){let cw=canvas.width,ch=canvas.height;let d
  if(weather!=='clear'){let count=weather==='storm'?95:65;for(let i=0;i<count;i++){let sx=(hash(i,1482)*cw+weatherPhase*(weather==='snow'?14:140)+i*73)%(cw+20),sy=(hash(i,1782)*ch+weatherPhase*(weather==='snow'?26:240)+i*41)%(ch+20);ctx.strokeStyle=weather==='snow'?'#eafaffcc':'#9ddcff9a';ctx.lineWidth=Math.max(1,zoom*.55);ctx.beginPath();ctx.moveTo(sx,sy);ctx.lineTo(sx+(weather==='snow'?2:5)*zoom,sy+(weather==='snow'?2:12)*zoom);ctx.stroke()}if(weather==='storm'&&Math.sin(weatherPhase*5)>.9995){ctx.fillStyle='#d9f1ff44';ctx.fillRect(0,0,cw,ch)}}
  if(sceneOnly)return;
  drawWorldDrops(cw,ch);drawGraves(cw,ch);let px=(player.x*T-cam.x)*zoom+cw/2,py=(player.y*T-cam.y)*zoom+ch/2;character(px,py,32*zoom);drawEnemies(cw,ch);drawProjectiles(cw,ch);drawAttack(cw,ch);drawFx(cw,ch);drawLighting(cw,ch,left,right,top,bottom,day);drawEnvironmentVignette(cw,ch);
- let {tx,ty,reachable,front,back}=tileTarget();if(reachable&&tx>=0&&tx<W&&ty>=0&&ty<H){let mx=(tx*T-cam.x)*zoom+cw/2,my=(ty*T-cam.y)*zoom+ch/2;ctx.strokeStyle='#f9e9ae';ctx.lineWidth=Math.max(1,zoom);ctx.strokeRect(Math.floor(mx)+1,Math.floor(my)+1,ts-2,ts-2);if(mineProgress>0&&mineX===tx&&mineY===ty){ctx.fillStyle='#0009';ctx.fillRect(mx,my+ts*.75,ts,ts*.16);ctx.fillStyle='#ffe18a';ctx.fillRect(mx,my+ts*.75,ts*Math.min(1,mineProgress/digTime(get(tx,ty),inv[active]?.id)),ts*.16)}}
+ let {tx,ty,reachable,front,back}=tileTarget();if(reachable&&tx>=0&&tx<W&&ty>=0&&ty<H&&!(inv[active]?.id in WEAPONS)&&inv[active]?.id!==59){let mx=(tx*T-cam.x)*zoom+cw/2,my=(ty*T-cam.y)*zoom+ch/2;ctx.strokeStyle='#f9e9ae';ctx.lineWidth=Math.max(1,zoom);ctx.strokeRect(Math.floor(mx)+1,Math.floor(my)+1,ts-2,ts-2);if(mineProgress>0&&mineX===tx&&mineY===ty){ctx.fillStyle='#0009';ctx.fillRect(mx,my+ts*.75,ts,ts*.16);ctx.fillStyle='#ffe18a';ctx.fillRect(mx,my+ts*.75,ts*Math.min(1,mineProgress/digTime(get(tx,ty),inv[active]?.id)),ts*.16)}}
  // カーソル表示と採掘・設置対象は同じ座標変換を使用する。
  drawItemCursor();
 }
-function hudUpdate(){document.getElementById('info').firstChild.textContent=layerAt(player.x,player.y)+' / '+(biomeAt(player.x)==='desert'?'砂漠':biomeAt(player.x)==='snow'?'雪原':biomeAt(player.x)==='coast'?'海岸':'森林')+'　|　深度: ';document.getElementById('coords').textContent=Math.floor(player.x)+', '+Math.floor(player.y);document.getElementById('depth').textContent=Math.max(0,Math.floor(player.y-heightAt(Math.floor(player.x))));document.getElementById('zoomtext').textContent=zoom.toFixed(1);document.getElementById('kills').textContent=killCount;let d=Math.max(0,player.y-heightAt(Math.floor(player.x))-5),dayVal=(Math.sin((time/1440)*Math.PI*2-Math.PI/2)+1)/2;document.getElementById('lighttext').textContent=Math.round(100*(1-Math.min(.97,1-(1-Math.max(0,Math.min(1,(.44-dayVal)*3))*.75)*(1-(d<=0?0:Math.min(.96,.27+d*.011))))))+'%';let hh=Math.floor(time/60)%24,mm=Math.floor(time%60);document.getElementById('clock').textContent=(gameMode==='sandbox'?'✨ ':'')+(timeFrozen?'⏸ ':'')+(weather==='clear'?'':weather==='rain'?'🌧 ':weather==='storm'?'⛈ ':'❄ ')+(hh>=6&&hh<18?'☀ ':'☾ ')+String(hh).padStart(2,'0')+':'+String(mm).padStart(2,'0');}
-let miniTimer=0;function renderMini(dt){miniTimer+=dt;if(miniTimer<.3)return;miniTimer=0;
+function hudUpdate(){document.getElementById('info').firstChild.textContent=layerAt(player.x,player.y)+' / '+(biomeAt(player.x)==='desert'?'砂漠':biomeAt(player.x)==='snow'?'雪原':biomeAt(player.x)==='coast'?'海岸':'森林')+'　|　深度: ';document.getElementById('coords').textContent=Math.floor(player.x)+', '+Math.floor(player.y);document.getElementById('depth').textContent=Math.max(0,Math.floor(player.y-heightAt(Math.floor(player.x))));document.getElementById('zoomtext').textContent=zoom.toFixed(1);document.getElementById('kills').textContent=killCount;let d=smoothedLightDepth??localLightDepth(),dayVal=(Math.sin((time/1440)*Math.PI*2-Math.PI/2)+1)/2;const nightLight=Math.max(0,Math.min(1,(.44-dayVal)*3))*.75;document.getElementById('lighttext').textContent=Math.round(100*(1-Math.min(.97,1-(1-nightLight)*(1-darkAtDepth(d)))))+'%';let hh=Math.floor(time/60)%24,mm=Math.floor(time%60);document.getElementById('clock').textContent=(gameMode==='sandbox'?'✨ ':'')+(timeFrozen?'⏸ ':'')+(weather==='clear'?'':weather==='rain'?'🌧 ':weather==='storm'?'⛈ ':'❄ ')+(hh>=6&&hh<18?'☀ ':'☾ ')+String(hh).padStart(2,'0')+':'+String(mm).padStart(2,'0');}
+let miniTimer=0;function renderMini(dt){miniTimer+=dt;if(miniTimer<.55)return;miniTimer=0;
  const mw=mini.width,mh=mini.height,scale=2,centerX=player.x,centerY=player.y;
  mctx.fillStyle='#182e40';mctx.fillRect(0,0,mw,mh);
- for(let mx=0;mx<mw;mx+=2)for(let my=0;my<mh;my+=2){
+ for(let mx=0;mx<mw;mx+=4)for(let my=0;my<mh;my+=4){
   const x=Math.floor(centerX+(mx-mw/2)*scale),y=Math.floor(centerY+(my-mh/2)*scale),t=get(x,y);
-  if(!t)continue;mctx.fillStyle=colors[t]||'#777';mctx.fillRect(mx,my,2,2);
+  if(!t)continue;mctx.fillStyle=colors[t]||'#777';mctx.fillRect(mx,my,4,4);
  }
  drawMapSymbols(mctx,centerX-mw*scale/2,centerY-mh*scale/2,scale,mw,mh,true);
  mctx.fillStyle='#fff0a2';mctx.strokeStyle='#452918';mctx.lineWidth=2;
  mctx.beginPath();mctx.arc(mw/2,mh/2,4,0,Math.PI*2);mctx.fill();mctx.stroke();
 }
-function resize(){let scale=window.devicePixelRatio||1;canvas.width=Math.floor(innerWidth*scale);canvas.height=Math.floor(innerHeight*scale);ctx.imageSmoothingEnabled=false;ctx.setTransform(1,0,0,1,0,0); // display pixel coordinates via device-size canvas
+function resize(){
+ // Pixel art gets no detail benefit from 3x / 4x internal canvases.
+ // Cap mobile at 1x, desktop at 1.5x to reduce fill-rate and offscreen memory.
+ const scale=Math.min(window.devicePixelRatio||1,touchDevice?1:1.5);
+ const w=Math.max(1,Math.floor(innerWidth*scale)),h=Math.max(1,Math.floor(innerHeight*scale));
+ if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;ctx.imageSmoothingEnabled=false;ctx.setTransform(1,0,0,1,0,0)}
 }
 // A day/night cycle is 3 times longer than before: 10 -> 10/3 game minutes per second.
 const WORLD_TIME_RATE=10/3;
 function loop(ts){
  requestAnimationFrame(loop);
  if(touchDevice)document.body.classList.toggle('touchPlaying',mode==='playing'||mode==='touchEdit');
- const dt=Math.min(.05,(ts-last)/1000||0);last=ts;
+ const dt=Math.min(.05,(ts-last)/1000||0);last=ts;lightingFrameDt=Math.max(.001,dt);
  if(['menu','worldSlots','worldCreate','worldRename','worldDelete','titleSettings','titleControls'].includes(mode)){if(player){titlePreviewFrame+=dt;cam.x=titleViewX*T+Math.sin(titlePreviewFrame*.14)*T*1.5;cam.y=(heightAt(titleViewX)-3)*T;worldRender(true);}return;}if(!player)return;
  // Only Esc pause (and its settings screen) or the death screen stops the world.
  const pauseWorld=mode==='pause'||mode==='dead'||(mode==='settings'&&(settingsPauseWorld||settingsReturn==='menu'));
@@ -1536,23 +1597,55 @@ function loop(ts){
 }
 
 // Persist touch control coordinates as percentages so they survive device rotation/resize.
-const TOUCH_IDS=['touchLeft','touchRight','touchStick','touchDrop','touchDown','touchJump','touchZoomIn','touchZoomOut','quickInventory','quickCraft','quickMap','quickSettings'];
-const TOUCH_DEFAULTS={touchLeft:[8,79,68],touchRight:[20,79,68],touchStick:[14,78,98],touchDrop:[76,63,50],touchDown:[83,80,54],touchJump:[93,79,68],touchZoomIn:[94,43,44],touchZoomOut:[94,58,44],quickInventory:[40,8,46],quickCraft:[46,8,46],quickMap:[54,8,46],quickSettings:[60,8,46]};
+const TOUCH_IDS=['touchLeft','touchRight','touchStick','touchDrop','touchDash','touchDown','touchJump','touchZoomIn','touchZoomOut','quickInventory','quickCraft','quickMap','quickSettings'];
+const TOUCH_DEFAULTS={touchLeft:[9,82,72],touchRight:[22,82,72],touchStick:[13,80,102],touchDrop:[82,48,48],touchDash:[76,69,56],touchDown:[84,79,54],touchJump:[93,80,68],touchZoomIn:[93,43,44],touchZoomOut:[93,59,44],quickInventory:[40,8,46],quickCraft:[46,8,46],quickMap:[54,8,46],quickSettings:[60,8,46]};
 let mobileLayout={type:'buttons',positions:{}};
-try{let v=JSON.parse(localStorage.getItem('wildroot_mobile_layout_v2')||'{}');if(v&&typeof v==='object')mobileLayout={type:v.type==='stick'?'stick':'buttons',positions:v.positions||{}}}catch(e){}
+try{let v=JSON.parse(localStorage.getItem('wildroot_mobile_layout_v3')||'{}');if(v&&typeof v==='object')mobileLayout={type:v.type==='stick'?'stick':'buttons',positions:v.positions||{}}}catch(e){}
 function getTouchPlacement(id){let v=mobileLayout.positions[id];return Array.isArray(v)&&v.length===3&&v.every(Number.isFinite)?v:TOUCH_DEFAULTS[id];}
 function applyTouchLayout(){
- const w=innerWidth,h=innerHeight;
- for(const id of TOUCH_IDS){const b=document.getElementById(id);if(!b)continue;
-  const [px,py,size]=getTouchPlacement(id);const maxDim=Math.max(42,Math.min(140,h*.19));const dim=Math.max(34,Math.min(maxDim,size));
-  b.style.left=`${Math.max(0,Math.min(w-dim,w*px/100-dim/2))}px`;
-  b.style.top=`${Math.max(0,Math.min(h-dim,h*py/100-dim/2))}px`;
-  b.style.width=dim+'px';b.style.height=dim+'px';
+ const gameRect=canvas.getBoundingClientRect(), w=gameRect.width||innerWidth,h=gameRect.height||innerHeight;
+ const ox=gameRect.left||0,oy=gameRect.top||0;
+ const small=h<460;
+ for(const id of TOUCH_IDS){
+  const b=document.getElementById(id);if(!b)continue;
+  let [px,py,size]=getTouchPlacement(id);
+  // Shorter displays must not squash the action controls over the hotbar.
+  let dim=Math.max(32,Math.min(small?Math.max(42,h*.20):Math.max(48,h*.23),size));
+  if(id==='touchStick')dim=Math.max(66,Math.min(110,h*.29));
+  if(id.startsWith('quick'))dim=Math.max(38,Math.min(51,h*.13));
+  let x=ox+w*px/100-dim/2,y=oy+h*py/100-dim/2;
+  if(id.startsWith('quick')){
+   // Four buttons centered in the gap between the status panel and mini-map.
+   const stats=document.getElementById('stats').getBoundingClientRect();
+   const map=document.getElementById('map').getBoundingClientRect();
+   const areaLeft=Math.max(ox+12,stats.right+10),areaRight=Math.min(ox+w-12,map.left-12);
+   const stride=dim+5,groupWidth=stride*4-5;
+   const center=areaRight-areaLeft>groupWidth? (areaLeft+areaRight)/2:ox+w/2;
+   const index=['quickInventory','quickCraft','quickMap','quickSettings'].indexOf(id);
+   x=center-groupWidth/2+index*stride;
+   y=oy+8;
+  }
+  if(id==='touchStick'||id==='touchLeft'||id==='touchRight'){
+   // Keep movement on the left side, out of the inventory slots.
+   x=Math.min(x,ox+w*.28-dim);
+   y=Math.max(y,oy+h*.57);
+  }
+  if(['touchDrop','touchDash','touchDown','touchJump','touchZoomIn','touchZoomOut'].includes(id)){
+   // Keep actions on the right side, away from the center hotbar.
+   x=Math.max(x,ox+w*.70);
+   x=Math.min(x,ox+w-dim-7);
+  }
+  x=Math.max(ox+3,Math.min(ox+w-dim-3,x));
+  y=Math.max(oy+3,Math.min(oy+h-dim-3,y));
+  b.style.setProperty('left',x+'px','important');
+  b.style.setProperty('top',y+'px','important');
+  b.style.setProperty('width',dim+'px','important');
+  b.style.setProperty('height',dim+'px','important');
  }
  for(const id of ['touchLeft','touchRight'])document.getElementById(id).style.display=mobileLayout.type==='stick'?'none':'flex';
  document.getElementById('touchStick').style.display=mobileLayout.type==='stick'?'flex':'none';
 }
-function saveTouchLayout(){try{localStorage.setItem('wildroot_mobile_layout_v2',JSON.stringify(mobileLayout))}catch(e){}}
+function saveTouchLayout(){try{localStorage.setItem('wildroot_mobile_layout_v3',JSON.stringify(mobileLayout))}catch(e){}}
 let touchEditorReturn='game',editingTouchId='touchLeft';
 function startTouchEditor(origin=null){
  touchEditorReturn=origin==='title'||origin==='game'?origin:(mode==='titleControls'||mode==='titleSettings'||mode==='menu'?'title':'game');
@@ -1609,6 +1702,8 @@ function zoomMobile(delta){if(mode!=='playing')return;zoom=Math.max(1,Math.min(3
 document.getElementById('touchZoomIn').addEventListener('pointerdown',e=>{e.preventDefault();zoomMobile(.25)});
 document.getElementById('touchZoomOut').addEventListener('pointerdown',e=>{e.preventDefault();zoomMobile(-.25)});
 applyTouchLayout();
+window.addEventListener('resize',applyTouchLayout);
+window.addEventListener('orientationchange',()=>requestAnimationFrame(applyTouchLayout));
 // Disable native mobile selection / copy / long-press menus while mining.
 for(const target of [canvas,document.getElementById('touchControls')]){
  target.addEventListener('contextmenu',e=>e.preventDefault());
@@ -1632,6 +1727,7 @@ function touchMovement(buttonId,code,onStart){
 }
 touchMovement('touchLeft','ArrowLeft');touchMovement('touchRight','ArrowRight');touchMovement('touchDown','ArrowDown');
 touchMovement('touchJump','Space',touchJump);
+touchMovement('touchDash','ShiftLeft');
 document.getElementById('touchDrop').addEventListener('pointerdown',e=>{e.preventDefault();if(mode==='playing')dropSelected(false)});
 const touchGesture={pointer:null,start:0,held:false,timer:0};
 function aimTouch(e){
