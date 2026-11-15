@@ -920,7 +920,7 @@ function updateWorldDrops(dt){
          if(durabilityMax(d.id)){const slot=inv.findIndex(v=>!v);if(slot>=0)inv[slot]={id:d.id,n:1,dur:d.dur??durabilityMax(d.id)}}
          else addItem(d.id,d.n);
          const ix=worldDrops.findIndex(v=>v.wrId===id);if(ix>=0)worldDrops.splice(ix,1);updateBar();
-       }).catch(e=>console.warn('Pick-up:',e)).finally(()=>wrClaimingDrops.delete(id));
+       }).catch(e=>{console.warn('Pick-up:',e);if(e?.code==='resource-exhausted')toast('オンラインの利用上限です。アイテム回収を一時停止しています');}).finally(()=>wrClaimingDrops.delete(id));
        continue;
      }
      if(durabilityMax(d.id)){
@@ -1151,7 +1151,7 @@ function showPlayerProfile(){
 let onlineRoomCode='',onlineRoomData=null,onlineRoomUnsubs=[],onlineRemotePlayers=new Map(),onlineCaptureEdits=false,onlineSuppressEdit=false,onlineMoveAt=0,onlineLastMoveX=NaN,onlineLastMoveY=NaN,onlineLastMoveStamp=-1000000,onlineChatUnsub=null;
 // Keep remote rendering independent of Firestore snapshot cadence.
 let onlineRemoteMotion=new Map(),onlinePublishPending=false,onlinePublishQueued=null,onlineLastFace=1,onlineLastAnim='';
-const ONLINE_SEND_MOVING_MS=190,ONLINE_SEND_IDLE_MS=1350;
+const ONLINE_SEND_MOVING_MS=850,ONLINE_SEND_IDLE_MS=7000;
 let worldInvitesUnsub=null;
 function stopWorldInviteWatch(){if(worldInvitesUnsub){worldInvitesUnsub();worldInvitesUnsub=null}}
 const onlineSafe=v=>escapeHTML(String(v||''));
@@ -1175,7 +1175,7 @@ function wrReceiveSharedDrops(list){
  for(let i=worldDrops.length-1;i>=0;i--){const d=worldDrops[i];if(d.wrId&&d.wrPublished&&!seen.has(d.wrId))worldDrops.splice(i,1)}
 }
 function wrPublishWorldState(ts){
- if(!wrIsOnlineHost()||wrWorldStatePending||ts-wrWorldStateAt<5000)return;
+ if(!wrIsOnlineHost()||wrWorldStatePending||ts-wrWorldStateAt<30000)return;
  wrWorldStateAt=ts;wrWorldStatePending=true;
  window.WRCloud?.publishWorldState?.(onlineRoomCode,{time:+time.toFixed(3),weather,weatherPhase:+weatherPhase.toFixed(2),weatherTimer:+weatherTimer.toFixed(2)}).catch(e=>console.warn('World state:',e)).finally(()=>wrWorldStatePending=false);
 }
@@ -1208,7 +1208,7 @@ function wrEnemyVisualUpdate(dt){
  for(const e of enemies){if(Number.isFinite(e.wrTargetX)){e.x+=(e.wrTargetX-e.x)*blend;e.y+=(e.wrTargetY-e.y)*blend;}}
 }
 function wrSendEnemyState(ts){
- if(!wrIsOnlineHost()||wrEnemySyncPending||ts-wrEnemySyncAt<950)return;
+ if(!wrIsOnlineHost()||wrEnemySyncPending||ts-wrEnemySyncAt<4500)return;
  wrEnemySyncAt=ts;wrEnemySyncPending=true;
  const state=enemies.slice(0,32).map(e=>({id:e.wrId||(e.wrId='e'+Math.random().toString(36).slice(2,11)),
   type:e.type,x:+e.x.toFixed(2),y:+e.y.toFixed(2),vx:+(e.vx||0).toFixed(1),vy:+(e.vy||0).toFixed(1),
@@ -1289,7 +1289,7 @@ function showMultiWorldCreate(){
 async function enterMultiplayerRoom(code){
  if(!/^[A-Z2-9]{8}$/.test(code)){onlineStatus('8文字の合言葉を入力してください。');return}
  stopWorldInviteWatch();
- try{onlineStatus('ワールドに接続中…');const room=await getMulti().joinRoom(code);if(!room.started||!room.settings)throw Error('まだワールドが作成されていません');onlineRoomCode=code;onlineRoomData=room;rememberWorld(code,room.settings.name);await launchMultiplayerWorld();}catch(e){if(e.message?.includes('見つかりません'))forgetWorld(code);onlineStatus('参加できません：'+(e.code||e.message))}
+ try{onlineStatus('ワールドに接続中…');const room=await getMulti().joinRoom(code);if(!room.started||!room.settings)throw Error('まだワールドが作成されていません');onlineRoomCode=code;onlineRoomData=room;rememberWorld(code,room.settings.name);await launchMultiplayerWorld();}catch(e){if(e.message?.includes('見つかりません'))forgetWorld(code);onlineStatus(e.code==='resource-exhausted'?'参加できません：Firebaseの通信・利用上限に達しています。少し時間をおくか、管理者がFirebaseの利用状況を確認してください。':'参加できません：'+(e.code||e.message))}
 }
 async function launchMultiplayerWorld(){
  const r=onlineRoomData;if(!r?.started||!r.settings)return onlineStatus('まだワールドを開始できません。');
