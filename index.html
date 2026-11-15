@@ -454,7 +454,10 @@ button,.quickButton,.invSlot,.recipe,select,input{touch-action:manipulation;-web
 #modal .wrStorageCells .invSlot canvas{max-width:80%;max-height:80%}
 #modal .wrStorageBottom{margin-top:8px}
 @media(max-width:640px){#modal .wrStorageColumns{gap:5px}#modal .wrStorageColumn{padding:4px}#modal .wrStorageCells .invSlot{height:clamp(24px,6vh,38px)}#modal .wrStorageColumn h3{font-size:11px}}
-</style></head><body><canvas id="game"></canvas><div id="hud"><div id="top"><div id="stats"><div class="stat">❤ HP <span id="hp">100 / 100</span></div><div class="bar"><div id="hpfill" class="fill" style="width:100%"></div></div><div class="stat">✦ MP <span id="mpnum">20 / 20</span></div><div class="bar"><div class="fill" id="mpfill" style="width:100%;background:#67a5f2"></div></div><div class="stat">🫧 酸素 <span id="oxynum">100 / 100</span></div><div class="bar"><div class="fill" id="oxyfill" style="width:100%;background:#a0e2f5"></div></div><div class="stat">🍖 食料 <span id="foodnum">100 / 100</span></div><div class="bar"><div class="fill" id="foodfill" style="width:100%;background:#d59752"></div></div><div class="stat">💧 水分 <span id="waternum">100 / 100</span></div><div class="bar" style="margin-bottom:0"><div class="fill" id="waterfill" style="width:100%;background:#55b3dc"></div></div></div><div id="info">地表 / 森林　|　深度: <span id="depth">0</span><br>座標: <span id="coords">0, 0</span><br>ズーム: <span id="zoomtext">2.0</span>x<br>光量: <span id="lighttext">100%</span> · 撃破: <span id="kills">0</span></div></div><canvas id="map" width="224" height="224" title="全体マップを表示 (M)"></canvas><div id="clock">☀ 08:00</div><div id="toast"></div><div id="quickActions"><button type="button" class="quickButton" id="quickInventory" title="持ち物を開く (E)"><span class="keyhint">E</span><span class="symbol">🎒</span><span>持ち物</span></button><button type="button" class="quickButton" id="quickCraft" title="クラフト (C)"><span class="keyhint">C</span><span class="symbol">📖</span><span>クラフト</span></button></div><div id="quickActionsRight" class="right"><button type="button" class="quickButton" id="quickMap" title="全体マップ (M)"><span class="keyhint">M</span><span class="symbol">🗺️</span><span>マップ</span></button><button type="button" class="quickButton" id="quickSettings" title="一時停止 (Esc)"><span class="keyhint">Esc</span><span class="symbol">⏸</span><span>一時停止</span></button></div><div id="hotbar"></div></div><div id="rotateNotice">📱 横画面にしてください<small>WILDROOTのスマホ版は横向き専用です。<br>端末を横に回転してプレイしてください。</small></div><div id="touchControls" aria-label="スマホ操作"><div id="touchMove"><button id="touchLeft" aria-label="左へ移動">◀</button><button id="touchRight" aria-label="右へ移動">▶</button><button id="touchStick" aria-label="移動スティック"><span id="stickKnob"></span></button></div><div id="touchSpecial"><button id="touchDrop" aria-label="アイテムを捨てる">🗑</button><button id="touchDash" aria-label="ダッシュ">⇧</button><button id="touchDown" aria-label="下へ">▼</button><button id="touchJump" aria-label="ジャンプ">⤒</button><button id="touchZoomIn" aria-label="拡大">＋</button><button id="touchZoomOut" aria-label="縮小">－</button></div><div id="touchGuide">短押し：設置・攻撃　長押し：採掘</div></div><div id="touchEditBar"><strong>📱 スマホ操作配置</strong><label>移動 <select id="touchStyle"><option value="buttons">左右ボタン</option><option value="stick">スティック</option></select></label><label>サイズ <input id="touchSize" type="range" min="38" max="140" step="2" value="72"></label><span id="touchEditSelection">ボタンを選択・ドラッグ</span><button id="touchLayoutReset">初期化</button><button id="touchEditDone">保存して戻る</button></div><div id="itemTooltip" role="tooltip"></div><div id="overlay"><div id="modal"></div></div><script>
+#miniZoomControl{position:fixed;z-index:3;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;width:27px;background:#172638df;border:2px solid #718896;border-radius:6px;padding:5px 2px;pointer-events:auto;touch-action:none}
+#miniZoomSlider{writing-mode:vertical-lr;direction:rtl;appearance:slider-vertical;-webkit-appearance:slider-vertical;width:18px;height:85px;padding:0;margin:0;touch-action:none;cursor:pointer;accent-color:#90d6b2}
+#miniZoomControl span{font-size:10px;line-height:1}body.titleScene #miniZoomControl{display:none}
+</style></head><body><canvas id="game"></canvas><div id="hud"><div id="top"><div id="stats"><div class="stat">❤ HP <span id="hp">100 / 100</span></div><div class="bar"><div id="hpfill" class="fill" style="width:100%"></div></div><div class="stat">✦ MP <span id="mpnum">20 / 20</span></div><div class="bar"><div class="fill" id="mpfill" style="width:100%;background:#67a5f2"></div></div><div class="stat">🫧 酸素 <span id="oxynum">100 / 100</span></div><div class="bar"><div class="fill" id="oxyfill" style="width:100%;background:#a0e2f5"></div></div><div class="stat">🍖 食料 <span id="foodnum">100 / 100</span></div><div class="bar"><div class="fill" id="foodfill" style="width:100%;background:#d59752"></div></div><div class="stat">💧 水分 <span id="waternum">100 / 100</span></div><div class="bar" style="margin-bottom:0"><div class="fill" id="waterfill" style="width:100%;background:#55b3dc"></div></div></div><div id="info">地表 / 森林　|　深度: <span id="depth">0</span><br>座標: <span id="coords">0, 0</span><br>ズーム: <span id="zoomtext">2.0</span>x<br>光量: <span id="lighttext">100%</span> · 撃破: <span id="kills">0</span></div></div><canvas id="map" width="224" height="224" title="全体マップを表示 (M)"></canvas><div id="miniZoomControl" aria-label="ミニマップの拡大縮小"><input id="miniZoomSlider" type="range" min="0.7" max="6" step="0.1" value="2" aria-label="ミニマップ拡大率"><span>🔎</span></div><div id="clock">☀ 08:00</div><div id="toast"></div><div id="quickActions"><button type="button" class="quickButton" id="quickInventory" title="持ち物を開く (E)"><span class="keyhint">E</span><span class="symbol">🎒</span><span>持ち物</span></button><button type="button" class="quickButton" id="quickCraft" title="クラフト (C)"><span class="keyhint">C</span><span class="symbol">📖</span><span>クラフト</span></button></div><div id="quickActionsRight" class="right"><button type="button" class="quickButton" id="quickMap" title="全体マップ (M)"><span class="keyhint">M</span><span class="symbol">🗺️</span><span>マップ</span></button><button type="button" class="quickButton" id="quickSettings" title="一時停止 (Esc)"><span class="keyhint">Esc</span><span class="symbol">⏸</span><span>一時停止</span></button></div><div id="hotbar"></div></div><div id="rotateNotice">📱 横画面にしてください<small>WILDROOTのスマホ版は横向き専用です。<br>端末を横に回転してプレイしてください。</small></div><div id="touchControls" aria-label="スマホ操作"><div id="touchMove"><button id="touchLeft" aria-label="左へ移動">◀</button><button id="touchRight" aria-label="右へ移動">▶</button><button id="touchStick" aria-label="移動スティック"><span id="stickKnob"></span></button></div><div id="touchSpecial"><button id="touchDrop" aria-label="アイテムを捨てる">🗑</button><button id="touchDash" aria-label="ダッシュ">⇧</button><button id="touchDown" aria-label="下へ">▼</button><button id="touchJump" aria-label="ジャンプ">⤒</button><button id="touchZoomIn" aria-label="拡大">＋</button><button id="touchZoomOut" aria-label="縮小">－</button></div><div id="touchGuide">短押し：設置・攻撃　長押し：採掘</div></div><div id="touchEditBar"><strong>📱 スマホ操作配置</strong><label>移動 <select id="touchStyle"><option value="buttons">左右ボタン</option><option value="stick">スティック</option></select></label><label>サイズ <input id="touchSize" type="range" min="38" max="140" step="2" value="72"></label><span id="touchEditSelection">ボタンを選択・ドラッグ</span><button id="touchLayoutReset">初期化</button><button id="touchEditDone">保存して戻る</button></div><div id="itemTooltip" role="tooltip"></div><div id="overlay"><div id="modal"></div></div><script>
 
 'use strict';
 (()=>{
@@ -668,7 +671,16 @@ function isCave(x,y,h){if(y<h+12||y>=H-5)return false;if(genVersion===1){let cav
  let entrance=(noise1(x,39,618)>.76&&y<h+25&&y>h+8);
  return cave||entrance||(genVersion>=4&&y>h+45&&noise2(x,y,65,912)>.68&&noise2(x,y,18,913)>.36);
 }
-function biomeAt(x){if(beachAt(x))return 'coast';if(genVersion<3||Math.abs(x-W/2)<(genVersion>=10?115:145))return 'forest';if(genVersion>=10){let region=Math.floor((x+75)/295),r=hash(region,217);return r<.34?'desert':r<.67?'snow':'forest'}let sector=Math.floor((x+85)/265);let r=hash(sector,217);return r<.33?'desert':r<.67?'snow':'forest'}
+function biomeAt(x){
+ if(beachAt(x))return 'coast';
+ // Generation v11 adds open green meadows and separate dense woodland.
+ // Existing v10 worlds retain their old terrain and tree placement.
+ if(genVersion>=11){
+  if(Math.abs(x-W/2)<145)return 'meadow';
+  const region=Math.floor((x+75)/275),r=hash(region,217);
+  return r<.34?'forest':r<.57?'meadow':r<.79?'desert':'snow';
+ }
+if(genVersion<3||Math.abs(x-W/2)<(genVersion>=10?115:145))return 'forest';if(genVersion>=10){let region=Math.floor((x+75)/295),r=hash(region,217);return r<.34?'desert':r<.67?'snow':'forest'}let sector=Math.floor((x+85)/265);let r=hash(sector,217);return r<.33?'desert':r<.67?'snow':'forest'}
 function layerAt(x,y){let h=heightAt(x);if(y<h-20)return '天空';if(y<h+22)return '地表';if(y<510)return '地下';if(y<1000)return '深層';return '地底'}
 function islandTile(x,y){let i=Math.floor((x+50)/145);for(let k=i-1;k<=i+1;k++){let cx=k*145+37+Math.floor(hash(k,670)*50),cy=88+Math.floor(hash(k,671)*38),rx=13+Math.floor(hash(k,672)*8),dx=x-cx;
  if(Math.abs(dx)>rx+1)continue;let edge=1-(dx*dx)/(rx*rx),th=Math.max(0,Math.floor(edge*7)),top=cy+Math.round(Math.abs(dx)*.08);
@@ -742,7 +754,7 @@ function extraStructure(x,y){
  return -1;
 }
 function baseTile(x,y){if(x<0||x>=W||y<0)return 0;if(y>=H)return 3;let h=heightAt(x);if(genVersion>=9&&oceanEdge(x)&&Math.abs(x-(genVersion>=10?closestOceanCenter(x):(x<W/2?95:W-95)))<11&&y>=h+1&&y<h+8){let dx=Math.abs(x-(genVersion>=10?closestOceanCenter(x):(x<W/2?95:W-95)));if(y===h+7||dx===10||y===h+1&&dx>4)return 73;if(y===h+5&&dx===0)return 34;if(y===h+6&&dx<4)return 0;}if(genVersion>=8&&oceanEdge(x)&&y===h-1&&(genVersion>=10?Math.abs(x-closestOceanCenter(x))===10:(x===105||x===W-106)))return 34;if(genVersion>=8&&oceanEdge(x)&&y===h-1&&hash(x,3200)>.83)return hash(x,3201)>.77?112:111;if(genVersion>=7&&y<h){if(oceanEdge(x)&&y>=263)return 88;let pondLevel=pondWaterline(x);if(pondLevel!==null&&y>=pondLevel&&y<h)return 95;}if(genVersion>=3){if(y<h){let island=islandTile(x,y);if(island)return island}else if(y>h+30){let dungeon=dungeonTile(x,y);if(dungeon>=0)return dungeon;let ruin=ruinTile(x,y);if(ruin>=0)return ruin;}}if(genVersion>=6){let extra=extraStructure(x,y);if(extra>=0)return extra;}if(y<h){ // trees from deterministic positions
- if(y>=h-9){for(let tx=x-4;tx<=x+4;tx++){if(tx<0||tx>=W||biomeAt(tx)!=='forest'||Math.abs(tx-W/2)<12||hash(tx,70)>.035||hash(tx-1,70)<.035)continue;let th=heightAt(tx),ht=4+Math.floor(hash(tx,80)*5),top=th-ht;
+ if(y>=h-9){for(let tx=x-4;tx<=x+4;tx++){if(tx<0||tx>=W||!['forest','meadow'].includes(biomeAt(tx))||Math.abs(tx-W/2)<12)continue;const treeChance=genVersion>=11?(biomeAt(tx)==='forest'?.38:.008):.035;if(hash(tx,70)>treeChance||hash(tx-1,70)<treeChance)continue;let th=heightAt(tx),ht=4+Math.floor(hash(tx,80)*5),top=th-ht;
  if(x===tx&&y>=top&&y<th)return 4;
  if(Math.abs(x-tx)<=3&&y>=top-3&&y<=top+2&&((x-tx)*(x-tx)*.4+(y-top)*(y-top)*.38)<5.2)return 5;
  }}return 0}
@@ -792,12 +804,12 @@ function canStoreDrop(d){
 function updateWorldDrops(dt){
  for(let i=worldDrops.length-1;i>=0;i--){const d=worldDrops[i];
   d.age+=dt;d.life-=dt;if(d.life<=0){worldDrops.splice(i,1);continue}
-  d.vy=Math.min(17,d.vy+21*dt);
+  d.vy=Math.min(17,d.vy+21*dt);d.vx*=Math.exp(-dt*2.2);
   let nx=d.x+d.vx*dt,ny=d.y+d.vy*dt;
   const wallX=d.vx>0?nx+.17:nx-.17;
   if(solid(get(Math.floor(wallX),Math.floor(d.y-.15)))){nx=d.x;d.vx*=-.16}
   if(d.vy>=0&&solid(get(Math.floor(nx),Math.floor(ny+.05)))){
-   ny=Math.floor(ny+.05)-.06;d.vy=Math.abs(d.vy)>2?-.9:0;d.vx*=Math.max(0,1-7*dt);
+   ny=Math.floor(ny+.05)-.06;d.vy=Math.abs(d.vy)>2?-.9:0;d.vx*=Math.max(0,1-17*dt);
   }else if(d.vy<0&&solid(get(Math.floor(nx),Math.floor(ny-.31)))){ny=Math.floor(ny-.31)+1.33;d.vy=0}
   d.x=Math.max(.15,Math.min(W-.15,nx));d.y=Math.max(.25,Math.min(H-1,ny));
   if(d.delay>0){d.delay-=dt;continue}
@@ -841,7 +853,7 @@ function drawWorldDrops(cw,ch){
 function dropSelected(stack=false){
  const it=inv[active];if(!it||it.n<=0)return;
  const count=stack?it.n:1;
- spawnDrop(it.id,count,player.x+player.face*.6,player.y-.72,{vx:player.face*5.5,vy:-3.1,delay:1.0,dur:it.dur});
+ spawnDrop(it.id,count,player.x+player.face*.6,player.y-.72,{vx:player.face*1.9,vy:-1.65,delay:.65,dur:it.dur});
  it.n-=count;if(it.n<=0)inv[active]=null;
  updateBar();
 }
@@ -967,7 +979,7 @@ function renderDedicatedPreview(showCharacter=false){
  const old={seed,genVersion,edits,wallEdits,chunks,crops,player,time,zoom,
    camX:cam.x,camY:cam.y,weather,weatherPhase};
  try{
-  seed=PREVIEW_WORLD_SEED;genVersion=10;
+  seed=PREVIEW_WORLD_SEED;genVersion=11;
   edits=previewWorldEdits;wallEdits=previewWorldWalls;
   chunks=previewWorldChunks;crops=previewWorldCrops;
   weather='clear';weatherPhase=0;time=8*60+titlePreviewFrame*.5;
@@ -1026,7 +1038,7 @@ function showPlayerProfile(){
 // Online room state. Single-player is not affected.
 let onlineRoomCode='',onlineRoomData=null,onlineRoomUnsubs=[],onlineRemotePlayers=new Map(),onlineCaptureEdits=false,onlineSuppressEdit=false,onlineMoveAt=0,onlineLastMoveX=NaN,onlineLastMoveY=NaN,onlineLastMoveStamp=-1000000,onlineChatUnsub=null;
 // Keep remote rendering independent of Firestore snapshot cadence.
-let onlineRemoteMotion=new Map(),onlinePublishPending=false,onlinePublishQueued=null,onlineLastFace=1;
+let onlineRemoteMotion=new Map(),onlinePublishPending=false,onlinePublishQueued=null,onlineLastFace=1,onlineLastAnim='';
 const ONLINE_SEND_MOVING_MS=300,ONLINE_SEND_IDLE_MS=2000;
 let worldInvitesUnsub=null;
 function stopWorldInviteWatch(){if(worldInvitesUnsub){worldInvitesUnsub();worldInvitesUnsub=null}}
@@ -1170,7 +1182,7 @@ function receiveOnlinePlayers(players,selfUid){
   if(wall-serverTime>45000)continue;
   seen.add(p.uid);
   let m=onlineRemoteMotion.get(p.uid);
-  if(!m){m={x:p.x,y:p.y,tx:p.x,ty:p.y,vx:0,vy:0,face:p.face||1,name:p.name||'プレイヤー',stamp:serverTime,receiveAt:now};onlineRemoteMotion.set(p.uid,m);continue;}
+  if(!m){m={x:p.x,y:p.y,tx:p.x,ty:p.y,vx:0,vy:0,face:p.face||1,name:p.name||'プレイヤー',anim:p.anim||'idle',attack:!!p.attack,stamp:serverTime,receiveAt:now};onlineRemoteMotion.set(p.uid,m);continue;}
   if(serverTime<m.stamp)continue;
   const sampleSec=Math.max(.08,Math.min(2,(serverTime-m.stamp)/1000||.2));
   const dx=p.x-m.tx,dy=p.y-m.ty;
@@ -1181,7 +1193,7 @@ function receiveOnlinePlayers(players,selfUid){
    const vy=Math.max(-18,Math.min(18,dy/sampleSec));
    m.vx=m.vx*.25+vx*.75;m.vy=m.vy*.25+vy*.75;
   }
-  m.tx=p.x;m.ty=p.y;m.face=p.face||m.face;m.name=p.name||m.name;m.stamp=serverTime;m.receiveAt=now;
+  m.tx=p.x;m.ty=p.y;m.face=p.face||m.face;m.name=p.name||m.name;m.anim=p.anim||'idle';m.attack=!!p.attack;m.stamp=serverTime;m.receiveAt=now;
  }
  for(const uid of onlineRemoteMotion.keys())if(!seen.has(uid))onlineRemoteMotion.delete(uid);
 }
@@ -1199,7 +1211,7 @@ function drawOnlinePlayers(cw,ch){
   }
   const x=(p.x*T-cam.x)*zoom+cw/2,y=(p.y*T-cam.y)*zoom+ch/2;
   if(x< -80||x>cw+80||y< -80||y>ch+80)continue;
-  const img=spriteReady('player_idle');ctx.save();
+  const animSprite=p.attack?'player_walk1':p.anim==='run'?(['player_walk1','player_idle','player_walk2','player_idle'][Math.floor(now/110)%4]):p.anim==='jump'?'player_walk2':Math.abs(p.vx)>.3?(['player_walk1','player_idle','player_walk2','player_idle'][Math.floor(now/135)%4]):'player_idle';const img=spriteReady(animSprite)||spriteReady('player_idle');ctx.save();
   if(img){ctx.translate(x,y);ctx.scale(-(p.face||1),1);ctx.drawImage(img,-16*zoom,-48*zoom,32*zoom,48*zoom)}
   else{ctx.fillStyle='#82c8ff';ctx.fillRect(x-12*zoom,y-40*zoom,24*zoom,38*zoom)}
   ctx.restore();ctx.fillStyle='#fff5c3';ctx.font=Math.max(11,12*zoom)+'px monospace';ctx.textAlign='center';ctx.fillText(String(p.name||'プレイヤー').slice(0,16),x,y-54*zoom);
@@ -1329,7 +1341,7 @@ function worldMenu(slot=0){
   newGame(n,value);save(true);
  };
 }
-function newGame(s,label){genVersion=10;bedSpawn=null;treasuresOpened.clear();lavaCooldown=0;seed=s;session=label;edits.clear();wallEdits.clear();chunks.clear();ground0=heightAt(W/2);spawn={x:W/2+.5,y:ground0-2.1};player={x:spawn.x,y:spawn.y,vx:0,vy:0,w:.68,h:1.45,hp:100,mp:20,food:100,water:100,oxygen:100,ground:false,face:1,anim:0,coyote:0,jumpBuffer:0,invuln:0};furnaces.clear();storageChests.clear();projectiles=[];enemies=[];fx=[];worldDrops=[];killCount=0;armor=[null,null,null];makeInv();graves=[];crops.clear();weather='clear';weatherTimer=65;weatherPhase=0;active=0;
+function newGame(s,label){genVersion=11;bedSpawn=null;treasuresOpened.clear();lavaCooldown=0;seed=s;session=label;edits.clear();wallEdits.clear();chunks.clear();ground0=heightAt(W/2);spawn={x:W/2+.5,y:ground0-2.1};player={x:spawn.x,y:spawn.y,vx:0,vy:0,w:.68,h:1.45,hp:100,mp:20,food:100,water:100,oxygen:100,ground:false,face:1,anim:0,coyote:0,jumpBuffer:0,invuln:0};furnaces.clear();storageChests.clear();projectiles=[];enemies=[];fx=[];worldDrops=[];killCount=0;armor=[null,null,null];makeInv();graves=[];crops.clear();weather='clear';weatherTimer=65;weatherPhase=0;active=0;
  if(label===SECRET_SEED){let lx=Math.floor(spawn.x)+3,ly=ground0-1;for(let dx=0;dx<2;dx++){put(lx+dx,ly,0);put(lx+dx,ly-1,0)}put(lx,ly,110);let rare=[64,72,78,37,62,63,77,84,85,30,31,40,20,19,48,47,45,96,113];let amounts=[1,1,1,99,99,99,99,99,99,99,99,99,99,99,99,99,30,30,20];storageChests.set(lx+','+ly,rare.map((id,i)=>({id,n:amounts[i],...(durabilityMax(id)?{dur:durabilityMax(id)}:{})})).concat(Array.from({length:17},()=>null)));}time=8*60;zoom=zoomClamp(titlePrefs.zoom*(touchDevice?mobileZoomFactor():1));cam.x=player.x*T;cam.y=player.y*T;startPlay();toast('ワールド生成完了！ Cでクラフト、作業台を設置しよう')}
 function startPlay(){if(touchDevice&&zoom>3*mobileZoomFactor())zoom=zoomClamp(2*mobileZoomFactor());document.body.classList.remove('titleScene');modal.classList.remove('mapModal','wrCraftModal','wrPauseModal','wrStorageModal');hideTip();mode='playing';overlay.classList.add('hidden');lastSpaceTap=-10000;keys.clear();mouse.left=mouse.right=false;updateBar();last=performance.now();}
 function save(silent=false){if(!player||!session||currentWorldSlot<0)return;try{let data={v:17,worldName,savedAt:Date.now(),graves:graves.map(g=>({...g,items:g.items.map(t=>t?{...t}:null),armor:g.armor.map(t=>t?{...t}:null)})),gameMode,spectator,timeFrozen,boatRiding,crops:[...crops],weather,weatherTimer,weatherPhase,bedSpawn,storageChests:[...storageChests],worldDrops:worldDrops.map(d=>({...d})),genVersion,seed,session,treasuresOpened:[...treasuresOpened],edits:[...edits],wallEdits:[],furnaces:[...furnaces],inv,player:{x:player.x,y:player.y,hp:player.hp,mp:player.mp,food:player.food,water:player.water,oxygen:player.oxygen??100},time,zoom:touchDevice?zoom/mobileZoomFactor():zoom,killCount,armor};localStorage.setItem(worldSaveKey(currentWorldSlot),JSON.stringify(data));if(!silent)toast('ワールドを保存しました')}catch(e){toast('保存に失敗しました。ブラウザの保存容量を確認してください')}}
@@ -1392,6 +1404,18 @@ function worldLandmarks(){
   if(biomeAt(x)==='snow'&&hash(i,2113)>.25)list.push({x,y:heightAt(x)+16,name:'氷洞窟',kind:'ruin',symbol:'◆',color:'#a2eaff'});
  }
  mapLandmarksCacheKey=cacheKey;mapLandmarksCache=list;return list;
+}
+function wrDrawTeammatesOnMap(g,originX,originY,blocksPerPixel,w,h,small=false){
+ if(!onlineRoomCode)return;
+ g.save();g.font='bold '+(small?9:12)+'px sans-serif';g.textAlign='center';g.textBaseline='middle';
+ for(const p of onlineRemoteMotion.values()){
+  const x=(p.x-originX)/blocksPerPixel,y=(p.y-originY)/blocksPerPixel;
+  if(x<4||y<4||x>w-4||y>h-4)continue;
+  g.fillStyle='#54e5ff';g.strokeStyle='#08364c';g.lineWidth=small?1:2;
+  g.beginPath();g.arc(x,y,small?4:6,0,Math.PI*2);g.fill();g.stroke();
+  if(!small){g.fillStyle='#e1faff';g.fillText(String(p.name||'仲間').slice(0,10),x,y-12);}
+ }
+ g.restore();
 }
 function drawMapSymbols(g,originX,originY,blocksPerPixel,w,h,miniMap=false){
  const landmarks=[...worldLandmarks(),...graves.map(v=>({x:v.x+.5,y:v.y+.5,name:'墓',kind:'grave',symbol:'☠',color:'#ff7575'}))];g.save();g.textAlign='center';g.textBaseline='middle';
@@ -1470,7 +1494,7 @@ function renderWorldMap(){let c=document.getElementById('worldMapCanvas');if(!c)
  let rgb=t===0?[24,49,72]:t===36?[236,94,39]:t===88?[36,129,198]:t===95?[80,174,226]:t===34||t===75?[253,210,101]:t===83?[100,226,245]:t===82?[209,173,109]:t===74?[230,102,115]:t===6?[178,119,90]:t===7?[174,181,185]:t===13?[53,57,71]:t===29?[233,189,73]:t===30?[87,224,246]:t===37?[171,119,219]:t===39?[156,215,238]:t===32?[213,179,117]:t===33?[232,242,251]:t===1||t===38||t===5?[89,173,102]:t===2?[135,99,66]:t===3?[108,116,130]:t===35||t===73?[124,120,142]:t===4?[157,113,67]:[50,74,94];
  let z=(py*w+px)*4;data[z]=rgb[0];data[z+1]=rgb[1];data[z+2]=rgb[2];data[z+3]=255;
  }
- g.putImageData(pixels,0,0);drawMapSymbols(g,originX,originY,mapZoom,w,h,false);wrDrawPins(g,originX,originY,mapZoom);let mx=(player.x-originX)/mapZoom,my=(player.y-originY)/mapZoom;g.fillStyle='#ffe786';g.strokeStyle='#271b12';g.lineWidth=1.5;g.beginPath();g.arc(mx,my,4,0,Math.PI*2);g.fill();g.stroke();g.strokeStyle='#ffe78699';g.strokeRect((cam.x/T-originX)/mapZoom-canvas.width/(T*zoom)/mapZoom/2,(cam.y/T-originY)/mapZoom-canvas.height/(T*zoom)/mapZoom/2,canvas.width/(T*zoom)/mapZoom,canvas.height/(T*zoom)/mapZoom);
+ g.putImageData(pixels,0,0);drawMapSymbols(g,originX,originY,mapZoom,w,h,false);wrDrawPins(g,originX,originY,mapZoom);wrDrawTeammatesOnMap(g,originX,originY,mapZoom,w,h);let mx=(player.x-originX)/mapZoom,my=(player.y-originY)/mapZoom;g.fillStyle='#ffe786';g.strokeStyle='#271b12';g.lineWidth=1.5;g.beginPath();g.arc(mx,my,4,0,Math.PI*2);g.fill();g.stroke();g.strokeStyle='#ffe78699';g.strokeRect((cam.x/T-originX)/mapZoom-canvas.width/(T*zoom)/mapZoom/2,(cam.y/T-originY)/mapZoom-canvas.height/(T*zoom)/mapZoom/2,canvas.width/(T*zoom)/mapZoom,canvas.height/(T*zoom)/mapZoom);
  const status=document.getElementById('mapStatus');if(status)status.textContent='現在地：'+Math.floor(player.x)+', '+Math.floor(player.y)+'　表示縮尺：1px = '+mapZoom.toFixed(1)+'ブロック';}
 function closeWorldMap(){modal.classList.remove('mapModal');startPlay()}
 function showPauseScreen(){
@@ -1991,7 +2015,7 @@ function updateEnemies(dt){
  for(let i=enemies.length-1;i>=0;i--){
   let e=enemies[i],cfg=MONSTERS[e.type]||MONSTERS.slime;
   e.hurt=Math.max(0,e.hurt-dt);e.flee=Math.max(0,(e.flee||0)-dt);e.baby=Math.max(0,(e.baby||0)-dt);e.stun=Math.max(0,(e.stun||0)-dt);e.attackWindup=Math.max(0,(e.attackWindup||0)-dt);
-  if(Math.abs(e.x-player.x)>37||Math.abs(e.y-player.y)>27){enemies.splice(i,1);continue}
+  if(Math.hypot(e.x-player.x,(e.y-player.y)*1.35)>48 && (!onlineRoomCode||![...onlineRemoteMotion.values()].some(p=>Math.hypot(e.x-p.x,(e.y-p.y)*1.35)<48))){enemies.splice(i,1);continue}
   const dx=player.x-e.x,dist=Math.abs(dx),dy=player.y-e.y,dir=Math.sign(dx)||1;
   const flying=e.type==='cave'||e.type==='shark',ranged=e.type==='fireKnight',fast=e.type==='snowWolf'||e.type==='sandworm';
   const detectRange=cfg.passive?5:(e.type==='fireKnight'?18:e.type==='snowWolf'?14:e.type==='cave'?13:e.type==='slime'?8:11);
@@ -2131,7 +2155,7 @@ function biomeWeights(x){
  const k=String(seed)+':'+genVersion+':'+Math.round(x);
  if(biomeWeightCache.has(k))return biomeWeightCache.get(k);
  // Neighboring samples crossfade silhouettes at biome edges; scenery follows world coordinates.
- const weights={forest:0,coast:0,desert:0,snow:0};
+ const weights={forest:0,meadow:0,coast:0,desert:0,snow:0};
  for(const [dx,w] of [[-35,1],[-22,2],[-10,3],[0,4],[10,3],[22,2],[35,1]]){
   const b=biomeAt(Math.max(0,Math.min(W-1,Math.floor(x+dx))));weights[b]+=w/16;
  }
@@ -2191,7 +2215,7 @@ function drawBackdrop(cw,ch){
   for(let sx=0;sx<=cw+panStep;sx+=panStep){
    const bx=player.x+(sx-cw/2)/tw*scale,w=biomeWeights(bx);
    const peaks=noise1(bx,115,off)*.50+noise1(bx,39,off+3)*.19;
-   const elevation=w.snow*(-43)+w.forest*(-3)+w.desert*(33)+w.coast*(80);
+   const elevation=w.snow*(-43)+w.forest*(-3)+w.meadow*(8)+w.desert*(33)+w.coast*(80);
    const yy=base+elevation+peaks*amp;
    ctx.lineTo(sx,yy);
   }
@@ -2205,6 +2229,11 @@ function drawBackdrop(cw,ch){
   if(w.coast>.015){ctx.save();ctx.globalAlpha=w.coast;const water=ctx.createLinearGradient(0,baseY-7,0,ch);water.addColorStop(0,'#78c4d6');water.addColorStop(.35,'#3898c0');water.addColorStop(1,'#1a628e');ctx.fillStyle=water;ctx.fillRect(sx,baseY-7,unit+2,ch-baseY+8);ctx.fillStyle='#d6f8f0';ctx.globalAlpha=w.coast*.48;for(let j=0;j<4;j++){let ry=baseY+14+j*38+(hash(Math.floor(wx),j,seed+99)-.5)*12;ctx.fillRect(sx+hash(j,Math.floor(wx))*9,ry,unit*.55,Math.max(1,BG_SCALE*.7));}ctx.restore()}
   if(w.desert>.015){ctx.save();ctx.globalAlpha=w.desert;ctx.fillStyle='#d4a466';ctx.fillRect(sx,baseY-1,unit+2,ch-baseY+3);const py=baseY-5-(noise1(wx,75,602)+.6)*15*BG_SCALE;ctx.fillStyle='#e6bb78';ctx.beginPath();ctx.moveTo(sx,baseY+25);ctx.lineTo(sx+unit*.52,py);ctx.lineTo(sx+unit+2,baseY+23);ctx.fill();if(hash(Math.floor(wx/42),882)>.84){const px=sx+unit*.4,ph=18*BG_SCALE;ctx.fillStyle='#bd8b50';ctx.beginPath();ctx.moveTo(px-ph*.8,baseY+3);ctx.lineTo(px,baseY-ph);ctx.lineTo(px+ph*.85,baseY+3);ctx.fill();ctx.fillStyle='#f3ce91';ctx.beginPath();ctx.moveTo(px-ph*.8,baseY+3);ctx.lineTo(px,baseY-ph);ctx.lineTo(px,baseY+3);ctx.fill();}ctx.restore()}
   if(w.snow>.015){ctx.save();ctx.globalAlpha=w.snow;ctx.fillStyle='#b7d8e5';ctx.fillRect(sx,baseY-2,unit+2,ch-baseY+5);ctx.fillStyle='#f1f9ff';ctx.beginPath();ctx.moveTo(sx,baseY+12);ctx.lineTo(sx+unit*.48,baseY-22*BG_SCALE);ctx.lineTo(sx+unit+2,baseY+12);ctx.fill();if(hash(Math.floor(wx/17),929)>.68){let h=(15+hash(Math.floor(wx/17),930)*17)*BG_SCALE;let px=sx+unit*.5;ctx.fillStyle='#536e79';ctx.fillRect(px-2*BG_SCALE,baseY-h*.55,4*BG_SCALE,h*.85);for(let j=0;j<3;j++){ctx.fillStyle=j===0?'#e9f7fc':'#6b9aa4';ctx.beginPath();ctx.moveTo(px,baseY-h*(.95-j*.25));ctx.lineTo(px-h*(.36-j*.06),baseY-h*(.40-j*.2));ctx.lineTo(px+h*(.36-j*.06),baseY-h*(.40-j*.2));ctx.fill()}}ctx.restore()}
+  // Open meadow: uninterrupted layers of rolling green fields, not a forest image.
+  if(w.meadow>.015){ctx.save();ctx.globalAlpha=w.meadow;
+   ctx.fillStyle='#77b965';ctx.fillRect(sx,baseY-2,unit+2,ch-baseY+5);
+   ctx.fillStyle='#589c55';ctx.beginPath();ctx.moveTo(sx,baseY+10);ctx.lineTo(sx+unit*.5,baseY-5-noise1(wx,90,716)*9*BG_SCALE);ctx.lineTo(sx+unit+2,baseY+10);ctx.fill();
+   ctx.fillStyle='#9bd078';for(let k=0;k<3;k++){let bx=sx+k*unit/3,hh=(3+hash(Math.floor(wx),k,819)*4)*BG_SCALE;ctx.fillRect(bx,baseY-hh,Math.max(1,BG_SCALE),hh)}ctx.restore();}
   if(w.forest>.015&&!assetReady('bg_forest')){ctx.save();ctx.globalAlpha=w.forest;ctx.fillStyle='#385f54';ctx.fillRect(sx,baseY-6,unit+2,ch-baseY+8);const bx=sx+unit*.45,h=(47+hash(Math.floor(wx),725)*35)*BG_SCALE;ctx.fillStyle='#354d3d';ctx.fillRect(bx-3*BG_SCALE,baseY-h*.52,6*BG_SCALE,h);for(let crown=0;crown<3;crown++){let radius=(19+crown*4)*BG_SCALE;ctx.fillStyle=['#2d6b51','#3d835b','#5b9b68'][crown];ctx.beginPath();ctx.ellipse(bx+(crown-1)*7*BG_SCALE,baseY-h+10*BG_SCALE+crown*7*BG_SCALE,radius,radius*.75,0,0,Math.PI*2);ctx.fill()}ctx.restore()}
  }
  const forestArt=assetReady('bg_forest');
@@ -2314,15 +2343,20 @@ function worldRender(sceneOnly=false){let cw=canvas.width,ch=canvas.height;let d
  // カーソル表示と採掘・設置対象は同じ座標変換を使用する。
  drawItemCursor();
 }
-function hudUpdate(){document.getElementById('info').firstChild.textContent=layerAt(player.x,player.y)+' / '+(biomeAt(player.x)==='desert'?'砂漠':biomeAt(player.x)==='snow'?'雪原':biomeAt(player.x)==='coast'?'海岸':'森林')+'　|　深度: ';document.getElementById('coords').textContent=Math.floor(player.x)+', '+Math.floor(player.y);document.getElementById('depth').textContent=Math.max(0,Math.floor(player.y-heightAt(Math.floor(player.x))));document.getElementById('zoomtext').textContent=zoom.toFixed(1);document.getElementById('kills').textContent=killCount;let d=smoothedLightDepth??localLightDepth(),dayVal=(Math.sin((time/1440)*Math.PI*2-Math.PI/2)+1)/2;const nightLight=Math.max(0,Math.min(1,(.44-dayVal)*3))*.75;document.getElementById('lighttext').textContent=Math.round(100*(1-Math.min(.97,1-(1-nightLight)*(1-darkAtDepth(d)))))+'%';let hh=Math.floor(time/60)%24,mm=Math.floor(time%60);document.getElementById('clock').textContent=(gameMode==='sandbox'?'✨ ':'')+(timeFrozen?'⏸ ':'')+(weather==='clear'?'':weather==='rain'?'🌧 ':weather==='storm'?'⛈ ':'❄ ')+(hh>=6&&hh<18?'☀ ':'☾ ')+String(hh).padStart(2,'0')+':'+String(mm).padStart(2,'0');}
-let miniTimer=0;function renderMini(dt){miniTimer+=dt;if(miniTimer<1.15)return;miniTimer=0;
- const mw=mini.width,mh=mini.height,scale=2,centerX=player.x,centerY=player.y;
+function hudUpdate(){document.getElementById('info').firstChild.textContent=layerAt(player.x,player.y)+' / '+(biomeAt(player.x)==='desert'?'砂漠':biomeAt(player.x)==='snow'?'雪原':biomeAt(player.x)==='coast'?'海岸':biomeAt(player.x)==='meadow'?'草原':genVersion<11?'草原':'森')+'　|　深度: ';document.getElementById('coords').textContent=Math.floor(player.x)+', '+Math.floor(player.y);document.getElementById('depth').textContent=Math.max(0,Math.floor(player.y-heightAt(Math.floor(player.x))));document.getElementById('zoomtext').textContent=zoom.toFixed(1);document.getElementById('kills').textContent=killCount;let d=smoothedLightDepth??localLightDepth(),dayVal=(Math.sin((time/1440)*Math.PI*2-Math.PI/2)+1)/2;const nightLight=Math.max(0,Math.min(1,(.44-dayVal)*3))*.75;document.getElementById('lighttext').textContent=Math.round(100*(1-Math.min(.97,1-(1-nightLight)*(1-darkAtDepth(d)))))+'%';let hh=Math.floor(time/60)%24,mm=Math.floor(time%60);document.getElementById('clock').textContent=(gameMode==='sandbox'?'✨ ':'')+(timeFrozen?'⏸ ':'')+(weather==='clear'?'':weather==='rain'?'🌧 ':weather==='storm'?'⛈ ':'❄ ')+(hh>=6&&hh<18?'☀ ':'☾ ')+String(hh).padStart(2,'0')+':'+String(mm).padStart(2,'0');}
+let miniMapScale=2;
+const miniZoomSlider=document.getElementById('miniZoomSlider');
+try{miniMapScale=Math.max(.7,Math.min(6,Number(localStorage.getItem('wildroot_minimap_zoom'))||2));miniZoomSlider.value=String(miniMapScale)}catch(_){}miniZoomSlider.addEventListener('input',()=>{miniMapScale=Number(miniZoomSlider.value)||2;miniTimer=999;try{localStorage.setItem('wildroot_minimap_zoom',String(miniMapScale))}catch(_){} });
+miniZoomSlider.addEventListener('pointerdown',e=>e.stopPropagation());
+function miniZoomPlace(){const rect=mini.getBoundingClientRect(),ctl=document.getElementById('miniZoomControl');if(!rect.width)return;ctl.style.left=Math.max(4,rect.left-33)+'px';ctl.style.top=rect.top+'px';ctl.style.height=rect.height+'px';miniZoomSlider.style.height=Math.max(38,rect.height-34)+'px';}
+let miniTimer=0;function renderMini(dt){miniTimer+=dt;if(miniTimer<.45)return;miniTimer=0;miniZoomPlace();
+ const mw=mini.width,mh=mini.height,scale=miniMapScale,centerX=player.x,centerY=player.y;
  mctx.fillStyle='#182e40';mctx.fillRect(0,0,mw,mh);
  for(let mx=0;mx<mw;mx+=4)for(let my=0;my<mh;my+=4){
   const x=Math.floor(centerX+(mx-mw/2)*scale),y=Math.floor(centerY+(my-mh/2)*scale),t=get(x,y);
   if(!t)continue;mctx.fillStyle=colors[t]||'#777';mctx.fillRect(mx,my,4,4);
  }
- drawMapSymbols(mctx,centerX-mw*scale/2,centerY-mh*scale/2,scale,mw,mh,true);
+ drawMapSymbols(mctx,centerX-mw*scale/2,centerY-mh*scale/2,scale,mw,mh,true);wrDrawTeammatesOnMap(mctx,centerX-mw*scale/2,centerY-mh*scale/2,scale,mw,mh,true);
  mctx.fillStyle='#fff0a2';mctx.strokeStyle='#452918';mctx.lineWidth=2;
  mctx.beginPath();mctx.arc(mw/2,mh/2,4,0,Math.PI*2);mctx.fill();mctx.stroke();
 }
@@ -2388,7 +2422,7 @@ function loop(ts){
    const cx=player.x*T,cy=(player.y-player.h*.6)*T,a=1-Math.exp(-12*Math.max(0,dt));
    cam.x+=(cx-cam.x)*a;cam.y+=(cy-cam.y)*a;
    if(ts-hudDrawAt>=125){hudDrawAt=ts;hudUpdate();updateHP();}
-   renderMini(dt);if(onlineRoomCode)wrSendEnemyState(ts);if(onlineRoomCode&&mode==='playing'){const moved=Math.hypot(player.x-onlineLastMoveX,player.y-onlineLastMoveY)>.018||player.face!==onlineLastFace;const interval=moved?ONLINE_SEND_MOVING_MS:ONLINE_SEND_IDLE_MS;if(ts-onlineMoveAt>=interval){onlineMoveAt=ts;onlineLastMoveStamp=ts;onlineLastMoveX=player.x;onlineLastMoveY=player.y;onlineLastFace=player.face;publishOnlineMovement({x:player.x,y:player.y,face:player.face,name:getLocalProfile().name});}}
+   renderMini(dt);if(onlineRoomCode)wrSendEnemyState(ts);if(onlineRoomCode&&mode==='playing'){const currentAnim=attackVisual.elapsed<attackVisual.duration?'attack':!player.ground?'jump':Math.abs(player.vx)>.35?'run':'idle';const moved=Math.hypot(player.x-onlineLastMoveX,player.y-onlineLastMoveY)>.018||player.face!==onlineLastFace||currentAnim!==onlineLastAnim;const interval=moved?ONLINE_SEND_MOVING_MS:ONLINE_SEND_IDLE_MS;if(ts-onlineMoveAt>=interval){onlineMoveAt=ts;onlineLastMoveStamp=ts;onlineLastMoveX=player.x;onlineLastMoveY=player.y;onlineLastFace=player.face;onlineLastAnim=currentAnim;publishOnlineMovement({x:player.x,y:player.y,face:player.face,anim:attackVisual.elapsed<attackVisual.duration?'attack':!player.ground?'jump':Math.abs(player.vx)>.35?'run':'idle',attack:attackVisual.elapsed<attackVisual.duration,name:getLocalProfile().name});}}
    const inventoryClock=document.getElementById('inventoryClock');
    if(inventoryClock)inventoryClock.textContent=document.getElementById('clock').textContent;
   }
@@ -2705,7 +2739,7 @@ window.WRCloud={
  watchChat(code,cb){return onSnapshot(query(collection(db,'rooms',code,'messages'),orderBy('createdAt','desc'),limit(50)),snap=>cb(snap.docs.map(d=>d.data()).reverse()),e=>console.warn('Chat watch:',e));},
  async writeBlock(code,x,y,t){await setDoc(doc(db,'rooms',code,'blocks',Math.floor(x)+'_'+Math.floor(y)),{x:Math.floor(x),y:Math.floor(y),t,by:auth.currentUser.uid,updatedAt:serverTimestamp()});},
  watchBlocks(code,cb){return onSnapshot(collection(db,'rooms',code,'blocks'),snap=>{for(const c of snap.docChanges())if(c.type!=='removed'){const b=c.doc.data();cb(b.x,b.y,b.t)}},e=>console.warn('Block watch:',e));},
- async publishPlayer(code,p){await setDoc(doc(db,'rooms',code,'players',auth.currentUser.uid),{uid:auth.currentUser.uid,x:p.x,y:p.y,face:p.face,name:String(p.name).slice(0,20),updatedAt:serverTimestamp()});},
+ async publishPlayer(code,p){await setDoc(doc(db,'rooms',code,'players',auth.currentUser.uid),{uid:auth.currentUser.uid,x:p.x,y:p.y,face:p.face,anim:p.anim||'idle',attack:!!p.attack,name:String(p.name).slice(0,20),updatedAt:serverTimestamp()});},
  watchPlayers(code,cb){return onSnapshot(collection(db,'rooms',code,'players'),snap=>cb(snap.docs.map(d=>d.data())),e=>console.warn('Player watch:',e));},
  async writeChest(code,key,items){
   if(!auth.currentUser)throw Error('未接続');
