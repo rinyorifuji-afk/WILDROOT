@@ -2294,7 +2294,7 @@ function drawEnemies(cw,ch){for(let e of enemies){
  if(e.hurt>0||e.hp<e.maxHp){ctx.fillStyle='#182128';ctx.fillRect(-r,-r*1.95,r*2,Math.max(3,3*zoom));ctx.fillStyle='#f16e63';ctx.fillRect(-r,-r*1.95,r*2*Math.max(0,e.hp/e.maxHp),Math.max(3,3*zoom))}
  ctx.restore();
 }}
-function updateHP(){document.getElementById('oxynum').textContent=Math.ceil(player.oxygen??100)+' / 100';document.getElementById('oxyfill').style.width=(player.oxygen??100)+'%';document.getElementById('foodnum').textContent=Math.ceil(player.food??100)+' / 100';document.getElementById('foodfill').style.width=(player.food??100)+'%';document.getElementById('waternum').textContent=Math.ceil(player.water??100)+' / 100';document.getElementById('waterfill').style.width=(player.water??100)+'%';document.getElementById('hp').textContent=player.hp+' / 100';document.getElementById('hpfill').style.width=player.hp+'%';document.getElementById('mpnum').textContent=Math.floor(player.mp??20)+' / 20';document.getElementById('mpfill').style.width=((player.mp??20)/20*100)+'%'}
+function updateHP(){document.getElementById('oxynum').textContent=Math.ceil(player.oxygen??100)+' / 100';document.getElementById('oxyfill').style.width=(player.oxygen??100)+'%';document.getElementById('foodnum').textContent=Math.ceil(player.food??100)+' / 100';document.getElementById('foodfill').style.width=(player.food??100)+'%';document.getElementById('waternum').textContent=Math.ceil(player.water??100)+' / 100';document.getElementById('waterfill').style.width=(player.water??100)+'%';document.getElementById('hp').textContent=Math.ceil(Math.max(0,player.hp))+' / 100';document.getElementById('hpfill').style.width=player.hp+'%';document.getElementById('mpnum').textContent=Math.floor(player.mp??20)+' / 20';document.getElementById('mpfill').style.width=((player.mp??20)/20*100)+'%'}
 
 // Three coordinated parallax layers: sky / celestial bodies & clouds / biome landscape.
 function bgLerp(a,b,k){return a+(b-a)*k}
@@ -2519,7 +2519,7 @@ const miniZoomSlider=document.getElementById('miniZoomSlider');
 try{miniMapScale=Math.max(.7,Math.min(6,Number(localStorage.getItem('wildroot_minimap_zoom'))||2));miniZoomSlider.value=String(miniMapScale)}catch(_){}miniZoomSlider.addEventListener('input',()=>{miniMapScale=Number(miniZoomSlider.value)||2;miniTimer=999;try{localStorage.setItem('wildroot_minimap_zoom',String(miniMapScale))}catch(_){} });
 miniZoomSlider.addEventListener('pointerdown',e=>e.stopPropagation());
 function miniZoomPlace(){const rect=mini.getBoundingClientRect(),ctl=document.getElementById('miniZoomControl');if(!rect.width)return;ctl.style.left=Math.max(4,rect.left-33)+'px';ctl.style.top=rect.top+'px';ctl.style.height=rect.height+'px';miniZoomSlider.style.height=Math.max(38,rect.height-34)+'px';}
-let miniTimer=0;function renderMini(dt){miniTimer+=dt;if(miniTimer<.45)return;miniTimer=0;miniZoomPlace();
+let miniTimer=0;function renderMini(dt){miniTimer+=dt;if(miniTimer<.65)return;miniTimer=0;miniZoomPlace();
  const mw=mini.width,mh=mini.height,scale=miniMapScale,centerX=player.x,centerY=player.y;
  mctx.fillStyle='#182e40';mctx.fillRect(0,0,mw,mh);
  for(let mx=0;mx<mw;mx+=4)for(let my=0;my<mh;my+=4){
@@ -2546,6 +2546,7 @@ let previewDrawAt=0, gameDrawAt=0, hudDrawAt=0;
 // Back off gently on weak devices to avoid the long stalls caused by
 // continuously starting a new expensive render before the next frame.
 let smoothRenderCost=9, smoothFrameInterval=1000/60, smoothFrameSamples=0,wrDropStepClock=0;
+let wrEnemyStepClock=0,wrFurnaceStepClock=0,wrFxStepClock=0;
 function renderFrameBudget(){
  // Favor a stable cadence. Switch only when rendering cost remains very high.
  const target=smoothRenderCost>28?1000/30:1000/60;
@@ -2554,7 +2555,8 @@ function renderFrameBudget(){
 
 function loop(ts){
  requestAnimationFrame(loop);
- if(touchDevice){const v=mode==='playing'||mode==='touchEdit';if(document.body.classList.contains('touchPlaying')!==v)document.body.classList.toggle('touchPlaying',v);}
+ let wrLastTouchPlaying=null;
+if(touchDevice){const v=mode==='playing'||mode==='touchEdit';if(wrLastTouchPlaying!==v){wrLastTouchPlaying=v;document.body.classList.toggle('touchPlaying',v);}}
  const dt=Math.min(.05,(ts-last)/1000||0);last=ts;lightingFrameDt=Math.max(.001,dt);
  if(['menu','worldSlots','worldCreate','worldRename','worldDelete','titleSettings','titleControls','multiplayerEntry','multiWorldCreate','multiLobby','friendsEntry','profile'].includes(mode)){
   titlePreviewFrame+=dt;
@@ -2583,10 +2585,18 @@ function loop(ts){
    if(wrDropStepClock>=1/30){updateWorldDrops(Math.min(.067,wrDropStepClock));wrDropStepClock=0;}
    drinkAndEatTick(step);if(mode==='dead'){accumulator=0;break;}
    if(interactive){onlineCaptureEdits=!!onlineRoomCode;try{act(step)}finally{onlineCaptureEdits=false}}
-   updateEnemies(step);wrEnemyVisualUpdate(step);if(mode==='dead'){accumulator=0;break;}
+   // Batch noncritical world systems: avoid repeating whole mob/furnace scans at 60 Hz.
+   wrEnemyStepClock+=step;
+   if(wrEnemyStepClock>=1/30){updateEnemies(wrEnemyStepClock);wrEnemyStepClock=0;}
+   wrEnemyVisualUpdate(step);
+   if(mode==='dead'){accumulator=0;break;}
    updateProjectiles(step);if(mode==='dead'){accumulator=0;break;}
    enemyAnimTime+=step;player.mp=Math.min(20,player.mp+step*1.1);
-   tickFurnaces(step);updateFx(step);attackVisual.elapsed+=step;
+   wrFurnaceStepClock+=step;
+   if(wrFurnaceStepClock>=.25){tickFurnaces(wrFurnaceStepClock);wrFurnaceStepClock=0;}
+   wrFxStepClock+=step;
+   if(wrFxStepClock>=1/30){updateFx(wrFxStepClock);wrFxStepClock=0;}
+   attackVisual.elapsed+=step;
    attackCooldown=Math.max(0,attackCooldown-step);
    if(!timeFrozen)time=(time+step*WORLD_TIME_RATE)%1440;
    accumulator-=step;
@@ -2595,7 +2605,7 @@ function loop(ts){
    autosave+=dt;if(autosave>60){save(true);if(onlineRoomCode)onlineLocalSave();autosave=0}
    const cx=player.x*T,cy=(player.y-player.h*.6)*T,a=1-Math.exp(-12*Math.max(0,dt));
    cam.x+=(cx-cam.x)*a;cam.y+=(cy-cam.y)*a;
-   if(ts-hudDrawAt>=125){hudDrawAt=ts;hudUpdate();updateHP();}
+   if(ts-hudDrawAt>=200){hudDrawAt=ts;hudUpdate();updateHP();}
    renderMini(dt);if(onlineRoomCode){wrSendEnemyState(ts);wrPublishWorldState(ts);}if(onlineRoomCode&&mode==='playing'){const currentAnim=attackVisual.elapsed<attackVisual.duration?'attack':!player.ground?'jump':Math.abs(player.vx)>.35?'run':'idle';const moved=Math.hypot(player.x-onlineLastMoveX,player.y-onlineLastMoveY)>.018||player.face!==onlineLastFace||currentAnim!==onlineLastAnim;const interval=moved?ONLINE_SEND_MOVING_MS:ONLINE_SEND_IDLE_MS;if(ts-onlineMoveAt>=interval){onlineMoveAt=ts;onlineLastMoveStamp=ts;onlineLastMoveX=player.x;onlineLastMoveY=player.y;onlineLastFace=player.face;onlineLastAnim=currentAnim;publishOnlineMovement({x:player.x,y:player.y,face:player.face,anim:attackVisual.elapsed<attackVisual.duration?'attack':!player.ground?'jump':Math.abs(player.vx)>.35?'run':'idle',attack:attackVisual.elapsed<attackVisual.duration,name:getLocalProfile().name});}}
    const inventoryClock=document.getElementById('inventoryClock');
    if(inventoryClock)inventoryClock.textContent=document.getElementById('clock').textContent;
