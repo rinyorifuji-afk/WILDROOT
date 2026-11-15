@@ -199,6 +199,22 @@ body.touchEditing #overlay{display:none!important}
 .friendIdentity span{font-size:10px;color:#c6d5e0;overflow-wrap:anywhere}
 .friendRow button{margin:2px;padding:7px 11px;font-size:12px}
 .onlinePanel{max-height:min(88dvh,670px);overflow-y:auto;overscroll-behavior:contain}
+
+/* Profile dialog: separate ID, copy and actions; prevent overlaps on landscape phones. */
+.titleScene .onlinePanel{width:min(680px,94vw);max-width:100%;padding:clamp(12px,2.5vh,24px);min-width:0;overflow-x:hidden}
+.titleScene .onlinePanel .onlineIdentifier{margin:8px auto;overflow-wrap:anywhere;word-break:break-all}
+.titleScene .onlinePanel .profileCopyRow{margin:6px auto 10px}
+.titleScene .onlinePanel .profileActions{display:flex;justify-content:center;align-items:stretch;flex-wrap:wrap;gap:7px;margin:10px auto}
+.titleScene .onlinePanel .profileActions button{flex:1 1 145px;min-width:0;max-width:230px;white-space:normal;margin:0;padding:9px 7px;line-height:1.35}
+@media (max-height:520px) and (orientation:landscape){
+ .titleScene .onlinePanel{max-height:calc(100dvh - 26px);padding:10px 16px;overflow-y:auto}
+ .titleScene .onlinePanel h2{margin:3px 0 6px;font-size:19px}
+ .titleScene .onlinePanel p{margin:5px auto;line-height:1.4;font-size:11px}
+ .titleScene .onlinePanel .onlineField{margin:6px auto;gap:3px}
+ .titleScene .onlinePanel .onlineField input{padding:6px;max-width:290px}
+ .titleScene .onlinePanel .profileActions{gap:5px;margin:6px auto}
+ .titleScene .onlinePanel .profileActions button{font-size:11px;min-height:34px;padding:6px 7px}
+}
 </style></head><body><canvas id="game"></canvas><div id="hud"><div id="top"><div id="stats"><div class="stat">❤ HP <span id="hp">100 / 100</span></div><div class="bar"><div id="hpfill" class="fill" style="width:100%"></div></div><div class="stat">✦ MP <span id="mpnum">20 / 20</span></div><div class="bar"><div class="fill" id="mpfill" style="width:100%;background:#67a5f2"></div></div><div class="stat">🫧 酸素 <span id="oxynum">100 / 100</span></div><div class="bar"><div class="fill" id="oxyfill" style="width:100%;background:#a0e2f5"></div></div><div class="stat">🍖 食料 <span id="foodnum">100 / 100</span></div><div class="bar"><div class="fill" id="foodfill" style="width:100%;background:#d59752"></div></div><div class="stat">💧 水分 <span id="waternum">100 / 100</span></div><div class="bar" style="margin-bottom:0"><div class="fill" id="waterfill" style="width:100%;background:#55b3dc"></div></div></div><div id="info">地表 / 森林　|　深度: <span id="depth">0</span><br>座標: <span id="coords">0, 0</span><br>ズーム: <span id="zoomtext">2.0</span>x<br>光量: <span id="lighttext">100%</span> · 撃破: <span id="kills">0</span></div></div><canvas id="map" width="224" height="224" title="全体マップを表示 (M)"></canvas><div id="clock">☀ 08:00</div><div id="toast"></div><div id="quickActions"><button type="button" class="quickButton" id="quickInventory" title="持ち物を開く (E)"><span class="keyhint">E</span><span class="symbol">🎒</span><span>持ち物</span></button><button type="button" class="quickButton" id="quickCraft" title="クラフト (C)"><span class="keyhint">C</span><span class="symbol">📖</span><span>クラフト</span></button></div><div id="quickActionsRight" class="right"><button type="button" class="quickButton" id="quickMap" title="全体マップ (M)"><span class="keyhint">M</span><span class="symbol">🗺️</span><span>マップ</span></button><button type="button" class="quickButton" id="quickSettings" title="一時停止 (Esc)"><span class="keyhint">Esc</span><span class="symbol">⏸</span><span>一時停止</span></button></div><div id="hotbar"></div></div><div id="rotateNotice">📱 横画面にしてください<small>WILDROOTのスマホ版は横向き専用です。<br>端末を横に回転してプレイしてください。</small></div><div id="touchControls" aria-label="スマホ操作"><div id="touchMove"><button id="touchLeft" aria-label="左へ移動">◀</button><button id="touchRight" aria-label="右へ移動">▶</button><button id="touchStick" aria-label="移動スティック"><span id="stickKnob"></span></button></div><div id="touchSpecial"><button id="touchDrop" aria-label="アイテムを捨てる">🗑</button><button id="touchDash" aria-label="ダッシュ">⇧</button><button id="touchDown" aria-label="下へ">▼</button><button id="touchJump" aria-label="ジャンプ">⤒</button><button id="touchZoomIn" aria-label="拡大">＋</button><button id="touchZoomOut" aria-label="縮小">－</button></div><div id="touchGuide">短押し：設置・攻撃　長押し：採掘</div></div><div id="touchEditBar"><strong>📱 スマホ操作配置</strong><label>移動 <select id="touchStyle"><option value="buttons">左右ボタン</option><option value="stick">スティック</option></select></label><label>サイズ <input id="touchSize" type="range" min="38" max="140" step="2" value="72"></label><span id="touchEditSelection">ボタンを選択・ドラッグ</span><button id="touchLayoutReset">初期化</button><button id="touchEditDone">保存して戻る</button></div><div id="itemTooltip" role="tooltip"></div><div id="overlay"><div id="modal"></div></div><script>
 
 'use strict';
@@ -705,17 +721,13 @@ function showMenu(){
 // WILDROOT online phase 1: local profile only. Online identities and friends require a backend.
 const LOCAL_PROFILE_KEY='wildroot_local_profile_v1';
 function getLocalProfile(){
- try{const data=JSON.parse(localStorage.getItem(LOCAL_PROFILE_KEY)||'null');if(data&&typeof data.name==='string'&&typeof data.id==='string')return data;}catch(_){}
- const bytes=new Uint8Array(6);if(window.crypto&&crypto.getRandomValues)crypto.getRandomValues(bytes);else for(let i=0;i<bytes.length;i++)bytes[i]=Math.floor(Math.random()*256);
- const id='WR-'+Array.from(bytes,x=>x.toString(16).padStart(2,'0')).join('').toUpperCase();
- const profile={name:'プレイヤー',id};
- try{localStorage.setItem(LOCAL_PROFILE_KEY,JSON.stringify(profile))}catch(_){}
- return profile;
+ try{const data=JSON.parse(localStorage.getItem(LOCAL_PROFILE_KEY)||'null');if(data&&typeof data.name==='string')return {name:data.name.slice(0,20)||'プレイヤー'};}catch(_){}
+ return {name:'プレイヤー'};
 }
 function showPlayerProfile(){
  mode='profile';document.body.classList.add('titleScene');overlay.classList.remove('hidden');
  const profile=getLocalProfile();const uid=window.WRCloud?.uid||'';
- modal.innerHTML='<main class="titlePanel onlinePanel"><h2>👤 プロフィール</h2><p>プレイヤー名はこの端末に保存されます。オンライン接続後はクラウドにも保存できます。</p><label class="onlineField">プレイヤー名<input id="profileName" maxlength="20" placeholder="プレイヤー名" value="'+escapeHTML(profile.name)+'"></label><p class="onlineIdentifier">端末の仮ID：<strong>'+escapeHTML(profile.id)+'</strong></p><p class="onlineIdentifier" id="cloudProfileId">'+(uid?'オンラインID：<strong>'+escapeHTML(uid)+'</strong>':'オンラインID：未接続')+'<div class="worldActions"><button id="profileCopyId">📋 オンラインIDをコピー</button></div>'+'</p><p class="small" id="cloudProfileStatus">'+(uid?'Firebaseに接続済み':'Firebase認証・Firestoreを有効化してから「オンライン接続」を押してね。')+'</p><div class="worldActions"><button id="profileSave" class="worldPrimary">名前を保存</button><button id="profileConnect">'+(uid?'クラウドに再保存':'🌐 オンライン接続')+'</button><button id="profileBack">タイトルへ戻る</button></div><p class="small">※匿名ログインのため、ブラウザのデータ削除や端末変更で同じアカウントに戻れなくなる場合があります。オンラインIDを友達に伝えて申請してもらえます。</p></main>';
+ modal.innerHTML='<main class="titlePanel onlinePanel"><h2>👤 プロフィール</h2><p>プレイヤー名はこの端末に保存されます。オンライン接続後はクラウドにも保存できます。</p><label class="onlineField">プレイヤー名<input id="profileName" maxlength="20" placeholder="プレイヤー名" value="'+escapeHTML(profile.name)+'"></label><p class="onlineIdentifier" id="cloudProfileId">'+(uid?'オンラインID：<strong>'+escapeHTML(uid)+'</strong>':'オンラインID：未接続')+'</p><div class="worldActions profileCopyRow"><button id="profileCopyId">📋 オンラインIDをコピー</button></div><p class="small" id="cloudProfileStatus">'+(uid?'Firebaseに接続済み':'Firebase認証・Firestoreを有効化してから「オンライン接続」を押してね。')+'</p><div class="worldActions profileActions"><button id="profileSave" class="worldPrimary">名前を保存</button><button id="profileConnect">'+(uid?'クラウドに再保存':'🌐 オンライン接続')+'</button><button id="profileBack">タイトルへ戻る</button></div><p class="small">※匿名ログインのため、ブラウザのデータ削除や端末変更で同じアカウントに戻れなくなる場合があります。オンラインIDを友達に伝えて申請してもらえます。</p></main>';
  const getName=()=>document.getElementById('profileName').value.trim().slice(0,20)||'プレイヤー';
  const saveLocal=()=>{profile.name=getName();try{localStorage.setItem(LOCAL_PROFILE_KEY,JSON.stringify(profile))}catch(_){}return profile.name;};
  const status=document.getElementById('cloudProfileStatus');
@@ -776,7 +788,7 @@ function showFriendsEntry(){
    const div=document.createElement('div');div.className='friendRow';
    div.innerHTML='<div class="friendIdentity"><b>'+escapeHTML(user.name||'プレイヤー')+'</b><span>'+escapeHTML(id)+'</span></div><button id="sendFriendRequest">申請する</button>';
    result.appendChild(div);status('プレイヤーが見つかりました。');
-   div.querySelector('button').onclick=async()=>{div.querySelector('button').disabled=true;status('申請を送信中…');try{await cloud.sendFriend(id);status('フレンド申請を送りました！');result.innerHTML='';await reload();}catch(e){status('申請できません：'+(e.code||e.message||'通信エラー'));div.querySelector('button').disabled=false;}};
+   div.querySelector('button').onclick=async()=>{div.querySelector('button').disabled=true;status('申請を送信中…');try{await cloud.sendFriend(id);status('フレンド申請を送りました！');result.innerHTML='';await reload();}catch(e){status('申請できません：'+(e.message||e.code||'通信エラー'));div.querySelector('button').disabled=false;}};
   }catch(e){status('検索できません：'+(e.code||e.message||'通信エラー'));}
   finally{if(mode==='friendsEntry'&&$('friendSearch'))$('friendSearch').disabled=false;}
  };
@@ -1924,8 +1936,10 @@ window.WRCloud={
   if(me===uid)throw Error('自分自身には申請できません。');
   if(!(await this.findPlayer(uid)))throw Error('相手のプロフィールが存在しません。');
   const id=[me,uid].sort().join('_');const ref=doc(db,'friendRequests',id);
-  const current=await getDoc(ref);if(current.exists())throw Error('すでに申請中、またはフレンドです。');
-  await setDoc(ref,{sender:me,recipient:uid,status:'pending',createdAt:serverTimestamp()});
+   // A missing request is not readable with participant-only Firestore rules.
+   // Create directly: the server allows create, but rejects overwriting an existing request.
+   try{await setDoc(ref,{sender:me,recipient:uid,status:'pending',createdAt:serverTimestamp()});}
+   catch(e){if(e.code==='permission-denied')throw Error('申請済み、または送信権限がありません。Firestoreルールの公開状態も確認してください。');throw e;}
  },
  async listFriends(){
   const me=auth.currentUser?.uid;if(!me)throw Error('オンライン接続が必要です。');
