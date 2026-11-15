@@ -807,6 +807,8 @@ let onlineRoomCode='',onlineRoomData=null,onlineRoomUnsubs=[],onlineRemotePlayer
 // Keep remote rendering independent of Firestore snapshot cadence.
 let onlineRemoteMotion=new Map(),onlinePublishPending=false,onlinePublishQueued=null,onlineLastFace=1;
 const ONLINE_SEND_MOVING_MS=300,ONLINE_SEND_IDLE_MS=2000;
+let worldInvitesUnsub=null;
+function stopWorldInviteWatch(){if(worldInvitesUnsub){worldInvitesUnsub();worldInvitesUnsub=null}}
 const onlineSafe=v=>escapeHTML(String(v||''));
 function onlineStatus(t){const el=document.getElementById('multiStatus');if(el)el.textContent=t;else toast(t);}
 function getMulti(){if(!window.WRCloud?.uid||!window.WRCloud.createRoom)throw Error('先にプロフィールからオンライン接続してください。');return window.WRCloud;}
@@ -821,20 +823,39 @@ function rememberWorld(code,name){const list=joinedWorlds().filter(x=>x.code!==c
 function forgetWorld(code){localStorage.setItem(ACTIVE_WORLDS_KEY,JSON.stringify(joinedWorlds().filter(x=>x.code!==code)))}
 function multiWorldSettings(){return {name:document.getElementById('multiWorldName').value.trim().slice(0,28)||'マルチワールド',mode:document.getElementById('multiGameMode').value,seed:document.getElementById('multiSeed').value.trim().slice(0,30)||String(Date.now()),pvp:document.getElementById('multiPvp').checked}}
 function showMultiplayerEntry(){
+ stopWorldInviteWatch();
  mode='multiplayerEntry';document.body.classList.add('titleScene');overlay.classList.remove('hidden');
  // Old lobby history has been permanently retired; never display stale rooms.
  try{localStorage.removeItem('wildroot_recent_rooms')}catch(_){}
- modal.innerHTML='<main class="titlePanel onlinePanel"><h2>🌐 マルチプレイ</h2><p>最大4人・ワールドを作成するとすぐ冒険開始！</p><div class="multiActions"><button id="multiCreate">＋ ワールドを作る</button></div><label class="multiField">合言葉<input id="multiCode" maxlength="8" placeholder="8文字の合言葉"></label><div class="multiActions"><button id="multiJoin">ワールドに参加する</button></div><p id="multiStatus" class="onlineStatus"></p><h3>参加中のワールド</h3><div id="multiRecent" class="multiActions"></div><div class="worldActions"><button id="multiplayerBack">タイトルへ戻る</button></div></main>';
+ modal.innerHTML='<main class="titlePanel onlinePanel"><h2>🌐 マルチプレイ</h2><p>最大4人・ワールドを作成するとすぐ冒険開始！</p><div class="multiActions"><button id="multiCreate">＋ ワールドを作る</button></div><label class="multiField">合言葉<input id="multiCode" maxlength="8" placeholder="8文字の合言葉"></label><div class="multiActions"><button id="multiJoin">ワールドに参加する</button></div><p id="multiStatus" class="onlineStatus"></p><h3>参加中のワールド</h3><div id="multiRecent" class="multiActions"></div><h3>📨 フレンドからの招待</h3><div id="multiInvites" class="friendRows">読み込み中…</div><div class="worldActions"><button id="multiplayerBack">タイトルへ戻る</button></div></main>';
  document.getElementById('multiplayerBack').onclick=showMenu;
  document.getElementById('multiCreate').onclick=showMultiWorldCreate;
  document.getElementById('multiJoin').onclick=()=>enterMultiplayerRoom(document.getElementById('multiCode').value.trim().toUpperCase());
  if(!window.WRCloud?.uid)onlineStatus('先にプロフィールからオンライン接続してください。');else onlineStatus('オンライン接続済み。');
  const area=document.getElementById('multiRecent');
- const entries=joinedWorlds();if(!entries.length){area.textContent='まだ参加したワールドはありません';return;}
+ const entries=joinedWorlds();if(!entries.length)area.textContent='まだ参加したワールドはありません';
+ if(window.WRCloud?.uid){try{worldInvitesUnsub=getMulti().watchWorldInvites(items=>loadWorldInvites(items));}catch(e){loadWorldInvites()}}else document.getElementById('multiInvites').textContent='オンライン接続してください';
  entries.forEach(({code,name})=>{const btn=document.createElement('button');btn.textContent=name;btn.title=code;btn.onclick=()=>enterMultiplayerRoom(code);area.appendChild(btn)});
  if(window.WRCloud?.uid){Promise.all(entries.map(async item=>{try{return {...item,room:await getMulti().getRoom(item.code)}}catch(_){return {...item,room:null}}})).then(results=>{if(mode!=='multiplayerEntry')return;const valid=results.filter(x=>x.room);localStorage.setItem(ACTIVE_WORLDS_KEY,JSON.stringify(valid.map(x=>({code:x.code,name:x.room.settings?.name||x.name}))));area.replaceChildren();valid.forEach(item=>{const b=document.createElement('button');b.textContent=item.room.settings?.name||item.name;b.onclick=()=>enterMultiplayerRoom(item.code);area.appendChild(b)});if(!valid.length)area.textContent='まだ参加したワールドはありません';})}
 }
+async function loadWorldInvites(itemsFromWatch){
+ const panel=document.getElementById('multiInvites');if(!panel)return;
+ try{
+  const invites=itemsFromWatch||await getMulti().listWorldInvites();if(mode!=='multiplayerEntry')return;
+  panel.replaceChildren();const pending=invites.filter(i=>i.status==='pending');
+  if(!pending.length){panel.textContent='届いている招待はありません';return}
+  for(const i of pending){
+   const row=document.createElement('div');row.className='friendRow';
+   const label=document.createElement('span');label.className='friendIdentity';label.textContent=(i.worldName||'マルチワールド')+' ／ '+(friendPref(i.sender).nickname||i.senderName||'フレンド')+' からの招待';
+   const accept=document.createElement('button');accept.textContent='OK';
+   accept.onclick=async()=>{accept.disabled=true;try{const room=await getMulti().getRoom(i.roomId);if(!room)throw Error('ワールドが削除されています');await getMulti().acceptWorldInvite(i.id);rememberWorld(i.roomId,room.settings?.name||i.worldName);toast('参加中のワールドに追加しました');showMultiplayerEntry()}catch(e){onlineStatus('招待を受け取れません：'+(e.code||e.message));accept.disabled=false}};
+   const reject=document.createElement('button');reject.textContent='拒否';reject.onclick=async()=>{reject.disabled=true;try{await getMulti().rejectWorldInvite(i.id);row.remove()}catch(e){onlineStatus('拒否できません：'+(e.code||e.message));reject.disabled=false}};
+   row.append(label,accept,reject);panel.append(row);
+  }
+ }catch(e){if(mode==='multiplayerEntry'&&panel)panel.textContent='招待の取得失敗：'+(e.code||e.message)}
+}
 function showMultiWorldCreate(){
+ stopWorldInviteWatch();
  try{getMulti()}catch(e){onlineStatus(e.message);return}
  mode='multiWorldCreate';modal.innerHTML='<main class="titlePanel onlinePanel"><h2>🌍 ワールド設定</h2><p>設定を完了するとワールドが作成され、すぐに入ります。</p><label class="multiField">ワールド名<input id="multiWorldName" maxlength="28" placeholder="みんなのワールド"></label><label class="multiField">モード<select id="multiGameMode"><option value="survival">サバイバル</option><option value="sandbox">サンドボックス</option></select></label><label class="multiField">シード値（空欄ならランダム）<input id="multiSeed" maxlength="30" placeholder="任意のシード値"></label><label><input type="checkbox" id="multiPvp" style="width:auto">PvPを許可する</label><p id="multiStatus" class="onlineStatus"></p><div class="multiActions"><button id="multiCreateConfirm">ワールドを作成して入る</button><button id="multiCreateBack">戻る</button></div></main>';
  document.getElementById('multiCreateBack').onclick=showMultiplayerEntry;
@@ -842,6 +863,7 @@ function showMultiWorldCreate(){
 }
 async function enterMultiplayerRoom(code){
  if(!/^[A-Z2-9]{8}$/.test(code)){onlineStatus('8文字の合言葉を入力してください。');return}
+ stopWorldInviteWatch();
  try{onlineStatus('ワールドに接続中…');const room=await getMulti().joinRoom(code);if(!room.started||!room.settings)throw Error('まだワールドが作成されていません');onlineRoomCode=code;onlineRoomData=room;rememberWorld(code,room.settings.name);await launchMultiplayerWorld();}catch(e){if(e.message?.includes('見つかりません'))forgetWorld(code);onlineStatus('参加できません：'+(e.code||e.message))}
 }
 async function launchMultiplayerWorld(){
@@ -1186,9 +1208,15 @@ async function showMultiHostControls(){
  if(!onlineRoomCode||onlineRoomData?.host!==window.WRCloud?.uid)return showPauseScreen();
  mode='pause';overlay.classList.remove('hidden');
  const code=onlineRoomCode;
- modal.innerHTML='<div class="pausePanel"><h2>👑 ホスト管理</h2><p>ワールド：'+escapeHTML(onlineRoomData.settings?.name||worldName)+'</p><p>合言葉：<strong class="multiRoomCode">'+escapeHTML(code)+'</strong></p><div class="multiActions"><button id="hostCopyCode">合言葉をコピー</button></div><h3>参加プレイヤー</h3><div id="hostMembers"></div><div class="pauseActions"><button id="hostBack">戻る</button><button id="hostDeleteWorld">ワールドを削除</button></div><p id="multiStatus" class="onlineStatus"></p></div>';
+ modal.innerHTML='<div class="pausePanel"><h2>👑 ホスト管理</h2><p>ワールド：'+escapeHTML(onlineRoomData.settings?.name||worldName)+'</p><p>合言葉：<strong class="multiRoomCode">'+escapeHTML(code)+'</strong></p><div class="multiActions"><button id="hostCopyCode">合言葉をコピー</button></div><div class="multiActions"><button id="hostInviteFriends">👥 フレンドを招待する</button></div><div id="hostInviteList" class="friendRows"></div><h3>参加プレイヤー</h3><div id="hostMembers"></div><div class="pauseActions"><button id="hostBack">戻る</button><button id="hostDeleteWorld">ワールドを削除</button></div><p id="multiStatus" class="onlineStatus"></p></div>';
  document.getElementById('hostCopyCode').onclick=()=>navigator.clipboard?.writeText(code).then(()=>onlineStatus('合言葉をコピーしました')).catch(()=>onlineStatus('合言葉：'+code));
  document.getElementById('hostBack').onclick=showPauseScreen;
+ document.getElementById('hostInviteFriends').onclick=async()=>{
+  const list=document.getElementById('hostInviteList');list.textContent='フレンドを取得中…';
+  try{const all=await getMulti().listFriends();const friends=all.filter(f=>f.status==='accepted');list.replaceChildren();if(!friends.length){list.textContent='フレンドがいません';return}
+   for(const f of friends){const uid=f.sender===getMulti().uid?f.recipient:f.sender;const row=document.createElement('div');row.className='friendRow';const name=document.createElement('span');name.textContent=friendPref(uid).nickname||f.otherName||uid.slice(0,10);const button=document.createElement('button');button.textContent='招待';button.onclick=async()=>{button.disabled=true;try{await getMulti().inviteFriendToWorld(code,uid,onlineRoomData.settings?.name||worldName,getLocalProfile().name);button.textContent='招待済み'}catch(e){onlineStatus('招待失敗：'+(e.code||e.message));button.disabled=false}};row.append(name,button);list.append(row)}
+  }catch(e){list.textContent='フレンド取得失敗：'+(e.code||e.message)}
+ }; 
  document.getElementById('hostDeleteWorld').onclick=async()=>{if(!confirm('このワールドを削除しますか？'))return;try{await getMulti().deleteRoom(code);forgetWorld(code);leaveOnlineRoom();showMultiplayerEntry()}catch(e){onlineStatus('削除失敗：'+(e.code||e.message))}};
  const root=document.getElementById('hostMembers');root.textContent='読み込み中…';
  const members=onlineRoomData.members||[];root.replaceChildren();for(const uid of members){const row=document.createElement('div');row.className='multiMember';const name=document.createElement('span');name.textContent=(uid===window.WRCloud.uid?'👑 自分':friendPref(uid).nickname||uid.slice(0,10));row.append(name);if(uid!==window.WRCloud.uid){const btn=document.createElement('button');btn.textContent='退出させる';btn.onclick=async()=>{if(!confirm('このプレイヤーを退出させますか？'))return;try{await getMulti().kickPlayer(code,uid);row.remove()}catch(e){onlineStatus('退出処理失敗：'+(e.code||e.message))}};row.append(btn);getMulti().findPlayer(uid).then(p=>{name.textContent=friendPref(uid).nickname||p?.name||uid.slice(0,10)}).catch(()=>{})}root.append(row)}
@@ -1544,14 +1572,16 @@ function character(x,y,s){
  ctx.restore();
 }
 // Ver.0.7: biome-specific monsters, armor mitigation, weapons and loot.
-const MONSTERS={shark:{hp:120,damage:24,speed:3.3,drop:117,n:2,color:'#6ca0b5'},slime:{hp:26,damage:9,speed:1.75,drop:28,n:2,color:'#59c78e'},night:{hp:48,damage:14,speed:2.5,drop:28,n:3,color:'#8e9b78'},cave:{hp:34,damage:10,speed:1.75,drop:28,n:2,color:'#6c8bc8'},scorpion:{hp:52,damage:17,speed:2.7,drop:46,n:2,color:'#d9a35e'},sandworm:{hp:75,damage:21,speed:3.3,drop:46,n:4,color:'#ae7654'},iceSlime:{hp:45,damage:13,speed:2.0,drop:47,n:2,color:'#85dff5'},snowWolf:{hp:68,damage:19,speed:3.2,drop:47,n:4,color:'#d4e9ec'},magma:{hp:90,damage:24,speed:2.3,drop:48,n:2,color:'#e9673b'},fireKnight:{hp:135,damage:30,speed:2.6,drop:48,n:4,color:'#ad3b39'},cow:{hp:35,damage:0,speed:1.0,drop:89,n:3,color:'#ac947a',passive:true},sheep:{hp:26,damage:0,speed:1.25,drop:90,n:2,color:'#e7e7df',passive:true},horse:{hp:52,damage:0,speed:2.4,drop:89,n:5,color:'#976849',passive:true}};
-function spawnEnemy(){if(enemies.length>=9)return;let x=Math.floor(player.x+(Math.random()<.5?-1:1)*(12+Math.random()*11));if(x<8||x>W-8)return;
- let deep=player.y-heightAt(Math.floor(player.x))>18,underworld=player.y>=900,biome=biomeAt(player.x),night=time>=1080||time<360;if(!deep&&!underworld&&!night&&Math.random()<.38)return;
+const MONSTERS={spider:{hp:38,damage:11,speed:2.9,drop:28,n:2,color:'#483c55'},shark:{hp:120,damage:24,speed:3.3,drop:117,n:2,color:'#6ca0b5'},slime:{hp:26,damage:9,speed:1.75,drop:28,n:2,color:'#59c78e'},night:{hp:48,damage:14,speed:2.5,drop:28,n:3,color:'#8e9b78'},cave:{hp:34,damage:10,speed:1.75,drop:28,n:2,color:'#6c8bc8'},scorpion:{hp:52,damage:17,speed:2.7,drop:46,n:2,color:'#d9a35e'},sandworm:{hp:75,damage:21,speed:3.3,drop:46,n:4,color:'#ae7654'},iceSlime:{hp:45,damage:13,speed:2.0,drop:47,n:2,color:'#85dff5'},snowWolf:{hp:68,damage:19,speed:3.2,drop:47,n:4,color:'#d4e9ec'},magma:{hp:90,damage:24,speed:2.3,drop:48,n:2,color:'#e9673b'},fireKnight:{hp:135,damage:30,speed:2.6,drop:48,n:4,color:'#ad3b39'},cow:{hp:35,damage:0,speed:1.0,drop:89,n:3,color:'#ac947a',passive:true},sheep:{hp:26,damage:0,speed:1.25,drop:90,n:2,color:'#e7e7df',passive:true},horse:{hp:52,damage:0,speed:2.4,drop:89,n:5,color:'#976849',passive:true}};
+function spawnEnemy(){if(enemies.length>=((weather==='rain'||weather==='storm')?13:9))return;let x=Math.floor(player.x+(Math.random()<.5?-1:1)*(12+Math.random()*11));if(x<8||x>W-8)return;
+ let deep=player.y-heightAt(Math.floor(player.x))>18,underworld=player.y>=900,biome=biomeAt(player.x),night=time>=1080||time<360;if(!deep&&!underworld&&!night&&weather!=='rain'&&weather!=='storm'&&Math.random()<.38)return;
  let type=underworld?(Math.random()<.27?'fireKnight':'magma'):deep?'cave':!night?['cow','sheep','horse'][Math.floor(Math.random()*3)]:biome==='desert'?(Math.random()<.28?'sandworm':'scorpion'):biome==='snow'?(Math.random()<.26?'snowWolf':'iceSlime'):(Math.random()<.72?'night':'slime');
- if(!deep&&!underworld&&biome==='coast')type=waterAt(player.x,player.y)?'shark':night?'slime':['cow','sheep','horse'][Math.floor(Math.random()*3)];if(!deep&&!underworld&&night&&type==='slime'&&Math.random()<.72)return;let y=type==='shark'?Math.floor(player.y)-1:deep?Math.floor(player.y)-2:heightAt(x)-1;if(deep){let found=false;for(let k=0;k<22;k++){if(!solid(get(x,y))&&!solid(get(x,y-1))){found=true;break}y--;}if(!found)return}else if(get(x,y)!==0)return;
+ if(!deep&&!underworld&&biome==='coast')type=waterAt(player.x,player.y)?'shark':night?'slime':['cow','sheep','horse'][Math.floor(Math.random()*3)];
+ // Rain and thunderstorms make surface spiders about four times as likely to spawn.
+ if(!deep&&!underworld&&!waterAt(player.x,player.y)&&Math.random()<((weather==='rain'||weather==='storm')?.48:.12))type='spider';if(!deep&&!underworld&&night&&type==='slime'&&Math.random()<.72)return;let y=type==='shark'?Math.floor(player.y)-1:deep?Math.floor(player.y)-2:heightAt(x)-1;if(deep){let found=false;for(let k=0;k<22;k++){if(!solid(get(x,y))&&!solid(get(x,y-1))){found=true;break}y--;}if(!found)return}else if(get(x,y)!==0)return;
  let cfg=MONSTERS[type];enemies.push({x:x+.5,y,vx:0,vy:0,hp:cfg.hp,maxHp:cfg.hp,type,ground:false,jump:Math.random(),hurt:0,alert:0,patrolSeed:hash(x,y)*20,attackCd:1.5+Math.random()*2,attackWindup:0});}
 function updateEnemies(dt){
- enemyTimer+=dt;if(enemyTimer>4.1){enemyTimer=0;spawnEnemy()}
+ enemyTimer+=dt;if(enemyTimer>((weather==='rain'||weather==='storm')?2.8:4.1)){enemyTimer=0;spawnEnemy()}
  for(let i=enemies.length-1;i>=0;i--){
   let e=enemies[i],cfg=MONSTERS[e.type]||MONSTERS.slime;
   e.hurt=Math.max(0,e.hurt-dt);e.flee=Math.max(0,(e.flee||0)-dt);e.baby=Math.max(0,(e.baby||0)-dt);e.stun=Math.max(0,(e.stun||0)-dt);e.attackWindup=Math.max(0,(e.attackWindup||0)-dt);
@@ -1637,7 +1667,11 @@ function drawEnemies(cw,ch){for(let e of enemies){
  ctx.save();ctx.translate(x,y+bounce);if(e.baby>0)ctx.scale(.62,.62);if(e.vx<-.05)ctx.scale(-1,1);
  const color=e.hurt>0?'#fff3e8':cfg.color;
  ctx.fillStyle=color;
- if(['cow','sheep','horse'].includes(e.type)){ctx.fillRect(-r*.8,-r*1.05,r*1.5,r*.65);ctx.fillRect(r*.35,-r*1.22,r*.52,r*.56);ctx.fillStyle=e.type==='cow'?'#43392f':e.type==='sheep'?'#d4d5cf':'#70452f';for(let n of [-.56,-.15,.45,.67])ctx.fillRect(r*n,-r*.42,r*.16,r*.55);if(e.type==='cow'){ctx.fillStyle='#f0e3d6';ctx.fillRect(-r*.45,-r*.96,r*.4,r*.28);ctx.fillStyle='#5b473e';ctx.fillRect(r*.57,-r*1.04,r*.08,r*.08)}if(e.type==='sheep'){ctx.fillStyle='#f9f9f3';for(let j=0;j<4;j++)ctx.fillRect(-r*.75+j*r*.35,-r*1.1,r*.3,r*.23)}
+ if(e.type==='spider'){
+  // Eight angular legs and a dark, two-part body, kept entirely in canvas pixel style.
+  ctx.strokeStyle=color;ctx.lineWidth=Math.max(2,3*zoom);for(const side of [-1,1])for(let j=0;j<4;j++){ctx.beginPath();ctx.moveTo(side*r*.27,-r*.55);ctx.lineTo(side*r*(.85+j*.12),-r*(1.14-j*.20));ctx.lineTo(side*r*(1.13+j*.15),-r*(.08+j*.10));ctx.stroke()}
+  ctx.fillStyle=color;ctx.fillRect(-r*.55,-r*.99,r*1.05,r*.82);ctx.fillRect(-r*.32,-r*1.35,r*.64,r*.46);ctx.fillStyle='#ed6473';ctx.fillRect(-r*.25,-r*1.14,r*.17,r*.16);ctx.fillRect(r*.10,-r*1.14,r*.17,r*.16);
+ }else if(['cow','sheep','horse'].includes(e.type)){ctx.fillRect(-r*.8,-r*1.05,r*1.5,r*.65);ctx.fillRect(r*.35,-r*1.22,r*.52,r*.56);ctx.fillStyle=e.type==='cow'?'#43392f':e.type==='sheep'?'#d4d5cf':'#70452f';for(let n of [-.56,-.15,.45,.67])ctx.fillRect(r*n,-r*.42,r*.16,r*.55);if(e.type==='cow'){ctx.fillStyle='#f0e3d6';ctx.fillRect(-r*.45,-r*.96,r*.4,r*.28);ctx.fillStyle='#5b473e';ctx.fillRect(r*.57,-r*1.04,r*.08,r*.08)}if(e.type==='sheep'){ctx.fillStyle='#f9f9f3';for(let j=0;j<4;j++)ctx.fillRect(-r*.75+j*r*.35,-r*1.1,r*.3,r*.23)}
  }else if(e.type==='snowWolf'||e.type==='scorpion'||e.type==='sandworm'){
   ctx.fillRect(-r*.83,-r*.9,r*1.65,r*.66);ctx.fillRect(r*.36,-r*1.21,r*.49,r*.58);
   ctx.fillStyle='#4b4646';for(let n of [-.55,-.12,.42,.72])ctx.fillRect(r*n,-r*.24,r*.19,r*.27);
@@ -1698,7 +1732,10 @@ const forestMask=document.createElement('canvas'),forestMaskCtx=forestMask.getCo
 function drawBackdrop(cw,ch){
  const palette=skyPalette(time),night=nightStrength(time),BG_SCALE=2,tw=T*BG_SCALE;
  const sky=ctx.createLinearGradient(0,0,0,ch);
- sky.addColorStop(0,bgColor(palette[0]));sky.addColorStop(1,bgColor(palette[1]));
+ const rainSky=weather==='rain'||weather==='storm';
+ const rainBlend=weather==='storm'?.77:weather==='rain'?.57:0;
+ const rainyColor=(base,upper)=>bgColor(base.map((v,i)=>Math.round(v*(1-rainBlend)+(i===0?(upper?67:99):i===1?(upper?77:105):(upper?94:119))*rainBlend)));
+ sky.addColorStop(0,rainyColor(palette[0],true));sky.addColorStop(1,rainyColor(palette[1],false));
  ctx.fillStyle=sky;ctx.fillRect(0,0,cw,ch);
  const strip=64;
  for(let sx=0;sx<cw;sx+=strip){
@@ -1717,7 +1754,7 @@ function drawBackdrop(cw,ch){
  let sunX=cw*(.06+.88*dayProgress),sunY=ch*(.76-.62*Math.sin(Math.PI*dayProgress));
  let moonX=cw*(.07+.86*moonProgress),moonY=ch*(.76-.58*Math.sin(Math.PI*moonProgress));
  const sunArt=assetReady('bg_sun'),moonArt=assetReady('bg_moon');
- if(night<.99){ctx.save();ctx.globalAlpha=1-night*.88;
+ if(night<.99){ctx.save();ctx.globalAlpha=(1-night*.88)*(weather==='storm'?.14:weather==='rain'?.32:1);
   if(sunArt){const h=Math.max(58,76*BG_SCALE),w=sunArt.naturalWidth*(h/sunArt.naturalHeight);ctx.drawImage(sunArt,sunX-w/2,sunY-h/2,w,h)}
   else{const r=Math.max(12,12*BG_SCALE);ctx.fillStyle='#fff1ba';ctx.shadowColor='#ffe5a0';ctx.shadowBlur=r*1.6;ctx.beginPath();ctx.arc(sunX,sunY,r,0,Math.PI*2);ctx.fill()}
   ctx.restore()}
@@ -1725,6 +1762,7 @@ function drawBackdrop(cw,ch){
   if(moonArt){const h=Math.max(52,70*BG_SCALE),w=moonArt.naturalWidth*(h/moonArt.naturalHeight);ctx.drawImage(moonArt,moonX-w/2,moonY-h/2,w,h)}
   else{const r=Math.max(9,10*BG_SCALE);ctx.fillStyle='#f5f3dc';ctx.shadowColor='#d9e9ff';ctx.shadowBlur=r*.8;ctx.beginPath();ctx.arc(moonX,moonY,r,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;ctx.fillStyle=bgColor(palette[0]);ctx.globalAlpha=night*.70;ctx.beginPath();ctx.arc(moonX+r*.34,moonY-r*.17,r*.81,0,Math.PI*2);ctx.fill()}
   ctx.restore()}
+ if(rainSky){ctx.fillStyle=weather==='storm'?'rgba(30,39,53,.25)':'rgba(65,75,87,.13)';ctx.fillRect(0,0,cw,ch)}
  const cloudKeys=['cloud1','cloud2','cloud3'];
  const baseAlpha=weather==='storm'?.34:weather==='rain'?.48:(night>.68?.25:.88);
  for(let i=0;i<11;i++){
@@ -2195,6 +2233,16 @@ window.WRCloud={
    try{await setDoc(doc(db,'rooms',code),{host:uid,members:[uid],settings,started:true,createdAt:serverTimestamp()});return code}catch(e){if(e.code!=='already-exists')throw e}
   }throw Error('ルームコードを作成できません。');
  },
+ async inviteFriendToWorld(code,recipient,worldName,senderName){
+  const sender=auth.currentUser?.uid;if(!sender)throw Error('未接続');
+  await addDoc(collection(db,'worldInvites',recipient,'inbox'),{
+   sender,recipient,roomId:code,worldName:String(worldName).slice(0,28),senderName:String(senderName).slice(0,20),status:'pending',createdAt:serverTimestamp()
+  });
+ },
+ async listWorldInvites(){const uid=auth.currentUser?.uid;if(!uid)throw Error('未接続');const snap=await getDocs(query(collection(db,'worldInvites',uid,'inbox'),orderBy('createdAt','desc'),limit(30)));return snap.docs.map(d=>({id:d.id,...d.data()}));},
+ watchWorldInvites(cb){const uid=auth.currentUser?.uid;if(!uid)throw Error('未接続');return onSnapshot(query(collection(db,'worldInvites',uid,'inbox'),orderBy('createdAt','desc'),limit(30)),snap=>cb(snap.docs.map(d=>({id:d.id,...d.data()}))),e=>console.warn('Invite watch:',e));},
+ async acceptWorldInvite(id){const uid=auth.currentUser?.uid;if(!uid)throw Error('未接続');await updateDoc(doc(db,'worldInvites',uid,'inbox',id),{status:'accepted'});},
+ async rejectWorldInvite(id){const uid=auth.currentUser?.uid;if(!uid)throw Error('未接続');await updateDoc(doc(db,'worldInvites',uid,'inbox',id),{status:'rejected'});},
  async getRoom(code){const snap=await getDoc(doc(db,'rooms',code));return snap.exists()?{...snap.data(),code}:null},
  async leaveWorld(code){const uid=auth.currentUser?.uid;if(!uid)return;const ref=doc(db,'rooms',code);await runTransaction(db,async tx=>{const snap=await tx.get(ref);if(!snap.exists())return;const r=snap.data();if(r.host===uid)return;const members=r.members.filter(x=>x!==uid);tx.update(ref,{members})});await deleteDoc(doc(db,'rooms',code,'players',uid)).catch(()=>{});},
  async kickPlayer(code,uid){const host=auth.currentUser?.uid;if(!host||host===uid)throw Error('操作できません');const ref=doc(db,'rooms',code);await runTransaction(db,async tx=>{const snap=await tx.get(ref);if(!snap.exists()||snap.data().host!==host)throw Error('ホストのみ操作できます');tx.update(ref,{members:snap.data().members.filter(x=>x!==uid)})});},
