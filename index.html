@@ -1486,7 +1486,7 @@ function localLightDepth(){
  return Math.max(0,player.y-surface-4);
 }
 function darkAtDepth(d){const t=Math.max(0,Math.min(1,d/32));return .94*t*t*(3-2*t)}
-function drawLighting(cw,ch,left,right,top,bottom,day){if(gameMode==='sandbox'&&spectator)return;
+function drawLighting(cw,ch,left,right,top,bottom,day,visibleLights=null){if(gameMode==='sandbox'&&spectator)return;
  const depthTarget=localLightDepth();
  if(smoothedLightDepth===null||Math.abs(depthTarget-smoothedLightDepth)>60)smoothedLightDepth=depthTarget;
  else smoothedLightDepth+=(depthTarget-smoothedLightDepth)*(1-Math.exp(-Math.min(.07,lightingFrameDt)*5));
@@ -1506,9 +1506,10 @@ function drawLighting(cw,ch,left,right,top,bottom,day){if(gameMode==='sandbox'&&
  grad.addColorStop(0,'rgba(0,0,0,'+strength+')');grad.addColorStop(.25,'rgba(0,0,0,'+strength*.95+')');grad.addColorStop(1,'rgba(0,0,0,0)');shadeCtx.fillStyle=grad;shadeCtx.beginPath();shadeCtx.arc(px,py,R,0,Math.PI*2);shadeCtx.fill()}
  // Player has very small ambient visibility, torches provide the real light.
  light(player.x*T,(player.y-player.h*.5)*T,T*2.1,.70);
- for(let y=top;y<=bottom;y++)for(let x=left;x<=right;x++){let t=get(x,y);
- if(t===92)light((x+.5)*T,(y+.5)*T,T*3.4,.75);if(t===36&&x%6===0&&y%4===0)light((x+.5)*T,(y+.5)*T,T*2.6,.7);
- if(t===8)light((x+.5)*T,(y+.42)*T,T*6.8,1);
+ for(const [x,y,t] of visibleLights||[]){
+ if(t===92)light((x+.5)*T,(y+.5)*T,T*3.4,.75);
+ else if(t===36)light((x+.5)*T,(y+.5)*T,T*2.6,.7);
+ else if(t===8)light((x+.5)*T,(y+.42)*T,T*6.8,1);
  else if(t===18){let f=furnaces.get(x+','+y);if(f&&(f.charges>0||f.fuel>0&&f.amount>=3))light((x+.5)*T,(y+.5)*T,T*3.1,.90)}}
  shadeCtx.globalCompositeOperation='source-over';ctx.imageSmoothingEnabled=true;ctx.drawImage(shade,0,0,cw,ch);ctx.imageSmoothingEnabled=false;
 }
@@ -1844,7 +1845,9 @@ function drawEnvironmentVignette(cw,ch){
 function worldRender(sceneOnly=false){let cw=canvas.width,ch=canvas.height;let day=(Math.sin((time/1440)*Math.PI*2-Math.PI/2)+1)/2;
  drawBackdrop(cw,ch);
  let left=Math.max(0,Math.floor((cam.x-cw/2/zoom)/T)-1),right=Math.min(W-1,Math.ceil((cam.x+cw/2/zoom)/T)+1),top=Math.max(0,Math.floor((cam.y-ch/2/zoom)/T)-1),bottom=Math.min(H-1,Math.ceil((cam.y+ch/2/zoom)/T)+1),ts=T*zoom;
- for(let y=top;y<=bottom;y++)for(let x=left;x<=right;x++){let t=get(x,y),bg=t===0?getWall(x,y):0;if(t===0&&bg===0)continue;let px=Math.floor((x*T-cam.x)*zoom+cw/2),py=Math.floor((y*T-cam.y)*zoom+ch/2);if(bg&&t===0){drawWall(px,py,Math.ceil(ts+.15),x,y)}if(t!==0)drawBlock(t,px,py,Math.ceil(ts+.15),x,y)}
+ const visibleLights=[];
+ for(let y=top;y<=bottom;y++)for(let x=left;x<=right;x++){let t=get(x,y),bg=t===0?getWall(x,y):0;
+ if(t===8||t===18||t===92||(t===36&&x%6===0&&y%4===0))visibleLights.push([x,y,t]);if(t===0&&bg===0)continue;let px=Math.floor((x*T-cam.x)*zoom+cw/2),py=Math.floor((y*T-cam.y)*zoom+ch/2);if(bg&&t===0){drawWall(px,py,Math.ceil(ts+.15),x,y)}if(t!==0)drawBlock(t,px,py,Math.ceil(ts+.15),x,y)}
  // Sparse deterministic surface details: dry shrubs, snow clumps and wild grass.
  for(let x=left;x<=right;x++){
   let sy=heightAt(x),b=biomeAt(x);if(sy<top||sy>bottom||hash(x,823)<.76||get(x,sy-1)!==0)continue;
@@ -1857,13 +1860,13 @@ function worldRender(sceneOnly=false){let cw=canvas.width,ch=canvas.height;let d
  for(const [k,c] of crops){let [x,y]=k.split(',').map(Number);if(x<left||x>right||y<top||y>bottom)continue;let sx=(x*T-cam.x)*zoom+cw/2,sy=(y*T-cam.y)*zoom+ch/2;let h=(8+Math.floor(c.age)*7)*zoom;ctx.fillStyle=c.kind===100?'#a6c85b':'#67bc51';ctx.fillRect(sx+14*zoom,sy+32*zoom-h,4*zoom,h);if(c.age>1){ctx.fillStyle=c.kind===100?'#ead67c':'#f69a41';ctx.fillRect(sx+10*zoom,sy+32*zoom-h,12*zoom,8*zoom)}}
  if(weather!=='clear'){let count=weather==='storm'?95:65;for(let i=0;i<count;i++){let sx=(hash(i,1482)*cw+weatherPhase*(weather==='snow'?14:140)+i*73)%(cw+20),sy=(hash(i,1782)*ch+weatherPhase*(weather==='snow'?26:240)+i*41)%(ch+20);ctx.strokeStyle=weather==='snow'?'#eafaffcc':'#9ddcff9a';ctx.lineWidth=Math.max(1,zoom*.55);ctx.beginPath();ctx.moveTo(sx,sy);ctx.lineTo(sx+(weather==='snow'?2:5)*zoom,sy+(weather==='snow'?2:12)*zoom);ctx.stroke()}if(weather==='storm'&&Math.sin(weatherPhase*5)>.9995){ctx.fillStyle='#d9f1ff44';ctx.fillRect(0,0,cw,ch)}}
  if(sceneOnly)return;
- drawWorldDrops(cw,ch);drawGraves(cw,ch);let px=(player.x*T-cam.x)*zoom+cw/2,py=(player.y*T-cam.y)*zoom+ch/2;character(px,py,32*zoom);drawOnlinePlayers(cw,ch);drawEnemies(cw,ch);drawProjectiles(cw,ch);drawAttack(cw,ch);drawFx(cw,ch);drawLighting(cw,ch,left,right,top,bottom,day);drawEnvironmentVignette(cw,ch);
+ drawWorldDrops(cw,ch);drawGraves(cw,ch);let px=(player.x*T-cam.x)*zoom+cw/2,py=(player.y*T-cam.y)*zoom+ch/2;character(px,py,32*zoom);drawOnlinePlayers(cw,ch);drawEnemies(cw,ch);drawProjectiles(cw,ch);drawAttack(cw,ch);drawFx(cw,ch);drawLighting(cw,ch,left,right,top,bottom,day,visibleLights);drawEnvironmentVignette(cw,ch);
  let {tx,ty,reachable,front,back}=tileTarget();if(reachable&&tx>=0&&tx<W&&ty>=0&&ty<H&&!(inv[active]?.id in WEAPONS)&&inv[active]?.id!==59){let mx=(tx*T-cam.x)*zoom+cw/2,my=(ty*T-cam.y)*zoom+ch/2;ctx.strokeStyle='#f9e9ae';ctx.lineWidth=Math.max(1,zoom);ctx.strokeRect(Math.floor(mx)+1,Math.floor(my)+1,ts-2,ts-2);if(mineProgress>0&&mineX===tx&&mineY===ty){ctx.fillStyle='#0009';ctx.fillRect(mx,my+ts*.75,ts,ts*.16);ctx.fillStyle='#ffe18a';ctx.fillRect(mx,my+ts*.75,ts*Math.min(1,mineProgress/digTime(get(tx,ty),inv[active]?.id)),ts*.16)}}
  // カーソル表示と採掘・設置対象は同じ座標変換を使用する。
  drawItemCursor();
 }
 function hudUpdate(){document.getElementById('info').firstChild.textContent=layerAt(player.x,player.y)+' / '+(biomeAt(player.x)==='desert'?'砂漠':biomeAt(player.x)==='snow'?'雪原':biomeAt(player.x)==='coast'?'海岸':'森林')+'　|　深度: ';document.getElementById('coords').textContent=Math.floor(player.x)+', '+Math.floor(player.y);document.getElementById('depth').textContent=Math.max(0,Math.floor(player.y-heightAt(Math.floor(player.x))));document.getElementById('zoomtext').textContent=zoom.toFixed(1);document.getElementById('kills').textContent=killCount;let d=smoothedLightDepth??localLightDepth(),dayVal=(Math.sin((time/1440)*Math.PI*2-Math.PI/2)+1)/2;const nightLight=Math.max(0,Math.min(1,(.44-dayVal)*3))*.75;document.getElementById('lighttext').textContent=Math.round(100*(1-Math.min(.97,1-(1-nightLight)*(1-darkAtDepth(d)))))+'%';let hh=Math.floor(time/60)%24,mm=Math.floor(time%60);document.getElementById('clock').textContent=(gameMode==='sandbox'?'✨ ':'')+(timeFrozen?'⏸ ':'')+(weather==='clear'?'':weather==='rain'?'🌧 ':weather==='storm'?'⛈ ':'❄ ')+(hh>=6&&hh<18?'☀ ':'☾ ')+String(hh).padStart(2,'0')+':'+String(mm).padStart(2,'0');}
-let miniTimer=0;function renderMini(dt){miniTimer+=dt;if(miniTimer<.80)return;miniTimer=0;
+let miniTimer=0;function renderMini(dt){miniTimer+=dt;if(miniTimer<1.15)return;miniTimer=0;
  const mw=mini.width,mh=mini.height,scale=2,centerX=player.x,centerY=player.y;
  mctx.fillStyle='#182e40';mctx.fillRect(0,0,mw,mh);
  for(let mx=0;mx<mw;mx+=4)for(let my=0;my<mh;my+=4){
@@ -1884,6 +1887,15 @@ function resize(){
 // A day/night cycle is 3 times longer than before: 10 -> 10/3 game minutes per second.
 const WORLD_TIME_RATE=10/3;
 let previewDrawAt=0, gameDrawAt=0, hudDrawAt=0;
+// Adaptive frame pacing: try 60 FPS when the device can sustain it.
+// Back off gently on weak devices to avoid the long stalls caused by
+// continuously starting a new expensive render before the next frame.
+let smoothRenderCost=9, smoothFrameInterval=1000/60, smoothFrameSamples=0;
+function renderFrameBudget(){
+ const target=smoothRenderCost<12.2?1000/60:smoothRenderCost<18?1000/45:1000/30;
+ smoothFrameInterval+=(target-smoothFrameInterval)*.07;
+}
+
 function loop(ts){
  requestAnimationFrame(loop);
  if(touchDevice)document.body.classList.toggle('touchPlaying',mode==='playing'||mode==='touchEdit');
@@ -1922,7 +1934,7 @@ function loop(ts){
   }
   if(mode!=='dead'){
    autosave+=dt;if(autosave>60){save(true);if(onlineRoomCode)onlineLocalSave();autosave=0}
-   const cx=player.x*T,cy=(player.y-player.h*.6)*T,a=Math.min(1,dt*6);
+   const cx=player.x*T,cy=(player.y-player.h*.6)*T,a=1-Math.exp(-12*Math.max(0,dt));
    cam.x+=(cx-cam.x)*a;cam.y+=(cy-cam.y)*a;
    if(ts-hudDrawAt>=125){hudDrawAt=ts;hudUpdate();updateHP();}
    renderMini(dt);if(onlineRoomCode&&mode==='playing'){const moved=Math.hypot(player.x-onlineLastMoveX,player.y-onlineLastMoveY)>.018||player.face!==onlineLastFace;const interval=moved?ONLINE_SEND_MOVING_MS:ONLINE_SEND_IDLE_MS;if(ts-onlineMoveAt>=interval){onlineMoveAt=ts;onlineLastMoveStamp=ts;onlineLastMoveX=player.x;onlineLastMoveY=player.y;onlineLastFace=player.face;publishOnlineMovement({x:player.x,y:player.y,face:player.face,name:getLocalProfile().name});}}
@@ -1932,8 +1944,15 @@ function loop(ts){
  }
  // Rendering every animation callback is expensive on high-refresh phones;
  // leave physics and input at full cadence and cap the canvas work.
- if(ts-gameDrawAt>=(touchDevice?24:19)){
-  gameDrawAt=ts;worldRender();
+ if(ts-gameDrawAt>=smoothFrameInterval-1){
+  gameDrawAt=ts;
+  const renderStarted=performance.now();
+  worldRender();
+  const renderCost=performance.now()-renderStarted;
+  // Reset the budget after a major view/zoom change rather than inheriting
+  // the load estimate from a completely different scene.
+  smoothRenderCost=smoothFrameSamples++===0?renderCost:smoothRenderCost*.89+renderCost*.11;
+  renderFrameBudget();
  }
 }
 
