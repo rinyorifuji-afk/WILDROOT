@@ -71,11 +71,95 @@ button{background:linear-gradient(#546950,#283c39 60%,#253039);color:#ffeed1;bor
 #touchGuide{position:absolute;left:50%;transform:translateX(-50%);bottom:8px;font-size:10px;color:#fff3d4;background:#11232dcc;padding:5px 9px;border-radius:6px;white-space:nowrap}
 @media(pointer:coarse){body.touchPlaying #touchControls{display:block}#quickActions,#quickActionsRight{bottom:76px!important;gap:4px}#quickActions{left:12px}#quickActionsRight{right:12px}#quickActions .quickButton,#quickActionsRight .quickButton{min-width:55px;min-height:43px;padding:4px;font-size:9px}#quickActions .quickButton .symbol,#quickActionsRight .quickButton .symbol{font-size:15px}#hotbar{bottom:76px!important;max-width:62vw!important}.slot{width:clamp(28px,4.6vw,44px)!important;height:clamp(32px,5vw,46px)!important}.slot canvas{width:24px!important;height:24px!important}#top{top:6px;left:6px}#stats{padding:5px;min-width:128px}#map{width:120px;height:120px;right:7px;top:7px}#clock{right:135px;top:7px}#touchGuide{display:none}#game{touch-action:none}#overlay{touch-action:pan-y}}
 @media(pointer:coarse) and (orientation:portrait){#rotateNotice{display:flex}#touchControls{display:none}#hud{display:none}#overlay{display:none}}
-</style></head><body><canvas id="game"></canvas><div id="hud"><div id="top"><div id="stats"><div class="stat">❤ HP <span id="hp">100 / 100</span></div><div class="bar"><div id="hpfill" class="fill" style="width:100%"></div></div><div class="stat">✦ MP <span id="mpnum">20 / 20</span></div><div class="bar"><div class="fill" id="mpfill" style="width:100%;background:#67a5f2"></div></div><div class="stat">🫧 酸素 <span id="oxynum">100 / 100</span></div><div class="bar"><div class="fill" id="oxyfill" style="width:100%;background:#a0e2f5"></div></div><div class="stat">🍖 食料 <span id="foodnum">100 / 100</span></div><div class="bar"><div class="fill" id="foodfill" style="width:100%;background:#d59752"></div></div><div class="stat">💧 水分 <span id="waternum">100 / 100</span></div><div class="bar" style="margin-bottom:0"><div class="fill" id="waterfill" style="width:100%;background:#55b3dc"></div></div></div><div id="info">地表 / 森林　|　深度: <span id="depth">0</span><br>座標: <span id="coords">0, 0</span><br>ズーム: <span id="zoomtext">2.0</span>x<br>光量: <span id="lighttext">100%</span> · 撃破: <span id="kills">0</span></div></div><canvas id="map" width="224" height="224" title="全体マップを表示 (M)"></canvas><div id="clock">☀ 08:00</div><div id="toast"></div><div id="quickActions"><button type="button" class="quickButton" id="quickInventory" title="持ち物を開く (E)"><span class="keyhint">E</span><span class="symbol">🎒</span><span>持ち物</span></button><button type="button" class="quickButton" id="quickCraft" title="クラフト (C)"><span class="keyhint">C</span><span class="symbol">📖</span><span>クラフト</span></button></div><div id="quickActionsRight" class="right"><button type="button" class="quickButton" id="quickMap" title="全体マップ (M)"><span class="keyhint">M</span><span class="symbol">🗺️</span><span>マップ</span></button><button type="button" class="quickButton" id="quickSettings" title="設定・操作説明 (Esc)"><span class="keyhint">Esc</span><span class="symbol">⚙️</span><span>設定</span></button></div><div id="hotbar"></div></div><div id="rotateNotice">📱 横画面にしてください<small>WILDROOTのスマホ版は横向き専用です。<br>端末を横に回転してプレイしてください。</small></div><div id="touchControls" aria-label="スマホ操作"><div id="touchMove"><button id="touchLeft" aria-label="左へ移動">◀</button><button id="touchRight" aria-label="右へ移動">▶</button></div><div id="touchSpecial"><button id="touchDrop" aria-label="アイテムを捨てる">Q</button><button id="touchDown" aria-label="下へ">▼</button><button id="touchJump" aria-label="ジャンプ">⤒</button></div><div id="touchGuide">短押し：設置・攻撃　長押し：採掘</div></div><div id="itemTooltip" role="tooltip"></div><div id="overlay"><div id="modal"></div></div><script>
+
+/* WILDROOT full-screen title + 10-world save browser */
+body.titleScene #game{cursor:default}
+body.titleScene #hud,body.titleScene #touchControls{display:none!important}
+body.titleScene #overlay{background:linear-gradient(90deg,rgba(5,14,19,.38),rgba(6,14,22,.19) 58%,rgba(5,14,19,.47));backdrop-filter:none}
+body.titleScene #modal{width:100%;height:100dvh;max-height:100dvh;max-width:none;margin:0;padding:0;background:transparent;border:none;border-radius:0;box-shadow:none;overflow:auto;display:flex;justify-content:center;align-items:center}
+body.titleScene #modal::before{display:none!important;content:none!important}
+body.titleScene #modal>.titlePanel{flex:0 1 930px;min-width:0;width:min(930px,94vw);margin:auto;box-sizing:border-box}
+body.titleScene #modal>.titleHome{flex:0 0 100%;box-sizing:border-box}
+body.titleScene #modal{flex-direction:column;justify-content:safe center;align-items:center;overflow-y:auto;overflow-x:hidden}
+.titleHome{width:100%;min-height:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:clamp(12px,3vh,26px);padding:calc(30px + env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom));text-shadow:0 3px 4px #041016,0 0 23px #06161c}
+.titleHome h1{font-size:clamp(48px,9vw,110px);letter-spacing:.12em;margin:0;line-height:1.08;color:#ffe7ab;-webkit-text-stroke:1px #624929;filter:drop-shadow(0 5px 3px #000b)}
+.titleHome .subTitle{color:#e6f0de;font-size:clamp(11px,1.5vw,17px);letter-spacing:.36em;margin:0 0 8px}
+.titleMenuButtons{display:flex;flex-direction:column;gap:12px;align-items:stretch;width:min(310px,75vw)}
+.titleMenuButtons button,.worldPrimary{width:100%;margin:0;background:linear-gradient(#4d6f67,#223b38);border:2px solid #cbb989;box-shadow:inset 0 2px #ffffff22,0 5px 0 #17201d,0 8px 18px #0008;color:#fff1c9;min-height:53px;font-size:17px;letter-spacing:.10em;border-radius:6px;text-shadow:0 2px #15241f}
+.titleMenuButtons button:hover,.worldPrimary:hover{background:linear-gradient(#6f9686,#365b51)}
+.titleFooter{font-size:11px;color:#e0e8df;opacity:.83;max-width:650px}
+.titlePanel{width:min(930px,94vw);max-height:94dvh;overflow:auto;background:#14232de8;border:2px solid #c8a969;box-shadow:0 12px 55px #000b;border-radius:12px;padding:clamp(13px,2.4vw,28px);text-shadow:0 1px 1px #0008}
+.titlePanel h2{font-size:clamp(20px,3vw,28px)}
+.worldSlots{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;text-align:left;margin:12px auto 20px}
+.worldSlot{display:flex;align-items:center;gap:10px;min-height:84px;padding:10px;background:#263e43df;border:1px solid #6e8f90;border-radius:8px}
+.worldSlot.empty{background:#1c3234be;border-style:dashed}
+.worldSlot .slotNumber{flex:0 0 37px;height:37px;border:1px solid #738c7f;background:#132d31;display:flex;align-items:center;justify-content:center;border-radius:5px;color:#f4d794;font-weight:800}
+.worldSlot .worldSummary{min-width:0;flex:1}.worldSlot .worldSummary strong{display:block;color:#fff3d7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px}
+.worldSlot .worldSummary small{display:block;color:#bad0cb;font-size:10px;line-height:1.6}
+.worldSlot button{padding:8px 10px;min-width:60px;margin:0;font-size:12px;white-space:nowrap}.worldSlot button.removeWorld{border-color:#b97d7b;background:#4d3438;min-width:36px;padding:8px 7px}
+.worldSettings{display:grid;grid-template-columns:1fr 1fr;gap:12px;text-align:left;margin:16px 0}.worldSettings .full{grid-column:1/-1}.worldSettings label{display:block;color:#ffebbf;font-size:12px;margin-bottom:6px}.worldSettings input[type=text],.worldSettings select{width:100%;max-width:100%;font-size:15px;padding:12px;border:2px solid #78949c;border-radius:6px;background:#102831;color:#f5f2df}
+.worldSettings .modeChoices{justify-content:stretch;margin:0;gap:8px}.worldSettings .modeChoices label{flex:1;min-width:0;font-size:13px}
+.worldActions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}.worldActions button{min-width:120px}
+.worldSettings .worldError{color:#ffb6a1;font-size:12px}
+.controlGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:14px 0}.controlRow{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px;background:#20343bd1;border:1px solid #577279;border-radius:6px;text-align:left;font-size:12px}.controlRow button{margin:0;min-width:94px;font-size:11px;padding:7px}
+@media(max-width:600px){.worldSlots{grid-template-columns:1fr}.titleHome h1{font-size:clamp(37px,10vw,63px)}.titleMenuButtons button{min-height:42px;font-size:14px}.worldSlot{min-height:68px}.worldSettings{grid-template-columns:1fr}.worldSettings .modeChoices{flex-wrap:wrap}.controlGrid{grid-template-columns:1fr}}
+html.hideMiniMap #map{display:none}html.hideGameHelp #help{display:none}
+.worldSlot .editWorld{padding:7px 10px;min-width:54px;font-size:12px;white-space:nowrap}
+
+/* Touch controls V2: independent customizable positions; fixed four top shortcuts. */
+html,body,#game,#touchControls,#touchControls button{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+#game{touch-action:none;-webkit-tap-highlight-color:transparent}
+#touchControls button{position:absolute;box-sizing:border-box;min-width:0!important;min-height:0!important;padding:0!important;margin:0!important;display:flex;align-items:center;justify-content:center;border-radius:17px;font-size:clamp(18px,2.5vw,31px)}
+#touchMove,#touchSpecial{position:static!important;display:contents!important}
+#touchStick{border-radius:50%!important;background:#18394dbb!important}
+#stickKnob{width:42%;height:42%;border-radius:50%;background:#c9edff;box-shadow:0 0 0 3px #447eab}
+#touchGuide{bottom:2px!important;font-size:9px!important}
+#touchEditBar{display:none;position:fixed;left:50%;top:5px;transform:translateX(-50%);z-index:9;max-width:96vw;min-height:51px;padding:5px 10px;border-radius:9px;border:2px solid #6aa9cc;background:#132432ef;color:#fff;align-items:center;gap:9px;white-space:nowrap;font-size:12px;pointer-events:auto}
+#touchEditBar label{display:flex;align-items:center;gap:3px}
+#touchEditBar input[type=range]{width:85px}
+#touchEditBar select{font-size:12px;padding:4px;max-width:100px}
+#touchEditBar button{padding:5px 8px!important;font-size:12px;margin:0!important;min-width:0!important}
+body.touchEditing #touchEditBar{display:flex}
+body.touchEditing #touchControls{display:block!important;z-index:8}
+body.touchEditing #touchControls button,body.touchEditing .quickButton{outline:2px dashed #72d7f9;outline-offset:3px;touch-action:none}
+body.touchEditing #touchControls button.editSelected,body.touchEditing .quickButton.editSelected{outline:4px solid #ffdc7c}
+body.touchEditing #touchGuide{display:none}
+body.touchEditing #overlay{display:none!important}
+@media(pointer:coarse){
+ body.touchPlaying #quickActions,body.touchPlaying #quickActionsRight,body.touchEditing #quickActions,body.touchEditing #quickActionsRight{display:contents!important}
+ body.touchPlaying .quickButton,body.touchEditing .quickButton{position:fixed!important;top:9px;bottom:auto!important;left:auto;right:auto;min-width:0!important;min-height:0!important;width:50px;height:47px;padding:3px!important;z-index:4;font-size:9px!important}
+ body.touchPlaying #hotbar,body.touchEditing #hotbar{bottom:14px!important;max-width:62vw!important}
+ body.touchPlaying #touchControls,body.touchEditing #touchControls{display:block!important}
+ body.touchPlaying #touchGuide{display:none}
+}
+@media(pointer:coarse) and (orientation:portrait){body.touchEditing #touchControls,body.touchEditing #touchEditBar{display:none!important}}
+
+/* Keep the four main menu shortcuts along the top edge on PC too. */
+#quickActions,#quickActionsRight{position:absolute;top:14px!important;bottom:auto!important;gap:7px}
+#quickActions{left:calc(50% - 142px)}
+#quickActionsRight{left:auto;right:calc(50% - 142px)}
+#quickActions .quickButton,#quickActionsRight .quickButton{min-width:60px;min-height:54px;padding:4px 6px;font-size:10px}
+#quickActions .quickButton .symbol,#quickActionsRight .quickButton .symbol{font-size:19px}
+#quickActions .quickButton .keyhint,#quickActionsRight .quickButton .keyhint{display:none}
+@media(max-width:780px) and (pointer:fine){#quickActions{top:115px!important;left:12px}#quickActionsRight{top:115px!important;right:12px}}
+</style></head><body><canvas id="game"></canvas><div id="hud"><div id="top"><div id="stats"><div class="stat">❤ HP <span id="hp">100 / 100</span></div><div class="bar"><div id="hpfill" class="fill" style="width:100%"></div></div><div class="stat">✦ MP <span id="mpnum">20 / 20</span></div><div class="bar"><div class="fill" id="mpfill" style="width:100%;background:#67a5f2"></div></div><div class="stat">🫧 酸素 <span id="oxynum">100 / 100</span></div><div class="bar"><div class="fill" id="oxyfill" style="width:100%;background:#a0e2f5"></div></div><div class="stat">🍖 食料 <span id="foodnum">100 / 100</span></div><div class="bar"><div class="fill" id="foodfill" style="width:100%;background:#d59752"></div></div><div class="stat">💧 水分 <span id="waternum">100 / 100</span></div><div class="bar" style="margin-bottom:0"><div class="fill" id="waterfill" style="width:100%;background:#55b3dc"></div></div></div><div id="info">地表 / 森林　|　深度: <span id="depth">0</span><br>座標: <span id="coords">0, 0</span><br>ズーム: <span id="zoomtext">2.0</span>x<br>光量: <span id="lighttext">100%</span> · 撃破: <span id="kills">0</span></div></div><canvas id="map" width="224" height="224" title="全体マップを表示 (M)"></canvas><div id="clock">☀ 08:00</div><div id="toast"></div><div id="quickActions"><button type="button" class="quickButton" id="quickInventory" title="持ち物を開く (E)"><span class="keyhint">E</span><span class="symbol">🎒</span><span>持ち物</span></button><button type="button" class="quickButton" id="quickCraft" title="クラフト (C)"><span class="keyhint">C</span><span class="symbol">📖</span><span>クラフト</span></button></div><div id="quickActionsRight" class="right"><button type="button" class="quickButton" id="quickMap" title="全体マップ (M)"><span class="keyhint">M</span><span class="symbol">🗺️</span><span>マップ</span></button><button type="button" class="quickButton" id="quickSettings" title="設定・操作説明 (Esc)"><span class="keyhint">Esc</span><span class="symbol">⚙️</span><span>設定</span></button></div><div id="hotbar"></div></div><div id="rotateNotice">📱 横画面にしてください<small>WILDROOTのスマホ版は横向き専用です。<br>端末を横に回転してプレイしてください。</small></div><div id="touchControls" aria-label="スマホ操作"><div id="touchMove"><button id="touchLeft" aria-label="左へ移動">◀</button><button id="touchRight" aria-label="右へ移動">▶</button><button id="touchStick" aria-label="移動スティック"><span id="stickKnob"></span></button></div><div id="touchSpecial"><button id="touchDrop" aria-label="アイテムを捨てる">Q</button><button id="touchDown" aria-label="下へ">▼</button><button id="touchJump" aria-label="ジャンプ">⤒</button><button id="touchZoomIn" aria-label="拡大">＋</button><button id="touchZoomOut" aria-label="縮小">－</button></div><div id="touchGuide">短押し：設置・攻撃　長押し：採掘</div></div><div id="touchEditBar"><strong>📱 スマホ操作配置</strong><label>移動 <select id="touchStyle"><option value="buttons">左右ボタン</option><option value="stick">スティック</option></select></label><label>サイズ <input id="touchSize" type="range" min="38" max="140" step="2" value="72"></label><span id="touchEditSelection">ボタンを選択・ドラッグ</span><button id="touchLayoutReset">初期化</button><button id="touchEditDone">保存して戻る</button></div><div id="itemTooltip" role="tooltip"></div><div id="overlay"><div id="modal"></div></div><script>
 
 'use strict';
 (()=>{
 const W=4000,H=1200,T=32,CHUNK=32,SAVEKEY='wildroot_proto_v01';
+const WORLD_SLOTS=10,WORLD_SAVE_PREFIX='wildroot_world_v2_slot_';
+let currentWorldSlot=0,worldName='ワールド 1',titlePreviewFrame=0,titleViewX=W/2;
+const worldSaveKey=n=>WORLD_SAVE_PREFIX+n;
+function migrateOldWorld(){try{if(localStorage.getItem(SAVEKEY)&&!localStorage.getItem(worldSaveKey(0))){let old=JSON.parse(localStorage.getItem(SAVEKEY));old.worldName=old.worldName||'以前のワールド';old.savedAt=old.savedAt||Date.now();localStorage.setItem(worldSaveKey(0),JSON.stringify(old));}}catch(e){console.warn('旧セーブ移行',e)}}
+function readWorldSlot(n){try{const raw=localStorage.getItem(worldSaveKey(n));if(!raw)return null;const d=JSON.parse(raw);if(!d||!Array.isArray(d.inv)||!Array.isArray(d.edits))return {invalid:true};return {name:d.worldName||d.session||'ワールド '+(n+1),seed:d.session||'',mode:d.gameMode||'survival',savedAt:d.savedAt||null,version:d.v||1}}catch(e){return null}}
+const DEFAULT_BINDS={left:'KeyA',right:'KeyD',up:'KeyW',down:'KeyS',jump:'Space',dash:'ShiftLeft',inventory:'KeyE',craft:'KeyC',map:'KeyM',save:'KeyF',pause:'Escape',drop:'KeyQ',hotbar1:'Digit1',hotbar2:'Digit2',hotbar3:'Digit3',hotbar4:'Digit4',hotbar5:'Digit5',hotbar6:'Digit6',hotbar7:'Digit7',hotbar8:'Digit8',hotbar9:'Digit9',mine:'Mouse0',place:'Mouse2',zoomIn:'Equal',zoomOut:'Minus'};
+let keyBinds={...DEFAULT_BINDS};
+let titlePrefs={mini:true,help:true,zoom:2};
+try{keyBinds={...DEFAULT_BINDS,...JSON.parse(localStorage.getItem('wildroot_controls_v1')||'{}')};titlePrefs={...titlePrefs,...JSON.parse(localStorage.getItem('wildroot_settings_v1')||'{}')}}catch(e){}
+function applyTitlePrefs(){document.documentElement.classList.toggle('hideMiniMap',!titlePrefs.mini);document.documentElement.classList.toggle('hideGameHelp',!titlePrefs.help)}
+function saveTitlePrefs(){try{localStorage.setItem('wildroot_settings_v1',JSON.stringify(titlePrefs))}catch(e){}applyTitlePrefs()}
+function toGameKey(code){const aliases={left:'KeyA',right:'KeyD',up:'KeyW',down:'KeyS',jump:'Space',dash:'ShiftLeft',inventory:'KeyE',craft:'KeyC',map:'KeyM',save:'KeyF',pause:'Escape',drop:'KeyQ',zoomIn:'Equal',zoomOut:'Minus'};for(let n=1;n<=9;n++)aliases['hotbar'+n]='Digit'+n;for(const [action,bind] of Object.entries(keyBinds))if(code===bind&&code!==DEFAULT_BINDS[action]&&aliases[action])return aliases[action];return code;}
+applyTitlePrefs();
 const canvas=document.getElementById('game'),ctx=canvas.getContext('2d',{alpha:false});ctx.imageSmoothingEnabled=false;
 const mini=document.getElementById('map'),mctx=mini.getContext('2d');mctx.imageSmoothingEnabled=false;
 const touchDevice=matchMedia('(pointer: coarse)').matches;
@@ -189,7 +273,10 @@ const hotbar=document.getElementById('hotbar'),toastEl=document.getElementById('
 const TYPES={air:0,grass:1,dirt:2,stone:3,wood:4,leaves:5,copper:6,iron:7,torch:8,pick:9,axe:10,shovel:11,bench:12,coal:13,stonePick:14,stoneAxe:15,stoneShovel:16,ironPick:17,furnace:18,copperBar:19,ironBar:20,copperPick:21,copperAxe:22,copperShovel:23,ironAxe:24,ironShovel:25,wall:26,sword:27,gel:28,gold:29,crystal:30,ember:31,sand:32,snow:33,chest:34,ruin:35,lava:36,ancient:37,skygrass:38,ice:39,goldBar:40,crystalBlade:41,desertFang:42,iceBlade:43,emberSword:44,healingPotion:45,hide:46,frostShard:47,fireCore:48,copperHelm:49,copperChest:50,copperLegs:51,ironHelm:52,ironChest:53,ironLegs:54,crystalHelm:55,crystalChest:56,crystalLegs:57,storageChest:58,bow:59,arrow:60,magicStaff:61,ancientRelic:62,skyShard:63,ancientSword:64,skySword:65,goldHelm:66,goldChest:67,goldLegs:68,ancientHelm:69,ancientChest:70,ancientLegs:71,ancientPick:72,ruinBrick:73,spikes:74,lockedChest:75,dungeonKey:76,guardianShard:77,guardianSword:78,guardianHelm:79,guardianChest:80,guardianLegs:81,templeStone:82,iceCrystal:83,sunShard:84,iceCore:85,sunSpear:86,iceSword:87,seaWater:88,rawMeat:89,wool:90,bed:91,campfire:92,cookedMeat:93,emptyFlask:94,freshWater:95,waterFlask:96,fish:97,grilledFish:98,hoe:99,wheatSeed:100,carrotSeed:101,wheat:102,carrot:103,bread:104,stew:105,wateringCan:106,table:107,chair:108,lantern:109,ironLocker:110,seaweed:111,coral:112,oxygenPotion:113,tilledSoil:114,waterBucket:115,boat:116,seaGem:117,seaBlade:118,coalOre:119};
 const names=['空気','草ブロック','土','石','木材','葉','銅鉱石','鉄鉱石','松明','木のツルハシ','木の斧','木のシャベル','作業台','石炭','石のツルハシ','石の斧','石のシャベル','鉄のツルハシ','炉','銅インゴット','鉄インゴット','銅のツルハシ','銅の斧','銅のシャベル','鉄の斧','鉄のシャベル','廃止された背景壁','木の剣','スライムジェル','金鉱石','蒼晶鉱石','炎晶鉱石','砂','雪','宝箱','古代遺跡の石','溶岩','古代鉱石','浮島の草','氷','金インゴット','蒼晶の剣','砂牙の剣','氷結の剣','灼熱の剣','回復薬','獣皮','氷の欠片','炎の核','銅の兜','銅の鎧','銅の脚甲','鉄の兜','鉄の鎧','鉄の脚甲','蒼晶の兜','蒼晶の鎧','蒼晶の脚甲','収納チェスト','木の弓','矢','蒼晶の杖','古代の欠片','天空の結晶','古代の大剣','天空の剣','金の兜','金の鎧','金の脚甲','古代の兜','古代の鎧','古代の脚甲','古代のツルハシ','遺跡レンガ','古代の針床','封印された宝箱','遺跡の鍵','守衛の結晶','守衛の剣','守衛の兜','守衛の鎧','守衛の脚甲','砂漠の神殿石','氷洞窟の結晶','太陽の欠片','氷晶核','太陽の槍','氷晶の剣','海水','生肉','羊毛','ベッド','焚き火','焼いた肉','空の水筒','淡水','飲み水筒','魚','焼き魚','木のクワ','小麦の種','ニンジンの種','小麦','ニンジン','パン','野菜シチュー','じょうろ','木のテーブル','木の椅子','ランタン','鉄の収納庫','海藻','サンゴ','酸素ポーション','耕した土','水入りバケツ','木のボート','海底の宝石','潮流の剣','石炭鉱石'];
 const colors=['#000','#69ad47','#977047','#818791','#936c42','#4f9e4b','#bb744c','#aeb4b8','#ffe19a','#a4b6bf','#b18b59','#aeb2a9','#c49358','#34343d','#a0adb9','#93887b','#b5c0ca','#c2c7cf','#c8804e','#c68253','#c4c8d0','#c48c67','#b97e5f','#bd8c65','#d3d7dc','#d8dbe0','#777e85','#dcb47a','#64c990','#e9c35b','#58d9ef','#ff8057','#e6c383','#d5edf8','#d9a65a','#6c657a','#f35928','#ac84e8','#92d78c','#8bd8ee','#f2d26e','#8de5f5','#e8bb70','#a5e9ff','#ff8a43','#f66b7e','#996e54','#b7edff','#ef5f39','#cb8a56','#b9824d','#c08a60','#c6d3dc','#a9bbc7','#bccbd7','#58d5e8','#55a9d5','#8dcce8','#a46a41','#bd9a68','#ded6b0','#72d9f6','#c9a4ee','#a8ebff','#ca91ff','#a0e7ff','#e9c866','#ddae4a','#c7983c','#b498e8','#9470ce','#7c5cb6','#d9b6ef','#716a8e','#9ca4af','#d19c55','#ecc87a','#83d6e3','#7ed9e3','#6ea2b9','#50839a','#416d85','#c9a46c','#8ccce8','#e8c878','#8cf0ff','#f8d586','#a5efff','#3189cf','#c97773','#f1efe5','#ad8158','#e89a53','#ba593c','#8f6b49','#5daada','#4ec3f0','#80b5ca','#e4a05a','#a67c46','#d9b975','#ed9a45','#e8c971','#f5a44d','#f0ca75','#d3945b','#6fa4c6','#a17b50','#b78e57','#ffd06f','#9aa8bb','#3eae91','#ed8ea1','#80cdec','#795b3b','#7bbce4','#a77a45','#56e7dc','#72d6e9','#55565c'];
-const solid=t=>t!==0&&t!==5&&t!==8&&t!==36&&t!==74&&t!==88&&t!==95&&t!==107&&t!==108&&t!==109&&t!==111&&t!==112;
+names.push('苗木','流水');colors.push('#62ac51','#56b8de');
+const WATER_TILES=new Set([88,95,121,122,123,124,125]);
+const isWaterTile=t=>WATER_TILES.has(t);
+const solid=t=>t!==0&&t!==5&&t!==8&&t!==36&&t!==74&&t!==88&&t!==95&&t!==120&&!isWaterTile(t)&&t!==107&&t!==108&&t!==109&&t!==111&&t!==112;
 let genVersion=6,seed=0, player, edits=new Map(),wallEdits=new Map(), chunks=new Map(), inv=[],active=0,zoom=2,cam={x:0,y:0},time=0,mode='menu',last=0,accumulator=0,autosave=0,toastTimeout=0;
 let furnaces=new Map(),activeFurnace=null,furnaceSignature='',fx=[],swing=0,enemies=[],enemyTimer=0,attackCooldown=0,hitFlash=0,killCount=0;
 let armor=[null,null,null], keys=new Set(),mouse={x:0,y:0,wx:0,wy:0,left:false,right:false,inside:false},session=0;
@@ -377,6 +464,7 @@ function drawGraves(cw,ch){
   ctx.restore();
  }
 }
+const dropFallbackIcons=new Map();
 function drawWorldDrops(cw,ch){
  for(const d of worldDrops){
   const px=(d.x*T-cam.x)*zoom+cw/2,py=(d.y*T-cam.y)*zoom+ch/2;
@@ -384,9 +472,13 @@ function drawWorldDrops(cw,ch){
   const bob=Math.sin(d.age*3.3+d.bob)*2.4*zoom;
   const size=Math.max(12,14*zoom);
   ctx.save();ctx.globalAlpha=.93;ctx.fillStyle='#070c12aa';ctx.beginPath();ctx.ellipse(px,py+size*.46,size*.35,size*.12,0,0,Math.PI*2);ctx.fill();
-  const art=spriteReady(String(d.id))||assetReady(({1:'grass_block',2:'dirt_block',3:'stone_block',6:'copper_ore',7:'iron_ore',13:'coal_item',119:'coal_ore',19:'copper_bar',20:'iron_bar',29:'gold_ore',40:'gold_bar'})[d.id]);
+  const art=itemArtwork(d.id);
   if(art){ctx.imageSmoothingEnabled=false;ctx.drawImage(art,px-size*.5,py-size*.6+bob,size,size)}
-  else{ctx.fillStyle=colors[d.id]||'#d9bf8e';ctx.fillRect(px-size*.32,py-size*.3+bob,size*.64,size*.64);ctx.fillStyle='#ffffff69';ctx.fillRect(px-size*.32,py-size*.3+bob,size*.3,size*.11)}
+  else{
+   // Use the inventory icon as a fallback as well (e.g. seeds before artwork loads).
+   if(!dropFallbackIcons.has(d.id)){const fallback=document.createElement('canvas');fallback.width=fallback.height=32;iconDraw(fallback.getContext('2d'),d.id);dropFallbackIcons.set(d.id,fallback)}
+   ctx.imageSmoothingEnabled=false;ctx.drawImage(dropFallbackIcons.get(d.id),px-size*.5,py-size*.6+bob,size,size);
+  }
   if(d.n>1){ctx.textAlign='center';ctx.font='bold '+Math.max(10,9*zoom)+'px monospace';ctx.strokeStyle='#18202d';ctx.lineWidth=3;ctx.strokeText(String(d.n),px,py+size*.64+bob);ctx.fillStyle='#ffffff';ctx.fillText(String(d.n),px,py+size*.64+bob)}ctx.restore();
  }
 }
@@ -409,13 +501,20 @@ function addItem(id,n=1){
  for(let i=0;i<inv.length&&n>0;i++)if(!inv[i]){let c=Math.min(n,STACK_MAX);inv[i]={id,n:c};n-=c}
  return n===0;
 }
-function iconDraw(target,id,s=32){target.clearRect(0,0,s,s);const art=spriteReady(String(id))||((id===30||id===31)?spriteReady('ore_'+id):null)||assetReady(({1:'grass_block',2:'dirt_block',3:'stone_block',4:'wood_item',5:'leaves_block',6:'copper_ore',7:'iron_ore',13:'coal_item',119:'coal_ore',19:'copper_bar',20:'iron_bar',29:'gold_ore',40:'gold_bar',119:'coal_ore'})[id]||(id===38?'grass_block':null));if(art){target.imageSmoothingEnabled=false;const boost=id===86?s*.19:0;target.drawImage(art,-boost*.5,-boost*.5,s+boost,s+boost);return;}if([89,90,91,92,93,94,95,96,97,98].includes(id)){target.fillStyle=colors[id];target.fillRect(s*.15,s*.18,s*.7,s*.64);target.fillStyle='#ffffff77';target.fillRect(s*.23,s*.25,s*.28,s*.1)}else if([9,10,11,14,15,16,17,21,22,23,24,25,72].includes(id)){
+// Keep the inventory, hotbar and physical drops on the same item artwork.
+// Wood and leaves are placeable blocks: their icons deliberately use the exact block texture.
+function itemArtwork(id){
+ const blockImage=({1:'grass_block',2:'dirt_block',3:'stone_block',4:'wood_block',5:'leaves_block',6:'copper_ore',7:'iron_ore',29:'gold_ore',30:'ore_30',31:'ore_31',38:'grass_block',119:'coal_ore'})[id];
+ if(id===4||id===5){const tile=assetReady(blockImage);if(tile)return tile;}
+ return spriteReady(String(id))||((id===30||id===31)?spriteReady('ore_'+id):null)||assetReady(blockImage||({13:'coal_item',19:'copper_bar',20:'iron_bar',40:'gold_bar'})[id]);
+}
+function iconDraw(target,id,s=32){target.clearRect(0,0,s,s);const art=itemArtwork(id);if(art){target.imageSmoothingEnabled=false;const boost=id===86?s*.19:0;target.drawImage(art,-boost*.5,-boost*.5,s+boost,s+boost);return;}if([89,90,91,92,93,94,95,96,97,98].includes(id)){target.fillStyle=colors[id];target.fillRect(s*.15,s*.18,s*.7,s*.64);target.fillStyle='#ffffff77';target.fillRect(s*.23,s*.25,s*.28,s*.1)}else if([9,10,11,14,15,16,17,21,22,23,24,25,72].includes(id)){
  target.fillStyle='#966d45';target.fillRect(s*.48,s*.26,s*.13,s*.65);
  target.fillStyle=[9,10,11].includes(id)?'#b89a6a':[14,15,16].includes(id)?'#a6aeb5':[21,22,23].includes(id)?'#c48150':'#d6d9dd';
  if([9,14,17,21,72].includes(id)){target.fillRect(s*.18,s*.14,s*.54,s*.24);target.fillRect(s*.16,s*.26,s*.17,s*.16)}
  else if([10,15,22,24].includes(id)){target.fillRect(s*.45,s*.10,s*.40,s*.35);target.fillStyle='#7e8c92';target.fillRect(s*.74,s*.15,s*.11,s*.22)}
  else{target.fillRect(s*.32,s*.12,s*.47,s*.28);target.fillRect(s*.28,s*.23,s*.11,s*.18)}
- }else if(id===59){target.strokeStyle='#c6a06b';target.lineWidth=3;target.beginPath();target.arc(s*.34,s*.5,s*.29,-Math.PI*.5,Math.PI*.5);target.stroke();target.strokeStyle='#f5ebd0';target.lineWidth=1;target.beginPath();target.moveTo(s*.34,s*.2);target.lineTo(s*.34,s*.8);target.stroke()}else if(id===60){target.fillStyle='#cdb78d';target.fillRect(s*.43,s*.11,s*.09,s*.76);target.fillStyle='#e2e7e9';target.fillRect(s*.38,s*.08,s*.2,s*.18)}else if(id===76){target.fillStyle='#f7d47b';target.fillRect(s*.2,s*.34,s*.48,s*.18);target.fillRect(s*.6,s*.33,s*.14,s*.40);target.fillRect(s*.45,s*.45,s*.11,s*.3)}else if(id===75){target.fillStyle='#68472b';target.fillRect(s*.1,s*.2,s*.8,s*.65);target.fillStyle='#eaca83';target.fillRect(s*.1,s*.42,s*.8,s*.1);target.fillRect(s*.45,s*.4,s*.12,s*.25)}else if(id===58){target.fillStyle='#9e6d3d';target.fillRect(s*.1,s*.25,s*.8,s*.62);target.fillStyle='#dfb96e';target.fillRect(s*.1,s*.43,s*.8,s*.12);target.fillRect(s*.47,s*.43,s*.12,s*.23)}else if([27,41,42,43,44,64,65,78,86,87].includes(id)){target.fillStyle=colors[id]||'#cbd6df';target.fillRect(s*.47,s*.09,s*.12,s*.57);target.fillRect(s*.32,s*.62,s*.42,s*.11);target.fillStyle='#9d754f';target.fillRect(s*.49,s*.72,s*.09,s*.21)}else if((id>=49&&id<=57)||(id>=66&&id<=71)||(id>=79&&id<=81)){target.fillStyle=colors[id];target.fillRect(s*.19,s*.2,s*.62,s*.62);target.fillStyle='#f0fcff66';target.fillRect(s*.22,s*.24,s*.53,s*.12)}else if(id===45){target.fillStyle='#ff849f';target.fillRect(s*.32,s*.28,s*.38,s*.57);target.fillStyle='#eddfc7';target.fillRect(s*.40,s*.14,s*.22,s*.17)}else if(id===28){target.fillStyle='#65c798';target.fillRect(s*.19,s*.29,s*.64,s*.49);target.fillStyle='#bbefda';target.fillRect(s*.29,s*.35,s*.22,s*.11)}else if(id===18){target.fillStyle='#776b64';target.fillRect(s*.12,s*.15,s*.76,s*.75);target.fillStyle='#20262b';target.fillRect(s*.26,s*.35,s*.48,s*.40);target.fillStyle='#f78a3b';target.fillRect(s*.37,s*.56,s*.24,s*.18)}else if(id===19||id===20){target.fillStyle=id===19?'#c98a58':'#c0c8ce';target.fillRect(s*.14,s*.29,s*.74,s*.40);target.fillStyle='#fff7';target.fillRect(s*.19,s*.30,s*.55,s*.09)}else if(id===12){target.fillStyle='#9c7448';target.fillRect(s*.13,s*.26,s*.74,s*.19);target.fillRect(s*.20,s*.45,s*.13,s*.44);target.fillRect(s*.68,s*.45,s*.13,s*.44);target.fillStyle='#d5ac71';target.fillRect(s*.15,s*.15,s*.7,s*.13)}else if(id===13){target.fillStyle='#353842';target.fillRect(s*.21,s*.30,s*.55,s*.52);target.fillRect(s*.34,s*.15,s*.35,s*.24);target.fillStyle='#737784';target.fillRect(s*.31,s*.31,s*.16,s*.11)}else if(id===999){target.fillStyle='#936c42';target.fillRect(s*.48,s*.22,s*.13,s*.7);target.fillStyle='#c0d2d7';target.fillRect(s*.18,s*.13,s*.48,s*.25);target.fillStyle='#6d8992';target.fillRect(s*.19,s*.14,s*.13,s*.20)}else if(id===8){target.fillStyle='#b68b53';target.fillRect(s*.45,s*.37,s*.14,s*.5);target.fillStyle='#ffe889';target.fillRect(s*.31,s*.08,s*.42,s*.43);target.fillStyle='#ffb34f';target.fillRect(s*.4,s*.2,s*.21,s*.28)}else{target.fillStyle=colors[id]||'#b0b0b0';target.fillRect(s*.13,s*.13,s*.74,s*.74);target.fillStyle='rgba(255,255,255,.24)';target.fillRect(s*.13,s*.13,s*.74,s*.14);target.strokeStyle='#293b3a';target.lineWidth=2;target.strokeRect(s*.13,s*.13,s*.74,s*.74)}}
+ }else if(id===120){target.fillStyle='#438e52';target.fillRect(s*.46,s*.44,s*.11,s*.45);target.fillStyle='#83ce69';target.fillRect(s*.2,s*.34,s*.37,s*.18);target.fillRect(s*.5,s*.19,s*.27,s*.22);target.fillStyle='#396a32';target.fillRect(s*.42,s*.84,s*.22,s*.09)}else if(id===59){target.strokeStyle='#c6a06b';target.lineWidth=3;target.beginPath();target.arc(s*.34,s*.5,s*.29,-Math.PI*.5,Math.PI*.5);target.stroke();target.strokeStyle='#f5ebd0';target.lineWidth=1;target.beginPath();target.moveTo(s*.34,s*.2);target.lineTo(s*.34,s*.8);target.stroke()}else if(id===60){target.fillStyle='#cdb78d';target.fillRect(s*.43,s*.11,s*.09,s*.76);target.fillStyle='#e2e7e9';target.fillRect(s*.38,s*.08,s*.2,s*.18)}else if(id===76){target.fillStyle='#f7d47b';target.fillRect(s*.2,s*.34,s*.48,s*.18);target.fillRect(s*.6,s*.33,s*.14,s*.40);target.fillRect(s*.45,s*.45,s*.11,s*.3)}else if(id===75){target.fillStyle='#68472b';target.fillRect(s*.1,s*.2,s*.8,s*.65);target.fillStyle='#eaca83';target.fillRect(s*.1,s*.42,s*.8,s*.1);target.fillRect(s*.45,s*.4,s*.12,s*.25)}else if(id===58){target.fillStyle='#9e6d3d';target.fillRect(s*.1,s*.25,s*.8,s*.62);target.fillStyle='#dfb96e';target.fillRect(s*.1,s*.43,s*.8,s*.12);target.fillRect(s*.47,s*.43,s*.12,s*.23)}else if([27,41,42,43,44,64,65,78,86,87].includes(id)){target.fillStyle=colors[id]||'#cbd6df';target.fillRect(s*.47,s*.09,s*.12,s*.57);target.fillRect(s*.32,s*.62,s*.42,s*.11);target.fillStyle='#9d754f';target.fillRect(s*.49,s*.72,s*.09,s*.21)}else if((id>=49&&id<=57)||(id>=66&&id<=71)||(id>=79&&id<=81)){target.fillStyle=colors[id];target.fillRect(s*.19,s*.2,s*.62,s*.62);target.fillStyle='#f0fcff66';target.fillRect(s*.22,s*.24,s*.53,s*.12)}else if(id===45){target.fillStyle='#ff849f';target.fillRect(s*.32,s*.28,s*.38,s*.57);target.fillStyle='#eddfc7';target.fillRect(s*.40,s*.14,s*.22,s*.17)}else if(id===28){target.fillStyle='#65c798';target.fillRect(s*.19,s*.29,s*.64,s*.49);target.fillStyle='#bbefda';target.fillRect(s*.29,s*.35,s*.22,s*.11)}else if(id===18){target.fillStyle='#776b64';target.fillRect(s*.12,s*.15,s*.76,s*.75);target.fillStyle='#20262b';target.fillRect(s*.26,s*.35,s*.48,s*.40);target.fillStyle='#f78a3b';target.fillRect(s*.37,s*.56,s*.24,s*.18)}else if(id===19||id===20){target.fillStyle=id===19?'#c98a58':'#c0c8ce';target.fillRect(s*.14,s*.29,s*.74,s*.40);target.fillStyle='#fff7';target.fillRect(s*.19,s*.30,s*.55,s*.09)}else if(id===12){target.fillStyle='#9c7448';target.fillRect(s*.13,s*.26,s*.74,s*.19);target.fillRect(s*.20,s*.45,s*.13,s*.44);target.fillRect(s*.68,s*.45,s*.13,s*.44);target.fillStyle='#d5ac71';target.fillRect(s*.15,s*.15,s*.7,s*.13)}else if(id===13){target.fillStyle='#353842';target.fillRect(s*.21,s*.30,s*.55,s*.52);target.fillRect(s*.34,s*.15,s*.35,s*.24);target.fillStyle='#737784';target.fillRect(s*.31,s*.31,s*.16,s*.11)}else if(id===999){target.fillStyle='#936c42';target.fillRect(s*.48,s*.22,s*.13,s*.7);target.fillStyle='#c0d2d7';target.fillRect(s*.18,s*.13,s*.48,s*.25);target.fillStyle='#6d8992';target.fillRect(s*.19,s*.14,s*.13,s*.20)}else if(id===8){target.fillStyle='#b68b53';target.fillRect(s*.45,s*.37,s*.14,s*.5);target.fillStyle='#ffe889';target.fillRect(s*.31,s*.08,s*.42,s*.43);target.fillStyle='#ffb34f';target.fillRect(s*.4,s*.2,s*.21,s*.28)}else{target.fillStyle=colors[id]||'#b0b0b0';target.fillRect(s*.13,s*.13,s*.74,s*.74);target.fillStyle='rgba(255,255,255,.24)';target.fillRect(s*.13,s*.13,s*.74,s*.14);target.strokeStyle='#293b3a';target.lineWidth=2;target.strokeRect(s*.13,s*.13,s*.74,s*.74)}}
 function ico(id){let c=document.createElement('canvas');c.width=c.height=32;iconDraw(c.getContext('2d'),id);return c}
 function updateBar(){hotbar.replaceChildren();for(let i=0;i<9;i++){let b=document.createElement('div');b.className='slot'+(active===i?' active':'');b.innerHTML='<span class="key">'+(i+1)+'</span>';if(inv[i]){attachTip(b,inv[i].id,()=>inv[i]?.n||0);b.append(ico(inv[i].id));let count=document.createElement('span');count.className='count';count.textContent=inv[i].n>1?inv[i].n:'';b.append(count);let dur=durabilityBar(inv[i]);if(dur)b.append(dur)}b.addEventListener('mousedown',e=>{e.preventDefault();active=i;updateBar()});b.style.pointerEvents='auto';if(inv[i])attachTip(b,inv[i].id,()=>inv[i]?.n||0);hotbar.append(b)}}
 const itemTooltip=document.getElementById('itemTooltip');
@@ -443,7 +542,8 @@ function hideTip(){itemTooltip.style.display='none'}
 function attachTip(node,id,getCount=()=>null,recipe=null){node.addEventListener('pointerenter',e=>{itemTooltip.innerHTML=infoHTML(id,getCount(),recipe);itemTooltip.style.display='block';positionTip(e)});node.addEventListener('pointermove',e=>{itemTooltip.innerHTML=infoHTML(id,getCount(),recipe);positionTip(e)});node.addEventListener('pointerleave',hideTip)}
 function toast(s){toastEl.textContent=s;toastEl.style.opacity='1';clearTimeout(toastTimeout);toastTimeout=setTimeout(()=>toastEl.style.opacity='0',2200)}
 function openSettings(from='playing'){
- hideTip();settingsReturn=from==='menu'?'menu':'playing';mode='settings';mouse.left=mouse.right=false;overlay.classList.remove('hidden');
+ const wasPaused=mode==='pause';
+ hideTip();settingsPauseWorld=wasPaused;settingsReturn=from==='menu'?'menu':'playing';mode='settings';mouse.left=mouse.right=false;overlay.classList.remove('hidden');
  const groups=[
  ['🕹 移動・視点',[['移動','A / D、← / →'],['ジャンプ・泳ぐ','Space / W'],['走る','Shift'],['ズーム','マウスホイール'],['ホットバー','1 ～ 9']]],
  ['⚔ 採掘・建築',[['掘る・攻撃','左クリック'],['置く・使用','右クリック'],['アイテムを捨てる','Q：1個 / Ctrl+Q：スタック全部'],['アイテムを拾う','落ちているアイテムに触れる'],['松明','右クリックで前景に設置（通り抜け可能）'],['持ち物','E'],['クラフト','C']]],
@@ -453,16 +553,112 @@ function openSettings(from='playing'){
  ];
  const sections=groups.map(([title,rows])=>'<section class="settingsSection"><h3>'+title+'</h3>'+rows.map(([n,k])=>'<div class="keyRow"><span>'+n+'</span><kbd>'+k+'</kbd></div>').join('')+'</section>').join('');
  modal.innerHTML='<h2>⚙️ 設定・操作ガイド</h2><p>画面上の操作案内はコンパクトに。詳しい操作はここで確認できます。</p><div class="settingsSections">'+sections+'</div><section class="settingsSection" style="text-align:left"><h3>🌱 冒険のヒント</h3><p class="small">種は耕した土に右クリックで植えられます。小麦を持って動物を右クリックすると繁殖できます。炉は鉱石と石炭の精錬専用です。サンドボックスでは E → 全アイテム・管理からアイテム・時間・天候・召喚を操作できます。</p></section><div class="inventoryActions"><button id="settingsBack">'+(settingsReturn==='menu'?'タイトルへ戻る':'冒険へ戻る')+'</button>'+(settingsReturn==='menu'?'':'<button id="settingsSave">💾 セーブ</button><button id="settingsTitle">タイトルへ</button>')+'</div>';
- document.getElementById('settingsBack').onclick=()=>settingsReturn==='menu'?showMenu():startPlay();
+ const changeControls=document.createElement('button');changeControls.textContent='🎮 キー割り当てを変更';changeControls.onclick=()=>openControlSettings('game');modal.querySelector('.inventoryActions').prepend(changeControls);if(touchDevice){const touchButton=document.createElement('button');touchButton.textContent='📱 スマホ操作設定';touchButton.onclick=startTouchEditor;modal.querySelector('.inventoryActions').prepend(touchButton);}document.getElementById('settingsBack').onclick=()=>settingsReturn==='menu'?showMenu():startPlay();
  if(settingsReturn!=='menu'){document.getElementById('settingsSave').onclick=()=>save();document.getElementById('settingsTitle').onclick=()=>{save(true);showMenu()};}
 }
-let settingsReturn='playing';
-function showMenu(){mode='menu';overlay.classList.remove('hidden');modal.innerHTML='<h1>WILDROOT</h1><p>2D SURVIVAL　—　VERSION 1.6 VISUAL</p><p>ランダム生成された世界を冒険し、掘って、建てよう。</p><button id="start">新しいワールド</button><button id="resume">セーブを読み込む</button><button id="titleSettings">⚙️ 操作ガイド</button><p class="small">4,000×1,200ブロック / 農業・料理・墓システム・天候・水中探索に対応。新しい海底の地形は新規ワールドで生成されます。</p><p id="mobileNote" class="small">現在の操作はPC（キーボード・マウス）向けです。</p>';document.getElementById('start').onclick=worldMenu;document.getElementById('resume').onclick=load;const settingsBtn=document.getElementById('titleSettings');if(settingsBtn)settingsBtn.onclick=()=>openSettings('menu');}
-function worldMenu(){modal.innerHTML='<h2>新しいワールド</h2><p>ゲームモードを選択</p><div class="modeChoices"><label><input type="radio" name="gamemode" value="survival" checked><b>🌲 サバイバル</b><br><small>資源を集め、空腹・水分・戦闘を楽しむ</small></label><label><input type="radio" name="gamemode" value="sandbox"><b>✨ サンドボックス</b><br><small>全アイテム・無敵・飛行・時間変更・召喚</small></label></div><p>シード（空欄はランダム）</p><input id="seedinput" placeholder="例：WILDROOT2026"><p class="small">※サンドボックスは E → 全アイテム・管理 / Space×2：スペクテイター</p><button id="create">ワールドを生成</button><button id="back">戻る</button>';document.getElementById('back').onclick=showMenu;document.getElementById('create').onclick=()=>{let value=document.getElementById('seedinput').value.trim()||String(Math.floor(Math.random()*1e9));gameMode=document.querySelector('input[name="gamemode"]:checked').value;spectator=false;timeFrozen=false;boatRiding=false;lastSpaceTap=-10000;let s=0;for(let c of value)s=Math.imul(s,31)+c.charCodeAt(0)|0;newGame(s,value)};}
+let settingsReturn='playing',settingsPauseWorld=false;
+
+function openTitleSettings(){
+ mode='titleSettings';document.body.classList.add('titleScene');overlay.classList.remove('hidden');
+ modal.innerHTML='<div class="titlePanel"><h2>⚙️ 設定</h2><p>ゲーム中の表示と初期ズームを変更できます。</p><div class="settingsSection" style="text-align:left"><label class="keyRow">ミニマップを表示 <input type="checkbox" id="settingMini" '+(titlePrefs.mini?'checked':'')+'></label><label class="keyRow">ゲーム中の操作ヒントを表示 <input type="checkbox" id="settingHelp" '+(titlePrefs.help?'checked':'')+'></label><label class="keyRow">新しいワールドの初期ズーム <select id="settingZoom" style="width:auto"><option value="1">1.0 倍</option><option value="1.5">1.5 倍</option><option value="2">2.0 倍</option><option value="2.5">2.5 倍</option><option value="3">3.0 倍</option></select></label></div><div class="worldActions"><button id="titleSettingsBack">タイトルへ戻る</button></div></div>';
+ document.getElementById('settingMini').onchange=e=>{titlePrefs.mini=e.target.checked;saveTitlePrefs()};
+ document.getElementById('settingHelp').onchange=e=>{titlePrefs.help=e.target.checked;saveTitlePrefs()};
+ document.getElementById('settingZoom').value=String(titlePrefs.zoom);
+ document.getElementById('settingZoom').onchange=e=>{titlePrefs.zoom=Number(e.target.value);saveTitlePrefs()};
+ document.getElementById('titleSettingsBack').onclick=showMenu;
+}
+let controlsReturn='title';
+function openControlSettings(back='title'){
+ controlsReturn=back==='game'?'game':'title';
+ mode=controlsReturn==='game'?'gameControls':'titleControls';keys.clear();mouse.left=mouse.right=false;
+ if(controlsReturn==='title')document.body.classList.add('titleScene');
+ overlay.classList.remove('hidden');
+ const labels=[['left','左移動'],['right','右移動'],['up','上移動・泳ぐ'],['down','下移動'],['jump','ジャンプ'],['dash','ダッシュ'],['mine','破壊・攻撃'],['place','設置・使用'],['inventory','インベントリ'],['craft','クラフト'],['map','マップ'],['save','セーブ'],['drop','アイテムを捨てる'],['zoomIn','ズームイン'],['zoomOut','ズームアウト'],['pause','一時停止'],...Array.from({length:9},(_,i)=>['hotbar'+(i+1),'ホットバー '+(i+1)])];
+ const keyLabel=code=>code.startsWith('Mouse')?'マウス'+({Mouse0:'左',Mouse1:'中央',Mouse2:'右'}[code]||code):code==='Space'?'Space':code==='Escape'?'Esc':code.replace('Key','').replace('Digit','').replace('Arrow','矢印');
+ modal.innerHTML='<div class="titlePanel"><h2>🎮 操作設定</h2><p>ボタンを押して、新しいキーまたはマウスボタンを入力してください。変更はPC・ゲーム内で共通です。</p><div class="controlGrid">'+labels.map(([id,label])=>'<div class="controlRow"><strong>'+label+'</strong><button type="button" data-bind="'+id+'">'+keyLabel(keyBinds[id])+'</button></div>').join('')+'</div><p id="bindNotice" class="small">ESCで変更をキャンセルできます。</p><div class="worldActions"><button id="resetControls">初期設定に戻す</button><button id="titleControlsBack">戻る</button></div></div>';
+ let cleanup=()=>{};
+ const refresh=()=>openControlSettings(controlsReturn);
+ for(const button of modal.querySelectorAll('button[data-bind]'))button.onclick=()=>{
+  const action=button.dataset.bind;button.textContent='入力待ち…';
+  const capture=e=>{e.preventDefault();e.stopImmediatePropagation();const code=e.type==='mousedown'?'Mouse'+e.button:e.code;
+   cleanup();if(code!=='Escape'&&code!=='Tab'){
+    // Resolve conflicts by swapping instead of leaving two actions on one key.
+    const other=Object.keys(keyBinds).find(k=>k!==action&&keyBinds[k]===code);
+    if(other)keyBinds[other]=keyBinds[action];
+    keyBinds[action]=code;try{localStorage.setItem('wildroot_controls_v1',JSON.stringify(keyBinds))}catch(err){}
+   }refresh();
+  };
+  cleanup=()=>{window.removeEventListener('keydown',capture,true);window.removeEventListener('mousedown',capture,true);window.removeEventListener('contextmenu',cancelContext,true);};
+  const cancelContext=e=>e.preventDefault();
+  window.addEventListener('keydown',capture,true);window.addEventListener('mousedown',capture,true);window.addEventListener('contextmenu',cancelContext,true);
+ };
+ document.getElementById('resetControls').onclick=()=>{cleanup();keyBinds={...DEFAULT_BINDS};try{localStorage.setItem('wildroot_controls_v1',JSON.stringify(keyBinds))}catch(e){}refresh()};
+ if(touchDevice){const mobile=document.createElement('button');mobile.textContent='📱 スマホボタン配置を編集';mobile.onclick=()=>{cleanup();startTouchEditor()};modal.querySelector('.worldActions').prepend(mobile);}document.getElementById('titleControlsBack').onclick=()=>{cleanup();if(controlsReturn==='game')openSettings('playing');else showMenu()};
+}
+
+function prepareTitlePreview(){
+ if(!player){seed=1357911;genVersion=10;edits.clear();chunks.clear();const gy=heightAt(W/2);player={x:W/2+.5,y:gy-2,vx:0,vy:0,w:.68,h:1.45,ground:true,face:1,anim:0,invuln:0,hp:100,mp:20,food:100,water:100,oxygen:100};}
+ titleViewX=Math.max(100,Math.min(W-100,Math.floor(player.x)));
+ cam.x=titleViewX*T;cam.y=(heightAt(titleViewX)-3)*T;
+ time=780;zoom=1.6;weather='clear';
+}
+function showMenu(){
+ hideTip();mode='menu';document.body.classList.add('titleScene');overlay.classList.remove('hidden');
+ prepareTitlePreview();
+ modal.classList.remove('mapModal');
+ modal.innerHTML='<main class="titleHome"><h1>WILDROOT</h1><p class="subTitle">2D PIXEL SURVIVAL</p><div class="titleMenuButtons"><button id="start">▶ プレイ</button><button id="titleSettings">⚙ 設定</button><button id="titleControls">🎮 操作設定</button></div><p class="titleFooter">掘る、作る、生き延びる。自分だけの世界へ。</p></main>';
+ document.getElementById('start').onclick=showWorldSlots;
+ document.getElementById('titleSettings').onclick=openTitleSettings;
+ document.getElementById('titleControls').onclick=openControlSettings;
+}
+function showWorldSlots(){
+ migrateOldWorld();mode='worldSlots';document.body.classList.add('titleScene');overlay.classList.remove('hidden');
+ const worlds=Array.from({length:WORLD_SLOTS},(_,i)=>({i,data:readWorldSlot(i)}));
+ modal.innerHTML='<main class="titlePanel"><h2>🌍 ワールドを選択</h2><p>最大10個までワールドを保存できます。既存のワールドを押すと続きから遊べます。</p><div class="worldSlots">'+worlds.map(({i,data})=>{
+  const empty=!data;const modeName=data?(data.mode==='sandbox'?'✨ サンドボックス':'🌲 サバイバル'):'';
+  const date=data&&data.savedAt?new Date(data.savedAt).toLocaleString('ja-JP'):'';
+  return '<article class="worldSlot'+(empty?' empty':'')+'"><span class="slotNumber">'+(i+1)+'</span><div class="worldSummary"><strong>'+(empty?'空きスロット':data.invalid?'読み込めないデータ':escapeHTML(data.name))+'</strong><small>'+(empty?'新しいワールドを作成':data.invalid?'データが破損しています':modeName+' / シード: '+escapeHTML(String(data.seed))+(date?' / '+escapeHTML(date):''))+'</small></div><button data-world-open="'+i+'">'+(empty?'＋ 新規作成':'▶ プレイ')+'</button>'+(empty?'':'<button class="editWorld" data-world-edit="'+i+'" title="ワールド名を編集">✎ 編集</button><button class="removeWorld" data-world-delete="'+i+'" title="ワールドを削除">🗑</button>')+'</article>';
+ }).join('')+'</div><div class="worldActions"><button id="worldSlotsBack">タイトルへ戻る</button></div></main>';
+ modal.querySelectorAll('[data-world-open]').forEach(b=>b.onclick=()=>{const i=Number(b.dataset.worldOpen);if(readWorldSlot(i))load(i);else worldMenu(i)});
+ modal.querySelectorAll('[data-world-edit]').forEach(b=>b.onclick=()=>showRenameWorld(Number(b.dataset.worldEdit)));
+ modal.querySelectorAll('[data-world-delete]').forEach(b=>b.onclick=()=>{const i=Number(b.dataset.worldDelete),d=readWorldSlot(i);if(!confirm('「'+(d?.name||'ワールド')+'」を完全に削除しますか？\nこの操作は元に戻せません。'))return;try{localStorage.removeItem(worldSaveKey(i));if(i===0)localStorage.removeItem(SAVEKEY)}catch(e){alert('削除できませんでした')}showWorldSlots()});
+ document.getElementById('worldSlotsBack').onclick=showMenu;
+}
+function showRenameWorld(slot){
+ const d=readWorldSlot(slot);if(!d||d.invalid){toast('このワールドは編集できません');return;}
+ mode='worldRename';document.body.classList.add('titleScene');overlay.classList.remove('hidden');
+ modal.innerHTML='<main class="titlePanel"><h2>✎ ワールド名を変更</h2><p>スロット '+(slot+1)+' の名前を変更します。シード値とワールドデータはそのままです。</p><div class="worldSettings"><div class="full"><label for="renameWorldInput">新しいワールド名</label><input id="renameWorldInput" type="text" maxlength="40" /></div></div><p id="renameWorldError" class="worldError"></p><div class="worldActions"><button id="renameWorldSave" class="worldPrimary">名前を保存</button><button id="renameWorldBack">キャンセル</button></div></main>';
+ const field=document.getElementById('renameWorldInput');field.value=d.name;
+ document.getElementById('renameWorldBack').onclick=showWorldSlots;
+ document.getElementById('renameWorldSave').onclick=()=>{
+  const name=field.value.trim();if(!name){document.getElementById('renameWorldError').textContent='ワールド名を入力してください。';return}
+  try{const key=worldSaveKey(slot),raw=localStorage.getItem(key);if(!raw)throw Error('missing');
+   const data=JSON.parse(raw);data.worldName=name;localStorage.setItem(key,JSON.stringify(data));
+   if(currentWorldSlot===slot)worldName=name;
+   showWorldSlots();toast('ワールド名を変更しました');
+  }catch(e){document.getElementById('renameWorldError').textContent='保存に失敗しました。';}
+ };
+ field.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();document.getElementById('renameWorldSave').click();}});
+ field.focus();field.select();
+}
+function worldMenu(slot=0){
+ currentWorldSlot=slot;mode='worldCreate';document.body.classList.add('titleScene');overlay.classList.remove('hidden');
+ modal.innerHTML='<main class="titlePanel"><h2>🌱 ワールドを作成 <small>（スロット '+(slot+1)+'）</small></h2><div class="worldSettings"><div class="full"><label for="worldNameInput">ワールド名</label><input type="text" id="worldNameInput" maxlength="40" placeholder="例：はじまりの森" value="ワールド '+(slot+1)+'"></div><div class="full"><label>ゲームモード</label><div class="modeChoices"><label><input type="radio" name="gamemode" value="survival" checked> 🌲 サバイバル<small style="display:block">素材収集・体力・戦闘</small></label><label><input type="radio" name="gamemode" value="sandbox"> ✨ サンドボックス<small style="display:block">自由建築・無敵・飛行</small></label></div></div><div class="full"><label for="seedinput">シード値（任意）</label><input type="text" id="seedinput" maxlength="100" placeholder="空欄ならランダム生成"><p class="small">同じシード値なら同じ地形が生成されます。ワールド名は自由に設定できます。</p></div></div><p id="worldCreateError" class="worldError"></p><div class="worldActions"><button id="create" class="worldPrimary" style="width:auto">ワールドを生成</button><button id="back">スロット選択へ</button></div></main>';
+ document.getElementById('back').onclick=showWorldSlots;
+ document.getElementById('create').onclick=()=>{
+  const name=document.getElementById('worldNameInput').value.trim();if(!name){document.getElementById('worldCreateError').textContent='ワールド名を入力してください。';return;}
+  if(readWorldSlot(slot)){document.getElementById('worldCreateError').textContent='このスロットには既にワールドがあります。';return;}
+  const value=document.getElementById('seedinput').value.trim()||String(Math.floor(Math.random()*1e9));
+  currentWorldSlot=slot;worldName=name;gameMode=document.querySelector('input[name="gamemode"]:checked').value;
+  spectator=false;timeFrozen=false;boatRiding=false;lastSpaceTap=-10000;
+  let n=0;for(const c of value)n=(Math.imul(n,31)+c.charCodeAt(0))|0;
+  newGame(n,value);save(true);
+ };
+}
 function newGame(s,label){genVersion=10;bedSpawn=null;treasuresOpened.clear();lavaCooldown=0;seed=s;session=label;edits.clear();wallEdits.clear();chunks.clear();ground0=heightAt(W/2);spawn={x:W/2+.5,y:ground0-2.1};player={x:spawn.x,y:spawn.y,vx:0,vy:0,w:.68,h:1.45,hp:100,mp:20,food:100,water:100,oxygen:100,ground:false,face:1,anim:0,coyote:0,jumpBuffer:0,invuln:0};furnaces.clear();storageChests.clear();projectiles=[];enemies=[];fx=[];worldDrops=[];killCount=0;armor=[null,null,null];makeInv();graves=[];crops.clear();weather='clear';weatherTimer=65;weatherPhase=0;active=0;
- if(label===SECRET_SEED){let lx=Math.floor(spawn.x)+3,ly=ground0-1;for(let dx=0;dx<2;dx++){put(lx+dx,ly,0);put(lx+dx,ly-1,0)}put(lx,ly,110);let rare=[64,72,78,37,62,63,77,84,85,30,31,40,20,19,48,47,45,96,113];let amounts=[1,1,1,99,99,99,99,99,99,99,99,99,99,99,99,99,30,30,20];storageChests.set(lx+','+ly,rare.map((id,i)=>({id,n:amounts[i],...(durabilityMax(id)?{dur:durabilityMax(id)}:{})})).concat(Array.from({length:17},()=>null)));}time=8*60;zoom=2;cam.x=player.x*T;cam.y=player.y*T;startPlay();toast('ワールド生成完了！ Cでクラフト、作業台を設置しよう')}
-function startPlay(){modal.classList.remove('mapModal');hideTip();mode='playing';overlay.classList.add('hidden');lastSpaceTap=-10000;keys.clear();mouse.left=mouse.right=false;updateBar();last=performance.now();}
-function save(silent=false){if(!player||!session)return;try{let data={v:16,graves:graves.map(g=>({...g,items:g.items.map(t=>t?{...t}:null),armor:g.armor.map(t=>t?{...t}:null)})),gameMode,spectator,timeFrozen,boatRiding,crops:[...crops],weather,weatherTimer,weatherPhase,bedSpawn,storageChests:[...storageChests],worldDrops:worldDrops.map(d=>({...d})),genVersion,seed,session,treasuresOpened:[...treasuresOpened],edits:[...edits],wallEdits:[],furnaces:[...furnaces],inv,player:{x:player.x,y:player.y,hp:player.hp,mp:player.mp,food:player.food,water:player.water,oxygen:player.oxygen??100},time,zoom,killCount,armor};localStorage.setItem(SAVEKEY,JSON.stringify(data));if(!silent)toast('ワールドを保存しました')}catch(e){toast('保存に失敗しました。ブラウザの保存容量を確認してください')}}
+ if(label===SECRET_SEED){let lx=Math.floor(spawn.x)+3,ly=ground0-1;for(let dx=0;dx<2;dx++){put(lx+dx,ly,0);put(lx+dx,ly-1,0)}put(lx,ly,110);let rare=[64,72,78,37,62,63,77,84,85,30,31,40,20,19,48,47,45,96,113];let amounts=[1,1,1,99,99,99,99,99,99,99,99,99,99,99,99,99,30,30,20];storageChests.set(lx+','+ly,rare.map((id,i)=>({id,n:amounts[i],...(durabilityMax(id)?{dur:durabilityMax(id)}:{})})).concat(Array.from({length:17},()=>null)));}time=8*60;zoom=titlePrefs.zoom;cam.x=player.x*T;cam.y=player.y*T;startPlay();toast('ワールド生成完了！ Cでクラフト、作業台を設置しよう')}
+function startPlay(){document.body.classList.remove('titleScene');modal.classList.remove('mapModal');hideTip();mode='playing';overlay.classList.add('hidden');lastSpaceTap=-10000;keys.clear();mouse.left=mouse.right=false;updateBar();last=performance.now();}
+function save(silent=false){if(!player||!session||currentWorldSlot<0)return;try{let data={v:17,worldName,savedAt:Date.now(),graves:graves.map(g=>({...g,items:g.items.map(t=>t?{...t}:null),armor:g.armor.map(t=>t?{...t}:null)})),gameMode,spectator,timeFrozen,boatRiding,crops:[...crops],weather,weatherTimer,weatherPhase,bedSpawn,storageChests:[...storageChests],worldDrops:worldDrops.map(d=>({...d})),genVersion,seed,session,treasuresOpened:[...treasuresOpened],edits:[...edits],wallEdits:[],furnaces:[...furnaces],inv,player:{x:player.x,y:player.y,hp:player.hp,mp:player.mp,food:player.food,water:player.water,oxygen:player.oxygen??100},time,zoom,killCount,armor};localStorage.setItem(worldSaveKey(currentWorldSlot),JSON.stringify(data));if(!silent)toast('ワールドを保存しました')}catch(e){toast('保存に失敗しました。ブラウザの保存容量を確認してください')}}
 function reconcileSavedItems(){
  const extras=[];
  for(let i=0;i<inv.length;i++){
@@ -479,7 +675,7 @@ function reconcileSavedItems(){
  }
  for(let j=0;j<armor.length;j++)if(armor[j]?.id===61)armor[j]=null;
 }
-function load(){let raw=localStorage.getItem(SAVEKEY);if(!raw){modal.innerHTML='<h2>セーブがありません</h2><button id="back">戻る</button>';document.getElementById('back').onclick=showMenu;return}try{let d=JSON.parse(raw);if(![1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16].includes(d.v)||!Array.isArray(d.edits)||!Array.isArray(d.inv))throw Error('format');gameMode=d.gameMode||'survival';spectator=!!d.spectator&&gameMode==='sandbox';timeFrozen=!!d.timeFrozen&&gameMode==='sandbox';boatRiding=false;graves=(Array.isArray(d.graves)?d.graves:[]).filter(g=>Number.isInteger(g.x)&&Number.isInteger(g.y)&&Array.isArray(g.items)).map(g=>({...g,items:g.items.map(t=>t?{...t}:null),armor:(Array.isArray(g.armor)?g.armor:[null,null,null]).map(t=>t?{...t}:null)}));graveSerial=Math.max(0,...graves.map(g=>g.id||0));genVersion=d.genVersion||1;crops=new Map(d.crops||[]);weather=d.weather||'clear';weatherTimer=d.weatherTimer||0;weatherPhase=d.weatherPhase||0;bedSpawn=d.bedSpawn||null;treasuresOpened=new Set(d.treasuresOpened||[]);lavaCooldown=0;seed=d.seed;session=d.session;edits=new Map(d.edits);wallEdits=new Map(d.wallEdits||[]);furnaces=new Map(d.furnaces||[]);storageChests=new Map(d.storageChests||[]);worldDrops=(Array.isArray(d.worldDrops)?d.worldDrops:[]).filter(v=>Number.isInteger(v.id)&&v.id>0&&v.id<names.length&&Number.isFinite(v.x)&&Number.isFinite(v.y)&&Number.isFinite(v.n)&&v.n>0).slice(0,900).map(v=>({...v,age:v.age||0,delay:v.delay||0,life:v.life??1800,vx:v.vx||0,vy:v.vy||0,bob:v.bob||0}));projectiles=[];enemies=[];fx=[];killCount=d.killCount||0;armor=Array.isArray(d.armor)?d.armor.slice(0,3):[null,null,null];chunks.clear();ground0=heightAt(W/2);spawn={x:W/2+.5,y:ground0-2.1};player={x:d.player.x,y:d.player.y,vx:0,vy:0,w:.68,h:1.45,hp:Math.max(1,d.player.hp??100),mp:d.player.mp??20,food:d.player.food??100,water:d.player.water??100,oxygen:d.player.oxygen??100,ground:false,face:1,anim:0,coyote:0,jumpBuffer:0,invuln:0};inv=d.inv.map(it=>normalizeStack(it&&it.id===26?{...it,id:3}:it));while(inv.length<49)inv.push(null);time=d.time;zoom=d.zoom||2;cam.x=player.x*T;cam.y=player.y*T;active=0;reconcileSavedItems();startPlay();toast('セーブを読み込みました')}catch(e){modal.innerHTML='<h2>セーブの読み込みに失敗</h2><p>保存データが破損している可能性があります。</p><button id="back">戻る</button>';document.getElementById('back').onclick=showMenu;}}
+function load(slot=currentWorldSlot){currentWorldSlot=slot;let raw=localStorage.getItem(worldSaveKey(slot));if(!raw){modal.innerHTML='<h2>セーブがありません</h2><button id="back">戻る</button>';document.getElementById('back').onclick=showWorldSlots;return}try{let d=JSON.parse(raw);if(![1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17].includes(d.v)||!Array.isArray(d.edits)||!Array.isArray(d.inv))throw Error('format');worldName=d.worldName||d.session||('ワールド '+(slot+1));gameMode=d.gameMode||'survival';spectator=!!d.spectator&&gameMode==='sandbox';timeFrozen=!!d.timeFrozen&&gameMode==='sandbox';boatRiding=false;graves=(Array.isArray(d.graves)?d.graves:[]).filter(g=>Number.isInteger(g.x)&&Number.isInteger(g.y)&&Array.isArray(g.items)).map(g=>({...g,items:g.items.map(t=>t?{...t}:null),armor:(Array.isArray(g.armor)?g.armor:[null,null,null]).map(t=>t?{...t}:null)}));graveSerial=Math.max(0,...graves.map(g=>g.id||0));genVersion=d.genVersion||1;crops=new Map(d.crops||[]);weather=d.weather||'clear';weatherTimer=d.weatherTimer||0;weatherPhase=d.weatherPhase||0;bedSpawn=d.bedSpawn||null;treasuresOpened=new Set(d.treasuresOpened||[]);lavaCooldown=0;seed=d.seed;session=d.session;edits=new Map(d.edits);if(d.v<17){for(const [k,v] of edits){if(v===121)edits.delete(k)}}wallEdits=new Map(d.wallEdits||[]);furnaces=new Map(d.furnaces||[]);storageChests=new Map(d.storageChests||[]);worldDrops=(Array.isArray(d.worldDrops)?d.worldDrops:[]).filter(v=>Number.isInteger(v.id)&&v.id>0&&v.id<names.length&&Number.isFinite(v.x)&&Number.isFinite(v.y)&&Number.isFinite(v.n)&&v.n>0).slice(0,900).map(v=>({...v,age:v.age||0,delay:v.delay||0,life:v.life??1800,vx:v.vx||0,vy:v.vy||0,bob:v.bob||0}));projectiles=[];enemies=[];fx=[];killCount=d.killCount||0;armor=Array.isArray(d.armor)?d.armor.slice(0,3):[null,null,null];chunks.clear();ground0=heightAt(W/2);spawn={x:W/2+.5,y:ground0-2.1};player={x:d.player.x,y:d.player.y,vx:0,vy:0,w:.68,h:1.45,hp:Math.max(1,d.player.hp??100),mp:d.player.mp??20,food:d.player.food??100,water:d.player.water??100,oxygen:d.player.oxygen??100,ground:false,face:1,anim:0,coyote:0,jumpBuffer:0,invuln:0};inv=d.inv.map(it=>normalizeStack(it&&it.id===26?{...it,id:3}:it));while(inv.length<49)inv.push(null);time=d.time;zoom=d.zoom||2;cam.x=player.x*T;cam.y=player.y*T;active=0;reconcileSavedItems();startPlay();toast('セーブを読み込みました')}catch(e){modal.innerHTML='<h2>セーブの読み込みに失敗</h2><p>保存データが破損している可能性があります。</p><button id="back">戻る</button>';document.getElementById('back').onclick=showWorldSlots;}}
 
 const SANDBOX_ITEM_CATEGORIES=[['tools','⛏ ツール類'],['weapons','⚔ 武器'],['armor','🛡 防具類'],['materials','💎 素材類'],['nature','🌿 自然類'],['misc','📦 その他']];
 function sandboxItemCategory(id){
@@ -600,7 +796,7 @@ function escapeHTML(str){return String(str).replace(/[&<>"']/g,c=>({'&':'&amp;',
 let selectedInventory=-1,dragItem=-1;
 function openInventory(){if(mode!=='playing')return;save(true);mode='inventory';overlay.classList.remove('hidden');renderInventory()}
 function closeInventory(){startPlay();selectedInventory=-1}
-function renderInventory(){hideTip();modal.innerHTML='<h2>持ち物・装備</h2><p id="defenseLabel" class="tip"></p><div id="armorSlots" class="inventoryActions"></div><p>クリックで選択→別スロットで入れ替え / 同じアイテムはスタック統合。右クリックで半分に分ける。</p><div class="grid" id="invgrid"></div><div class="inventoryActions"><button id="sort">整理</button><button id="sandboxInv" style="display:none">✨ 全アイテム・管理</button><button id="repair">選択中の道具を修理</button><button id="craftOpen">クラフト (C)</button><button id="close">冒険に戻る (E)</button></div><p class="tip">上段9枠がホットバー。アイテムにマウスを重ねると名前が表示されます。</p>';let grid=document.getElementById('invgrid');renderArmor();
+function renderInventory(){hideTip();modal.innerHTML='<h2>持ち物・装備</h2><p class="small">🕒 ワールド時間：<span id="inventoryClock"></span>（持ち物を開いている間も時間が進みます）</p><p id="defenseLabel" class="tip"></p><div id="armorSlots" class="inventoryActions"></div><p>クリックで選択→別スロットで入れ替え / 同じアイテムはスタック統合。右クリックで半分に分ける。</p><div class="grid" id="invgrid"></div><div class="inventoryActions"><button id="sort">整理</button><button id="sandboxInv" style="display:none">✨ 全アイテム・管理</button><button id="repair">選択中の道具を修理</button><button id="craftOpen">クラフト (C)</button><button id="close">冒険に戻る (E)</button></div><p class="tip">上段9枠がホットバー。アイテムにマウスを重ねると名前が表示されます。</p>';let grid=document.getElementById('invgrid');renderArmor();
  for(let i=0;i<inv.length;i++){let b=document.createElement('div');b.className='invSlot'+(selectedInventory===i?' selected':'');b.style.borderTop=i<9&&! (selectedInventory===i)?'3px solid #e7ca80':'';b.draggable=!!inv[i];if(inv[i]){b.append(ico(inv[i].id));let n=document.createElement('span');n.textContent=inv[i].n>1?inv[i].n:'';b.append(n);let dur=durabilityBar(inv[i]);if(dur)b.append(dur);attachTip(b,inv[i].id,()=>inv[i]?.n||0)}b.onclick=()=>{if(selectedInventory<0)selectedInventory=i;else{moveSlot(selectedInventory,i);selectedInventory=-1;updateBar()}renderInventory()};b.oncontextmenu=e=>{e.preventDefault();if(selectedInventory>=0&&selectedInventory!==i){moveSlot(selectedInventory,i,true);selectedInventory=-1}else if(inv[i]&&!durabilityMax(inv[i].id)&&inv[i].n>1){let target=inv.findIndex((v,j)=>j!==i&&!v);if(target>=0){let count=Math.floor(inv[i].n/2);inv[i].n-=count;inv[target]={id:inv[i].id,n:count}}}updateBar();renderInventory()};b.ondragstart=e=>{if(!inv[i])return;e.dataTransfer.setData('text/plain',String(i))};b.ondragover=e=>e.preventDefault();b.ondrop=e=>{e.preventDefault();let from=Number(e.dataTransfer.getData('text/plain'));if(Number.isInteger(from)&&from>=0&&from<inv.length){moveSlot(from,i);updateBar();renderInventory()}};grid.append(b)}
  let sb=document.getElementById('sandboxInv');if(gameMode==='sandbox'){sb.style.display='inline-block';sb.onclick=()=>openSandbox('items')}document.getElementById('close').onclick=closeInventory;document.getElementById('craftOpen').onclick=()=>openCraft(false);document.getElementById('repair').onclick=repairSelected;document.getElementById('sort').onclick=()=>{let items=inv.filter(Boolean).sort((a,b)=>a.id-b.id);inv=Array.from({length:49},(_,i)=>items[i]||null);selectedInventory=-1;updateBar();renderInventory()}}
 function armorSlot(id){if(id>=49&&id<=57)return (id-49)%3;if(id>=66&&id<=71)return (id-66)%3;return -1}
@@ -705,8 +901,8 @@ function tickFurnaces(dt){for(let [k,f] of furnaces){if(f.amount<3||f.ore!==6&&f
 function collision(x,y,w=player.w,h=player.h,forMob=false){if(!forMob&&gameMode==='sandbox'&&spectator)return false;let l=Math.floor(x-w/2+.02),r=Math.floor(x+w/2-.02),t=Math.floor(y-h+.02),b=Math.floor(y-.02);for(let yy=t;yy<=b;yy++)for(let xx=l;xx<=r;xx++)if(solid(get(xx,yy)))return true;return false}
 function physics(dt){if(gameMode==='sandbox'&&spectator){let dx=(keys.has('KeyD')||keys.has('ArrowRight')?1:0)-(keys.has('KeyA')||keys.has('ArrowLeft')?1:0),dy=(keys.has('KeyS')||keys.has('ArrowDown')?1:0)-(keys.has('KeyW')||keys.has('Space')||keys.has('ArrowUp')?1:0);let sp=keys.has('ShiftLeft')||keys.has('ShiftRight')?35:16;player.x=Math.max(1,Math.min(W-2,player.x+dx*dt*sp));player.y=Math.max(2,Math.min(H-2,player.y+dy*dt*sp));player.vx=dx*sp;if(dx!==0)player.face=dx>0?1:-1;player.vy=0;player.ground=false;player.anim+=dt*5;return;}lavaCooldown=Math.max(0,lavaCooldown-dt);if(gameMode!=='sandbox'&&genVersion>=3&&get(Math.floor(player.x),Math.floor(player.y-.4))===36&&lavaCooldown<=0){lavaCooldown=.65;player.hp=Math.max(0,player.hp-22);hitFlash=.25;updateHP();if(player.hp<=0){respawn('溶岩に飲み込まれた！')}}player.invuln=Math.max(0,(player.invuln||0)-dt);hitFlash=Math.max(0,hitFlash-dt);let dir=(keys.has('KeyD')||keys.has('ArrowRight')?1:0)-(keys.has('KeyA')||keys.has('ArrowLeft')?1:0);let speed=keys.has('ShiftLeft')||keys.has('ShiftRight')?7:5;player.vx+=(dir*speed-player.vx)*Math.min(1,dt*(player.ground?13:8));if(Math.abs(player.vx)<.02)player.vx=0;if(dir)player.face=dir;
  player.jumpBuffer=Math.max(0,player.jumpBuffer-dt);player.coyote=player.ground?.10:Math.max(0,player.coyote-dt);if(player.jumpBuffer>0&&player.coyote>0){player.vy=-11.6;player.ground=false;player.coyote=0;player.jumpBuffer=0}
- if(!(keys.has('Space')||keys.has('KeyW'))&&player.vy< -4)player.vy+=29*dt;let swimming=waterAt(player.x,player.y-.55);player.vy=Math.min(swimming?4:18,player.vy+(swimming?5:28)*dt);if(swimming&&(keys.has('Space')||keys.has('KeyW')))player.vy=Math.max(-4.5,player.vy-13*dt);if(swimming)player.vx*=.93;
- let dx=player.vx*dt,dy=player.vy*dt,n=Math.max(1,Math.ceil(Math.max(Math.abs(dx),Math.abs(dy))/.2));player.ground=false;for(let i=0;i<n;i++){let sx=dx/n,sy=dy/n;if(!collision(player.x+sx,player.y)){player.x+=sx}else{player.vx=0}if(!collision(player.x,player.y+sy)){player.y+=sy}else{if(sy>0)player.ground=true;player.vy=0}}
+ if(!(keys.has('Space')||keys.has('KeyW'))&&player.vy< -4)player.vy+=29*dt;let swimming=waterAt(player.x,player.y-.55);player.vy=Math.min(swimming?4:18,player.vy+(swimming?5:28)*dt);if(swimming&&(keys.has('Space')||keys.has('KeyW')))player.vy=Math.max(-7.4,player.vy-20*dt);if(swimming)player.vx*=.93;
+ let dx=player.vx*dt,dy=player.vy*dt,n=Math.max(1,Math.ceil(Math.max(Math.abs(dx),Math.abs(dy))/.2));player.ground=false;for(let i=0;i<n;i++){let sx=dx/n,sy=dy/n;if(!collision(player.x+sx,player.y)){player.x+=sx}else{if(swimming&&dir!==0){player.vy=Math.min(player.vy,-7.8);sy=Math.min(sy,-.10)}player.vx=0}if(!collision(player.x,player.y+sy)){player.y+=sy}else{if(sy>0)player.ground=true;player.vy=0}}
  player.x=Math.max(1,Math.min(W-2,player.x));player.anim+=dt*(player.ground?Math.abs(player.vx)*1.4:4);}
 function updatePointer(){let centerX=canvas.width/2,centerY=canvas.height/2;mouse.wx=(mouse.x-centerX)/zoom+cam.x;mouse.wy=(mouse.y-centerY)/zoom+cam.y}
 let mineX=-1,mineY=-1,mineLayer='front',mineProgress=0,actionCooldown=0;
@@ -781,21 +977,50 @@ function respawn(reason){
  save(true);updateHP();updateBar();
 }
 function eatOrDrink(){let id=inv[active]?.id;if(id===113){consume(id,1);player.oxygen=100;toast('酸素を回復！')}else if([93,98,103,104,105].includes(id)){if(player.food>=100)return toast('食料は満タンです');consume(id,1);player.food=Math.min(100,player.food+({93:35,98:30,103:12,104:45,105:65}[id]||20));toast('食料が回復した')}else if(id===96){if(player.water>=100)return toast('水分は満タンです');consume(id,1);player.water=Math.min(100,player.water+40);addItem(94,1);toast('水分が回復した')}updateBar();updateHP()}
-function waterAt(x,y){return [88,95].includes(get(Math.floor(x),Math.floor(y)))}
+// Finite flowing water: one source feeds at most four horizontal cells. The fifth
+// step never spreads sideways; downward waterfalls have full height.
+function updateFlowWater(dt){
+ fluidClock+=dt;
+ if(fluidClock<.32)return;
+ fluidClock=0;
+ const px=Math.floor(player.x),py=Math.floor(player.y),cx=17,cy=12;
+ const queue=[];
+ for(let y=Math.max(1,py-cy);y<=Math.min(H-2,py+cy);y++)
+  for(let x=Math.max(1,px-cx);x<=Math.min(W-2,px+cx);x++)
+   if(isWaterTile(get(x,y)))queue.push([x,y]);
+ // A snapshot prevents a cell created in this tick from immediately flowing again.
+ const additions=new Map();
+ for(const [x,y] of queue){
+  const type=get(x,y),up=get(x,y-1);
+  const fedFromAbove=isWaterTile(up);
+  if(type>=122&&type<=125&&fedFromAbove){additions.set(x+','+y,[x,y,121]);continue;}
+  const depth=type>=122&&type<=125?type-121:0;
+  if(get(x,y+1)===0){
+   const k=x+','+(y+1);
+   if(!additions.has(k))additions.set(k,[x,y+1,121]);
+   continue;
+  }
+  if(depth>=4)continue;
+  for(const dx of [-1,1]){
+   const nx=x+dx,k=nx+','+y;
+   if(nx<1||nx>=W-1||get(nx,y)!==0||additions.has(k))continue;
+   additions.set(k,[nx,y,122+depth]);
+  }
+ }
+ // Clamp work per update so large oceans don't stall mobile phones.
+ let count=0;
+ for(const [key,[x,y,t]] of additions){put(x,y,t);if(++count>=24)break;}
+}
+function waterAt(x,y){return isWaterTile(get(Math.floor(x),Math.floor(y)))}
 function survivalAndEnvironment(dt){if(gameMode==='sandbox'){player.hp=100;player.food=100;player.water=100;player.oxygen=100;return;}
  weatherTimer+=dt;weatherPhase+=dt;breedingCooldown=Math.max(0,breedingCooldown-dt);
  if(weatherTimer>100){weatherTimer=0;let r=Math.random();weather=biomeAt(player.x)==='snow'?(r<.42?'snow':'clear'):(r<.24?'rain':r<.31?'storm':'clear');if(weather!=='clear')toast(weather==='snow'?'雪が降り始めた':weather==='storm'?'雷雨になった！':'雨が降り始めた');}
  plantGrowth+=dt;if(plantGrowth>=1){plantGrowth=0;for(let [k,c] of crops){let [x,y]=k.split(',').map(Number);if(get(x,y+1)!==114){crops.delete(k);continue}if(weather==='rain'||weather==='storm')c.moist=1;c.moist=Math.max(0,c.moist-.007);if(c.moist>.06)c.age=Math.min(3,c.age+.014*(c.moist>.4?1.4:1));}}
- // Nearby fresh-water pools and placed water spread slowly into nearby air cells.
- fluidClock+=dt;if(fluidClock>.42){fluidClock=0;let px=Math.floor(player.x),py=Math.floor(player.y);let propagated=0;for(let x=px-9;x<=px+9&&propagated<6;x++)for(let y=py-7;y<=py+7&&propagated<6;y++){
-  if(edits.get(x+','+y)!==95)continue;
-  const below=get(x,y+1),side=hash(x,y,seed+Math.floor(weatherPhase))>.5?1:-1;
-  if(below===0){put(x,y+1,95);propagated++;continue}
-  if(get(x+side,y)===0&&get(x+side,y+1)!==0&&hash(x,y,992)>.36){put(x+side,y,95);propagated++}
- }}
  // Furnished shelter gives slow HP regeneration while resting near home furniture.
  if((nearStation(107)||nearStation(108))&&nearStation(109)&&player.hp<100&&player.food>25){player.hp=Math.min(100,player.hp+dt*.11)}
- let submerged=waterAt(player.x,player.y-.9);player.oxygen=Math.max(0,Math.min(100,(player.oxygen??100)+(submerged?-dt*7:dt*18)));
+ let submerged=waterAt(player.x,player.y-.9);
+ if(waterAt(player.x,player.y-.55))player.water=Math.min(100,player.water+dt*9);
+ player.oxygen=Math.max(0,Math.min(100,(player.oxygen??100)+(submerged?-dt*7:dt*18)));
  if(player.oxygen===0)respawn('水中で息が続かなかった！');
  if(weather==='storm'&&Math.random()<dt*.018&&player.y<=heightAt(player.x)+3&&!solid(get(Math.floor(player.x),Math.floor(player.y-3)))){hurtPlayer(8,player.x-1);toast('落雷！');}
 }
@@ -804,10 +1029,10 @@ function act(dt){if(mouse.left&&[93,96,98,103,104,105,113].includes(inv[active]?
  if(mouse.left&&graveAt(tx,ty)){recoverGrave(tx,ty);mouse.left=false;mineProgress=0;return}
  if(mouse.left&&inv[active]?.id===59){if(attackCooldown<=0){const id=inv[active].id;fireProjectile(id);lastAttackInterval=attackInterval(id);attackCooldown=lastAttackInterval;mouse.left=false}mineProgress=0;return}
  if(mouse.left&&(inv[active]?.id in WEAPONS)){if(attackCooldown<=0){const id=inv[active].id;lastAttackInterval=attackInterval(id);attackCooldown=lastAttackInterval;attackEnemy()}mineProgress=0;return}
- if(mouse.left){if(front===88||front===95){mineProgress=0;return}if(front===34||front===75){mineProgress=0;return}let t=front;let target='front';// Only mine foreground tiles, never the natural cave backdrop.
- if(t){if(mineX!==tx||mineY!==ty||mineLayer!==target){mineX=tx;mineY=ty;mineLayer=target;mineProgress=0}mineProgress+=dt;if(mineProgress>=digTime(t,inv[active]?.id)){if(t===4&&toolType(inv[active]?.id)==='axe')fellTree(tx,ty);else{if(t===58||t===110){let items=storageChests.get(tx+','+ty)||[];if(items.some(Boolean)){toast('チェストの中身を空にしてから壊してください');mineProgress=0;return}storageChests.delete(tx+','+ty)}put(tx,ty,0);spawnDrop(t===1?2:(t===13&&gameMode==='sandbox'?119:t),1,tx+.5,ty+.5);if(t===1&&Math.random()<.28)spawnDrop(Math.random()<.65?100:101,1,tx+.5,ty+.35);crops.delete(tx+','+(ty-1));spawnFx(tx,ty,colors[t]||'#b7ac9b',7)}if(target==='front'&&toolType(inv[active]?.id)!=='hand')wear(active,1);swing=.18;attackVisual={kind:'tool',elapsed:0,duration:.26,face:player.face};mineProgress=0;updateBar()}}else mineProgress=0
+ if(mouse.left){if(isWaterTile(front)){mineProgress=0;return}if(front===34||front===75){mineProgress=0;return}let t=front;let target='front';// Only mine foreground tiles, never the natural cave backdrop.
+ if(t){if(mineX!==tx||mineY!==ty||mineLayer!==target){mineX=tx;mineY=ty;mineLayer=target;mineProgress=0}mineProgress+=dt;if(mineProgress>=digTime(t,inv[active]?.id)){if(t===4&&toolType(inv[active]?.id)==='axe')fellTree(tx,ty);else{if(t===58||t===110){let items=storageChests.get(tx+','+ty)||[];if(items.some(Boolean)){toast('チェストの中身を空にしてから壊してください');mineProgress=0;return}storageChests.delete(tx+','+ty)}put(tx,ty,0);spawnDrop(t===1?2:(t===13&&gameMode==='sandbox'?119:t),1,tx+.5,ty+.5);if(t===5&&Math.random()<.30)spawnDrop(120,1,tx+.5,ty+.3);if(t===1&&Math.random()<.28)spawnDrop(Math.random()<.65?100:101,1,tx+.5,ty+.35);crops.delete(tx+','+(ty-1));spawnFx(tx,ty,colors[t]||'#b7ac9b',7)}if(target==='front'&&toolType(inv[active]?.id)!=='hand')wear(active,1);swing=.18;attackVisual={kind:'tool',elapsed:0,duration:.26,face:player.face};mineProgress=0;updateBar()}}else mineProgress=0
  }else mineProgress=0;
- if(mouse.right&&actionCooldown<=0){if(graveAt(tx,ty)){recoverGrave(tx,ty);mouse.right=false;return}if(front===34||front===75){mouse.right=false;openTreasure(tx,ty);actionCooldown=.25;return}if(front===58||front===110){mouse.right=false;openStorage(tx,ty);return}if(front===91){mouse.right=false;bedSpawn={x:tx+.5,y:ty};let hour=time/60;if(hour>=6&&hour<18){time=19*60;toast('ベッドで休んだ。夜になった！')}else{time=8*60;toast('ぐっすり眠った。朝になった！')}enemies=[];return}if(front===92){mouse.right=false;openCraft(false);return}if([88,95].includes(front)&&inv[active]?.id===115){mouse.right=false;toast('水入りバケツ：水面を選んで設置してみよう');return}if(front===95&&inv[active]?.id===106){mouse.right=false;for(let [k,c] of crops){let [cx,cy]=k.split(',').map(Number);if(Math.abs(cx-tx)<=3&&Math.abs(cy-ty)<=3)c.moist=1;}toast('周囲の畑に水をやった！');return}if(front===95&&inv[active]?.id===94){mouse.right=false;consume(94,1);if(!addItem(96,1))addItem(94,1);toast('池の淡水を水筒に汲んだ');updateBar();return}if(front===12||front===18){mouse.right=false;if(front===18)openFurnace(tx,ty);else openCraft(true);return}// Harvesting crops is possible even when holding no item.
+ if(mouse.right&&actionCooldown<=0){if(graveAt(tx,ty)){recoverGrave(tx,ty);mouse.right=false;return}if(front===34||front===75){mouse.right=false;openTreasure(tx,ty);actionCooldown=.25;return}if(front===58||front===110){mouse.right=false;openStorage(tx,ty);return}if(front===91){mouse.right=false;bedSpawn={x:tx+.5,y:ty};let hour=time/60;if(hour>=6&&hour<18){time=19*60;toast('ベッドで休んだ。夜になった！')}else{time=8*60;toast('ぐっすり眠った。朝になった！')}enemies=[];return}if(front===92){mouse.right=false;openCraft(false);return}if(isWaterTile(front)&&inv[active]?.id===115){mouse.right=false;toast('水入りバケツ：水面を選んで設置してみよう');return}if(isWaterTile(front)&&inv[active]?.id===106){mouse.right=false;for(let [k,c] of crops){let [cx,cy]=k.split(',').map(Number);if(Math.abs(cx-tx)<=3&&Math.abs(cy-ty)<=3)c.moist=1;}toast('周囲の畑に水をやった！');return}if(isWaterTile(front)&&inv[active]?.id===94){mouse.right=false;consume(94,1);if(!addItem(96,1))addItem(94,1);toast('池の淡水を水筒に汲んだ');updateBar();return}if(front===12||front===18){mouse.right=false;if(front===18)openFurnace(tx,ty);else openCraft(true);return}// Harvesting crops is possible even when holding no item.
  if(front===0&&crops.has(tx+','+ty)){let plant=crops.get(tx+','+ty);if(plant.age<3){mouse.right=false;return toast('まだ育っていない')}addItem(plant.kind===100?102:103,2+Math.floor(Math.random()*3));addItem(plant.kind,1);crops.delete(tx+','+ty);mouse.right=false;updateBar();toast('作物を収穫した！');return}
  let it=inv[active];if(!it||it.n<=0)return;
  let id=it.id;
@@ -815,10 +1040,10 @@ function act(dt){if(mouse.left&&[93,96,98,103,104,105,113].includes(inv[active]?
  if(id===99&&(front===1||front===2)&&get(tx,ty-1)===0){put(tx,ty,114);wear(active,1);mouse.right=false;toast('畑を耕した');return}
  if((id===100||id===101)&&front===0&&get(tx,ty+1)===114){let key=tx+','+ty;if(crops.has(key))return;let plant={kind:id,age:0,moist:weather==='rain'||weather==='storm'?1:.5};crops.set(key,plant);consume(id,1);updateBar();mouse.right=false;return}
  if(id===102&&breedingCooldown<=0){let near=enemies.filter(e=>MONSTERS[e.type]?.passive&&Math.abs(e.x-player.x)<4&&Math.abs(e.y-player.y)<3);let pair=near.find(a=>near.some(b=>a!==b&&a.type===b.type&&Math.abs(a.x-b.x)<4));if(pair){consume(102,1);let other=near.find(b=>b!==pair&&b.type===pair.type);const baby={...pair,x:(pair.x+other.x)/2,y:pair.y,hp:Math.ceil(pair.maxHp/2),maxHp:Math.ceil(pair.maxHp/2),baby:120};enemies.push(baby);breedingCooldown=20;mouse.right=false;toast('動物が繁殖した！');updateBar();return}}
- if([1,2,3,4,5,6,7,8,12,13,18,32,33,35,38,39,58,73,91,92,107,108,109,110,114,119].includes(id)&&front===0){if(id!==5&&id!==8&&player.x+player.w/2>tx&&player.x-player.w/2<tx+1&&player.y>ty&&player.y-player.h<ty+1)return;put(tx,ty,id===119?13:id)}else return;
+ if([1,2,3,4,5,6,7,8,12,13,18,32,33,35,38,39,58,73,91,92,107,108,109,110,114,119,120].includes(id)&&front===0){if(id===120&&![1,2,38,114].includes(get(tx,ty+1)))return toast('苗木は土の上に植えられます');if(id!==5&&id!==8&&id!==120&&player.x+player.w/2>tx&&player.x-player.w/2<tx+1&&player.y>ty&&player.y-player.h<ty+1)return;put(tx,ty,id===119?13:id)}else return;
  it.n--;if(it.n<=0)inv[active]=null;updateBar();actionCooldown=.105}}
 
-function drawBlock(id,x,y,sz,wx,wy){if(id===0)return;const blockArt=(id===30||id===31?spriteReady('ore_'+id):null)||assetReady(({1:'grass_block',2:'dirt_block',3:'stone_block',4:'wood_block',5:'leaves_block',6:'copper_ore',7:'iron_ore',13:'coal_ore',29:'gold_ore',30:'ore_30',31:'ore_31'})[id]||(id===38?'grass_block':null));if(blockArt){ctx.drawImage(blockArt,x,y,sz,sz);return;}if(id===88||id===95){const above=get(wx,wy-1),surface=above!==88&&above!==95;ctx.fillStyle=id===88?'rgba(28,125,182,.66)':'rgba(65,165,209,.66)';ctx.fillRect(x,y,sz,sz);if(surface){ctx.fillStyle='rgba(186,238,248,.60)';ctx.fillRect(x,y,sz,Math.max(1,sz*.085));}return;}if(id===91){ctx.fillStyle='#795239';ctx.fillRect(x+sz*.04,y+sz*.32,sz*.92,sz*.5);ctx.fillStyle='#d4edfa';ctx.fillRect(x+sz*.14,y+sz*.18,sz*.7,sz*.3);ctx.fillStyle='#aa5668';ctx.fillRect(x+sz*.14,y+sz*.38,sz*.74,sz*.32);return;}if(id===92){ctx.fillStyle='#786052';ctx.fillRect(x+sz*.12,y+sz*.61,sz*.78,sz*.31);ctx.fillStyle='#f49a43';ctx.fillRect(x+sz*.32,y+sz*.24,sz*.35,sz*.53);ctx.fillStyle='#ffe48c';ctx.fillRect(x+sz*.43,y+sz*.31,sz*.16,sz*.31);return;}if(id===114){ctx.fillStyle='#66452d';ctx.fillRect(x,y,sz,sz);ctx.fillStyle='#c09b62';ctx.fillRect(x,y,sz,sz*.17);return}
+function drawBlock(id,x,y,sz,wx,wy){if(id===0)return;const blockArt=(id===30||id===31?spriteReady('ore_'+id):null)||assetReady(({1:'grass_block',2:'dirt_block',3:'stone_block',4:'wood_block',5:'leaves_block',6:'copper_ore',7:'iron_ore',13:'coal_ore',29:'gold_ore',30:'ore_30',31:'ore_31'})[id]||(id===38?'grass_block':null));if(blockArt){ctx.drawImage(blockArt,x,y,sz,sz);return;}if(isWaterTile(id)){const above=get(wx,wy-1),surface=!isWaterTile(above);const ratio=surface&&id>=122&&id<=125?Math.max(.22,1-(id-121)*.19):1;const h=sz*ratio,offset=sz-h;ctx.fillStyle=id===88?'rgba(28,125,182,.66)':id>=121?'rgba(73,177,226,.66)':'rgba(65,165,209,.66)';ctx.fillRect(x,y+offset,sz,h);if(surface){ctx.fillStyle='rgba(186,238,248,.60)';ctx.fillRect(x,y+offset,sz,Math.max(1,sz*.065));}return;}if(id===120){ctx.fillStyle='#41864d';ctx.fillRect(x+sz*.45,y+sz*.48,sz*.13,sz*.45);ctx.fillStyle='#82c95d';ctx.fillRect(x+sz*.23,y+sz*.35,sz*.35,sz*.18);ctx.fillRect(x+sz*.51,y+sz*.19,sz*.29,sz*.22);return;}if(id===91){ctx.fillStyle='#795239';ctx.fillRect(x+sz*.04,y+sz*.32,sz*.92,sz*.5);ctx.fillStyle='#d4edfa';ctx.fillRect(x+sz*.14,y+sz*.18,sz*.7,sz*.3);ctx.fillStyle='#aa5668';ctx.fillRect(x+sz*.14,y+sz*.38,sz*.74,sz*.32);return;}if(id===92){ctx.fillStyle='#786052';ctx.fillRect(x+sz*.12,y+sz*.61,sz*.78,sz*.31);ctx.fillStyle='#f49a43';ctx.fillRect(x+sz*.32,y+sz*.24,sz*.35,sz*.53);ctx.fillStyle='#ffe48c';ctx.fillRect(x+sz*.43,y+sz*.31,sz*.16,sz*.31);return;}if(id===114){ctx.fillStyle='#66452d';ctx.fillRect(x,y,sz,sz);ctx.fillStyle='#c09b62';ctx.fillRect(x,y,sz,sz*.17);return}
  if([107,108,109,110].includes(id)){ctx.fillStyle=id===110?'#748897':id===109?'#efc96b':'#996d44';ctx.fillRect(x+sz*.1,y+sz*.24,sz*.8,sz*.72);ctx.fillStyle=id===110?'#ccdbe3':'#e7be80';ctx.fillRect(x+sz*.22,y+sz*.38,sz*.56,sz*.12);return}
  ctx.fillStyle=colors[id];if(id>=29){let c=colors[id]||'#999';ctx.fillStyle=c;ctx.fillRect(x,y,sz,sz);
  if([29,30,31,37].includes(id)){ctx.fillStyle='#52515b';ctx.fillRect(x,y,sz,sz);ctx.fillStyle=c;for(let i=0;i<4;i++){let ax=hash(wx+i*3,wy+12),ay=hash(wx+13,wy+i*5);ctx.fillRect(x+ax*sz*.75,y+ay*sz*.75,Math.max(2,sz*.17),Math.max(2,sz*.15))}}
@@ -830,7 +1055,7 @@ function drawBlock(id,x,y,sz,wx,wy){if(id===0)return;const blockArt=(id===30||id
  }else if(id===1){ctx.fillStyle='#906c45';ctx.fillRect(x,y,sz,sz);ctx.fillStyle='#5a9c4b';ctx.fillRect(x,y,sz,Math.max(2,sz*.24));ctx.fillStyle='#88c361';ctx.fillRect(x+sz*.14,y,sz*.2,sz*.1)}else if(id===2){ctx.fillRect(x,y,sz,sz);ctx.fillStyle='#795837';ctx.fillRect(x+sz*.2,y+sz*.48,sz*.18,sz*.14);ctx.fillRect(x+sz*.72,y+sz*.1,sz*.12,sz*.21)}else if(id===3||id===6||id===7){ctx.fillStyle='#787e83';ctx.fillRect(x,y,sz,sz);ctx.fillStyle='#666b73';ctx.fillRect(x,y+sz*.68,sz*.6,sz*.27);ctx.fillStyle='#9c9e9b';ctx.fillRect(x+sz*.14,y+sz*.15,sz*.44,sz*.13);if(id!==3){ctx.fillStyle=id===6?'#c97b50':'#becbd4';for(let i=0;i<3;i++){let ox=hash(wx+i,wy+33)*.55+.15,oy=hash(wx+41,wy+i)*.53+.18;ctx.fillRect(x+sz*ox,y+sz*oy,sz*.15,sz*.18)}}}else if(id===4){ctx.fillRect(x,y,sz,sz);ctx.fillStyle='#755333';ctx.fillRect(x+sz*.3,y,sz*.12,sz);ctx.fillRect(x+sz*.72,y,sz*.09,sz)}else if(id===5){ctx.fillRect(x+sz*.05,y+sz*.06,sz*.90,sz*.88);ctx.fillStyle='#78b661';ctx.fillRect(x+sz*.1,y+sz*.1,sz*.45,sz*.24)}else if(id===8){ctx.fillStyle='#b98953';ctx.fillRect(x+sz*.45,y+sz*.38,sz*.12,sz*.53);ctx.fillStyle='#ffe885';ctx.fillRect(x+sz*.32,y+sz*.08,sz*.37,sz*.38);ctx.fillStyle='#ffab54';ctx.fillRect(x+sz*.43,y+sz*.21,sz*.13,sz*.22)}else if(id===12){ctx.fillStyle='#9a6d40';ctx.fillRect(x+sz*.10,y+sz*.20,sz*.80,sz*.19);ctx.fillRect(x+sz*.17,y+sz*.39,sz*.16,sz*.56);ctx.fillRect(x+sz*.67,y+sz*.39,sz*.16,sz*.56);ctx.fillStyle='#d8aa70';ctx.fillRect(x+sz*.1,y+sz*.13,sz*.80,sz*.12);ctx.fillStyle='#463f38';ctx.fillRect(x+sz*.18,y+sz*.14,sz*.06,sz*.05)}else if(id===18){ctx.fillStyle='#76706a';ctx.fillRect(x,y,sz,sz);ctx.fillStyle='#444447';ctx.fillRect(x+sz*.1,y+sz*.1,sz*.8,sz*.18);ctx.fillStyle='#1f252a';ctx.fillRect(x+sz*.20,y+sz*.36,sz*.6,sz*.52);ctx.fillStyle='#f18b45';ctx.fillRect(x+sz*.34,y+sz*.55,sz*.34,sz*.28)}else if(id===13){ctx.fillStyle='#797d82';ctx.fillRect(x,y,sz,sz);ctx.fillStyle='#565b63';ctx.fillRect(x+sz*.05,y+sz*.65,sz*.8,sz*.25);ctx.fillStyle='#252833';for(let i=0;i<4;i++){let a=hash(wx+i*9,wy+i*3);ctx.fillRect(x+sz*(.1+a*.6),y+sz*(.12+hash(wy+i,wx)*.6),sz*.19,sz*.18)}} }
 function drawWall(x,y,sz,wx,wy){const img=assetReady('stone_wall');if(img){ctx.save();ctx.globalAlpha=1;ctx.fillStyle='#242329';ctx.fillRect(x,y,sz,sz);ctx.drawImage(img,x,y,sz,sz);ctx.restore();return;}ctx.fillStyle='#28272d';ctx.fillRect(x,y,sz,sz);let v=hash(wx,wy,661);ctx.fillStyle=v>.52?'#3a3a41':'#1e1f25';ctx.fillRect(x+sz*.06,y+sz*.13,sz*.7,Math.max(1,sz*.13));ctx.fillStyle='#181a20';ctx.fillRect(x+sz*.61,y+sz*.58,sz*.25,sz*.12);ctx.fillStyle='#47474d';ctx.fillRect(x+sz*.15,y+sz*.72,sz*.29,sz*.07)}
 function spawnFx(tx,ty,color,n=8){for(let i=0;i<n;i++)fx.push({x:(tx+.5)*T,y:(ty+.5)*T,vx:(Math.random()-.5)*155,vy:-Math.random()*130-20,life:.35+Math.random()*.35,color,size:2+Math.random()*5})}
-function fellTree(tx,ty){let baseY=ty;while(get(tx,baseY+1)===4&&baseY<ty+25)baseY++;let top=ty;while(get(tx,top-1)===4&&top>ty-25)top--;let count=0;for(let y=top;y<=baseY;y++){if(get(tx,y)===4){put(tx,y,0);count++;spawnDrop(4,1,tx+.5,y+.5);spawnFx(tx,y,'#a47b4b',3)}}for(let y=top-4;y<=top+3;y++)for(let x=tx-3;x<=tx+3;x++)if(get(x,y)===5&&Math.hypot(x-tx,(y-top)*.85)<4.2){put(x,y,0);if(hash(x,y,88)>.65)spawnDrop(5,1,x+.5,y+.5);spawnFx(x,y,'#72aa54',2)}toast('木を伐採！ 木材 ×'+count)}
+function fellTree(tx,ty){let baseY=ty;while(get(tx,baseY+1)===4&&baseY<ty+25)baseY++;let top=ty;while(get(tx,top-1)===4&&top>ty-25)top--;let count=0;for(let y=top;y<=baseY;y++){if(get(tx,y)===4){put(tx,y,0);count++;spawnDrop(4,1,tx+.5,y+.5);spawnFx(tx,y,'#a47b4b',3)}}for(let y=top-4;y<=top+3;y++)for(let x=tx-3;x<=tx+3;x++)if(get(x,y)===5&&Math.hypot(x-tx,(y-top)*.85)<4.2){put(x,y,0);if(hash(x,y,88)>.65)spawnDrop(5,1,x+.5,y+.5);if(Math.random()<.30)spawnDrop(120,1,x+.5,y+.3);spawnFx(x,y,'#72aa54',2)}toast('木を伐採！ 木材 ×'+count)}
 function updateFx(dt){swing=Math.max(0,swing-dt);fx=fx.filter(p=>p.life>0);for(let p of fx){p.life-=dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=340*dt}}
 function drawFx(cw,ch){for(let p of fx){let x=(p.x-cam.x)*zoom+cw/2,y=(p.y-cam.y)*zoom+ch/2;ctx.globalAlpha=Math.min(1,p.life*2);ctx.fillStyle=p.color;ctx.fillRect(Math.floor(x),Math.floor(y),Math.ceil(p.size*zoom*.65),Math.ceil(p.size*zoom*.65))}ctx.globalAlpha=1}
 // 夜と地下の暗さは別々に計算し、深いほど周辺光を減らす。
@@ -1036,7 +1261,7 @@ function biomeWeights(x){
 const forestLayer=document.createElement('canvas'),forestLayerCtx=forestLayer.getContext('2d');
 const forestMask=document.createElement('canvas'),forestMaskCtx=forestMask.getContext('2d');
 function drawBackdrop(cw,ch){
- const palette=skyPalette(time),night=nightStrength(time),tw=T*zoom;
+ const palette=skyPalette(time),night=nightStrength(time),BG_SCALE=2,tw=T*BG_SCALE;
  const sky=ctx.createLinearGradient(0,0,0,ch);
  sky.addColorStop(0,bgColor(palette[0]));sky.addColorStop(1,bgColor(palette[1]));
  ctx.fillStyle=sky;ctx.fillRect(0,0,cw,ch);
@@ -1051,19 +1276,19 @@ function drawBackdrop(cw,ch){
   const x=((hash(i,992)*cw*1.45-cam.x*.018)%(cw+30)+(cw+30))%(cw+30),y=hash(i,993)*ch*.57;
   const pulse=.63+.37*Math.sin(i*3.7+time*.037);
   ctx.fillStyle=i%7===0?'#fff2cf':'#d6edff';ctx.globalAlpha=night*pulse;
-  const sz=(i%9===0?3:1.6)*Math.max(1,zoom*.58);ctx.fillRect(Math.round(x),Math.round(y),sz,sz);
+  const sz=(i%9===0?3:1.6)*Math.max(1,BG_SCALE*.58);ctx.fillRect(Math.round(x),Math.round(y),sz,sz);
  }ctx.restore()}
  const dayProgress=((time-360)/720),moonProgress=((time-1080+1440)%1440)/720;
  let sunX=cw*(.06+.88*dayProgress),sunY=ch*(.76-.62*Math.sin(Math.PI*dayProgress));
  let moonX=cw*(.07+.86*moonProgress),moonY=ch*(.76-.58*Math.sin(Math.PI*moonProgress));
  const sunArt=assetReady('bg_sun'),moonArt=assetReady('bg_moon');
  if(night<.99){ctx.save();ctx.globalAlpha=1-night*.88;
-  if(sunArt){const h=Math.max(58,76*zoom),w=sunArt.naturalWidth*(h/sunArt.naturalHeight);ctx.drawImage(sunArt,sunX-w/2,sunY-h/2,w,h)}
-  else{const r=Math.max(12,12*zoom);ctx.fillStyle='#fff1ba';ctx.shadowColor='#ffe5a0';ctx.shadowBlur=r*1.6;ctx.beginPath();ctx.arc(sunX,sunY,r,0,Math.PI*2);ctx.fill()}
+  if(sunArt){const h=Math.max(58,76*BG_SCALE),w=sunArt.naturalWidth*(h/sunArt.naturalHeight);ctx.drawImage(sunArt,sunX-w/2,sunY-h/2,w,h)}
+  else{const r=Math.max(12,12*BG_SCALE);ctx.fillStyle='#fff1ba';ctx.shadowColor='#ffe5a0';ctx.shadowBlur=r*1.6;ctx.beginPath();ctx.arc(sunX,sunY,r,0,Math.PI*2);ctx.fill()}
   ctx.restore()}
  if(night>.02){ctx.save();ctx.globalAlpha=night;
-  if(moonArt){const h=Math.max(52,70*zoom),w=moonArt.naturalWidth*(h/moonArt.naturalHeight);ctx.drawImage(moonArt,moonX-w/2,moonY-h/2,w,h)}
-  else{const r=Math.max(9,10*zoom);ctx.fillStyle='#f5f3dc';ctx.shadowColor='#d9e9ff';ctx.shadowBlur=r*.8;ctx.beginPath();ctx.arc(moonX,moonY,r,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;ctx.fillStyle=bgColor(palette[0]);ctx.globalAlpha=night*.70;ctx.beginPath();ctx.arc(moonX+r*.34,moonY-r*.17,r*.81,0,Math.PI*2);ctx.fill()}
+  if(moonArt){const h=Math.max(52,70*BG_SCALE),w=moonArt.naturalWidth*(h/moonArt.naturalHeight);ctx.drawImage(moonArt,moonX-w/2,moonY-h/2,w,h)}
+  else{const r=Math.max(9,10*BG_SCALE);ctx.fillStyle='#f5f3dc';ctx.shadowColor='#d9e9ff';ctx.shadowBlur=r*.8;ctx.beginPath();ctx.arc(moonX,moonY,r,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;ctx.fillStyle=bgColor(palette[0]);ctx.globalAlpha=night*.70;ctx.beginPath();ctx.arc(moonX+r*.34,moonY-r*.17,r*.81,0,Math.PI*2);ctx.fill()}
   ctx.restore()}
  const cloudKeys=['cloud1','cloud2','cloud3'];
  const baseAlpha=weather==='storm'?.34:weather==='rain'?.48:(night>.68?.25:.88);
@@ -1072,11 +1297,11 @@ function drawBackdrop(cw,ch){
   let x=((i*237+hash(i,115)*80-cam.x*(.034+hash(i,120)*.016)+weatherPhase*3)%(cw+620)+(cw+620))%(cw+620)-310;
   let y=ch*(.08+hash(i,116)*.25),scale=.88+hash(i,119)*.28;
   ctx.save();ctx.globalAlpha=baseAlpha*(weather==='storm'?1.05:1);
-  if(art){const w=(126+hash(i,117)*148)*zoom*.55*scale,h=w*(art.naturalHeight/art.naturalWidth);ctx.drawImage(art,x,y,w,h)}
-  else{let wide=(53+hash(i,117)*72)*zoom*.7*scale,hi=Math.max(5,6*zoom);ctx.fillStyle=night>.65?'rgba(120,138,167,.35)':weather==='storm'?'rgba(90,106,132,.57)':'rgba(255,248,233,.34)';ctx.fillRect(x,y,wide,hi);ctx.fillRect(x+wide*.17,y-hi*.75,wide*.48,hi);ctx.fillRect(x+wide*.43,y-hi*.38,wide*.45,hi)}
+  if(art){const w=(126+hash(i,117)*148)*BG_SCALE*.55*scale,h=w*(art.naturalHeight/art.naturalWidth);ctx.drawImage(art,x,y,w,h)}
+  else{let wide=(53+hash(i,117)*72)*BG_SCALE*.7*scale,hi=Math.max(5,6*BG_SCALE);ctx.fillStyle=night>.65?'rgba(120,138,167,.35)':weather==='storm'?'rgba(90,106,132,.57)':'rgba(255,248,233,.34)';ctx.fillRect(x,y,wide,hi);ctx.fillRect(x+wide*.17,y-hi*.75,wide*.48,hi);ctx.fillRect(x+wide*.43,y-hi*.38,wide*.45,hi)}
   ctx.restore();
  }
- const horizon=ch*.54,panStep=Math.max(14,Math.floor(14*zoom));
+ const horizon=ch*.54,panStep=Math.max(14,Math.floor(14*BG_SCALE));
  function terrainPath(base,scale,amp,off,fill){
   ctx.beginPath();ctx.moveTo(0,ch);
   for(let sx=0;sx<=cw+panStep;sx+=panStep){
@@ -1088,15 +1313,15 @@ function drawBackdrop(cw,ch){
   }
   ctx.lineTo(cw,ch);ctx.fillStyle=fill;ctx.fill();
  }
- terrainPath(horizon+ch*.05,.22,36*zoom,145,'rgba(67,98,128,.28)');
- terrainPath(horizon+ch*.11,.47,23*zoom,153,'rgba(49,82,103,.36)');
- const unit=Math.max(20,Math.round(26*zoom));
+ terrainPath(horizon+ch*.05,.22,36*BG_SCALE,145,'rgba(67,98,128,.28)');
+ terrainPath(horizon+ch*.11,.47,23*BG_SCALE,153,'rgba(49,82,103,.36)');
+ const unit=Math.max(20,Math.round(26*BG_SCALE));
  for(let sx=-unit;sx<cw+unit;sx+=unit){
-  const wx=player.x+(sx-cw/2)/tw*.78,w=biomeWeights(wx),n=noise1(wx,47,503),baseY=horizon+ch*.105+n*zoom*13;
-  if(w.coast>.015){ctx.save();ctx.globalAlpha=w.coast;const water=ctx.createLinearGradient(0,baseY-7,0,ch);water.addColorStop(0,'#78c4d6');water.addColorStop(.35,'#3898c0');water.addColorStop(1,'#1a628e');ctx.fillStyle=water;ctx.fillRect(sx,baseY-7,unit+2,ch-baseY+8);ctx.fillStyle='#d6f8f0';ctx.globalAlpha=w.coast*.48;for(let j=0;j<4;j++){let ry=baseY+14+j*38+(hash(Math.floor(wx),j,seed+99)-.5)*12;ctx.fillRect(sx+hash(j,Math.floor(wx))*9,ry,unit*.55,Math.max(1,zoom*.7));}ctx.restore()}
-  if(w.desert>.015){ctx.save();ctx.globalAlpha=w.desert;ctx.fillStyle='#d4a466';ctx.fillRect(sx,baseY-1,unit+2,ch-baseY+3);const py=baseY-5-(noise1(wx,75,602)+.6)*15*zoom;ctx.fillStyle='#e6bb78';ctx.beginPath();ctx.moveTo(sx,baseY+25);ctx.lineTo(sx+unit*.52,py);ctx.lineTo(sx+unit+2,baseY+23);ctx.fill();if(hash(Math.floor(wx/42),882)>.84){const px=sx+unit*.4,ph=18*zoom;ctx.fillStyle='#bd8b50';ctx.beginPath();ctx.moveTo(px-ph*.8,baseY+3);ctx.lineTo(px,baseY-ph);ctx.lineTo(px+ph*.85,baseY+3);ctx.fill();ctx.fillStyle='#f3ce91';ctx.beginPath();ctx.moveTo(px-ph*.8,baseY+3);ctx.lineTo(px,baseY-ph);ctx.lineTo(px,baseY+3);ctx.fill();}ctx.restore()}
-  if(w.snow>.015){ctx.save();ctx.globalAlpha=w.snow;ctx.fillStyle='#b7d8e5';ctx.fillRect(sx,baseY-2,unit+2,ch-baseY+5);ctx.fillStyle='#f1f9ff';ctx.beginPath();ctx.moveTo(sx,baseY+12);ctx.lineTo(sx+unit*.48,baseY-22*zoom);ctx.lineTo(sx+unit+2,baseY+12);ctx.fill();if(hash(Math.floor(wx/17),929)>.68){let h=(15+hash(Math.floor(wx/17),930)*17)*zoom;let px=sx+unit*.5;ctx.fillStyle='#536e79';ctx.fillRect(px-2*zoom,baseY-h*.55,4*zoom,h*.85);for(let j=0;j<3;j++){ctx.fillStyle=j===0?'#e9f7fc':'#6b9aa4';ctx.beginPath();ctx.moveTo(px,baseY-h*(.95-j*.25));ctx.lineTo(px-h*(.36-j*.06),baseY-h*(.40-j*.2));ctx.lineTo(px+h*(.36-j*.06),baseY-h*(.40-j*.2));ctx.fill()}}ctx.restore()}
-  if(w.forest>.015&&!assetReady('bg_forest')){ctx.save();ctx.globalAlpha=w.forest;ctx.fillStyle='#385f54';ctx.fillRect(sx,baseY-6,unit+2,ch-baseY+8);const bx=sx+unit*.45,h=(47+hash(Math.floor(wx),725)*35)*zoom;ctx.fillStyle='#354d3d';ctx.fillRect(bx-3*zoom,baseY-h*.52,6*zoom,h);for(let crown=0;crown<3;crown++){let radius=(19+crown*4)*zoom;ctx.fillStyle=['#2d6b51','#3d835b','#5b9b68'][crown];ctx.beginPath();ctx.ellipse(bx+(crown-1)*7*zoom,baseY-h+10*zoom+crown*7*zoom,radius,radius*.75,0,0,Math.PI*2);ctx.fill()}ctx.restore()}
+  const wx=player.x+(sx-cw/2)/tw*.78,w=biomeWeights(wx),n=noise1(wx,47,503),baseY=horizon+ch*.105+n*BG_SCALE*13;
+  if(w.coast>.015){ctx.save();ctx.globalAlpha=w.coast;const water=ctx.createLinearGradient(0,baseY-7,0,ch);water.addColorStop(0,'#78c4d6');water.addColorStop(.35,'#3898c0');water.addColorStop(1,'#1a628e');ctx.fillStyle=water;ctx.fillRect(sx,baseY-7,unit+2,ch-baseY+8);ctx.fillStyle='#d6f8f0';ctx.globalAlpha=w.coast*.48;for(let j=0;j<4;j++){let ry=baseY+14+j*38+(hash(Math.floor(wx),j,seed+99)-.5)*12;ctx.fillRect(sx+hash(j,Math.floor(wx))*9,ry,unit*.55,Math.max(1,BG_SCALE*.7));}ctx.restore()}
+  if(w.desert>.015){ctx.save();ctx.globalAlpha=w.desert;ctx.fillStyle='#d4a466';ctx.fillRect(sx,baseY-1,unit+2,ch-baseY+3);const py=baseY-5-(noise1(wx,75,602)+.6)*15*BG_SCALE;ctx.fillStyle='#e6bb78';ctx.beginPath();ctx.moveTo(sx,baseY+25);ctx.lineTo(sx+unit*.52,py);ctx.lineTo(sx+unit+2,baseY+23);ctx.fill();if(hash(Math.floor(wx/42),882)>.84){const px=sx+unit*.4,ph=18*BG_SCALE;ctx.fillStyle='#bd8b50';ctx.beginPath();ctx.moveTo(px-ph*.8,baseY+3);ctx.lineTo(px,baseY-ph);ctx.lineTo(px+ph*.85,baseY+3);ctx.fill();ctx.fillStyle='#f3ce91';ctx.beginPath();ctx.moveTo(px-ph*.8,baseY+3);ctx.lineTo(px,baseY-ph);ctx.lineTo(px,baseY+3);ctx.fill();}ctx.restore()}
+  if(w.snow>.015){ctx.save();ctx.globalAlpha=w.snow;ctx.fillStyle='#b7d8e5';ctx.fillRect(sx,baseY-2,unit+2,ch-baseY+5);ctx.fillStyle='#f1f9ff';ctx.beginPath();ctx.moveTo(sx,baseY+12);ctx.lineTo(sx+unit*.48,baseY-22*BG_SCALE);ctx.lineTo(sx+unit+2,baseY+12);ctx.fill();if(hash(Math.floor(wx/17),929)>.68){let h=(15+hash(Math.floor(wx/17),930)*17)*BG_SCALE;let px=sx+unit*.5;ctx.fillStyle='#536e79';ctx.fillRect(px-2*BG_SCALE,baseY-h*.55,4*BG_SCALE,h*.85);for(let j=0;j<3;j++){ctx.fillStyle=j===0?'#e9f7fc':'#6b9aa4';ctx.beginPath();ctx.moveTo(px,baseY-h*(.95-j*.25));ctx.lineTo(px-h*(.36-j*.06),baseY-h*(.40-j*.2));ctx.lineTo(px+h*(.36-j*.06),baseY-h*(.40-j*.2));ctx.fill()}}ctx.restore()}
+  if(w.forest>.015&&!assetReady('bg_forest')){ctx.save();ctx.globalAlpha=w.forest;ctx.fillStyle='#385f54';ctx.fillRect(sx,baseY-6,unit+2,ch-baseY+8);const bx=sx+unit*.45,h=(47+hash(Math.floor(wx),725)*35)*BG_SCALE;ctx.fillStyle='#354d3d';ctx.fillRect(bx-3*BG_SCALE,baseY-h*.52,6*BG_SCALE,h);for(let crown=0;crown<3;crown++){let radius=(19+crown*4)*BG_SCALE;ctx.fillStyle=['#2d6b51','#3d835b','#5b9b68'][crown];ctx.beginPath();ctx.ellipse(bx+(crown-1)*7*BG_SCALE,baseY-h+10*BG_SCALE+crown*7*BG_SCALE,radius,radius*.75,0,0,Math.PI*2);ctx.fill()}ctx.restore()}
  }
  const forestArt=assetReady('bg_forest');
  if(forestArt){
@@ -1172,7 +1397,22 @@ function drawItemCursor(){
  ctx.beginPath();ctx.moveTo(mx-r,my);ctx.lineTo(mx+r,my);ctx.moveTo(mx,my-r);ctx.lineTo(mx,my+r);ctx.stroke();
  ctx.fillStyle='#101820';ctx.fillRect(mx-1,my-1,2,2);ctx.restore();
 }
-function worldRender(){let cw=canvas.width,ch=canvas.height;let day=(Math.sin((time/1440)*Math.PI*2-Math.PI/2)+1)/2;
+function drawEnvironmentVignette(cw,ch){
+ if(!player||gameMode==='sandbox'&&spectator)return;
+ const inWater=waterAt(player.x,player.y-.65);
+ const oxygen=player.oxygen??100;
+ const lowOxygen=inWater&&oxygen<32;
+ let red=Math.min(.70,Math.max(hitFlash*2.7,lowOxygen?(32-oxygen)/32*(.30+.18*(.5+.5*Math.sin(performance.now()*.013))):0));
+ const cyan=inWater?(.18+(1-oxygen/100)*.08):0;
+ ctx.save();
+ const radius=Math.max(cw,ch)*.75;
+ if(cyan>0){let grad=ctx.createRadialGradient(cw/2,ch/2,Math.min(cw,ch)*.15,cw/2,ch/2,radius);
+  grad.addColorStop(0,'rgba(49,187,228,0)');grad.addColorStop(1,'rgba(61,188,237,'+cyan+')');ctx.fillStyle=grad;ctx.fillRect(0,0,cw,ch);}
+ if(red>0){let grad=ctx.createRadialGradient(cw/2,ch/2,Math.min(cw,ch)*.12,cw/2,ch/2,radius);
+  grad.addColorStop(0,'rgba(230,30,48,0)');grad.addColorStop(1,'rgba(247,42,54,'+red+')');ctx.fillStyle=grad;ctx.fillRect(0,0,cw,ch);}
+ ctx.restore();
+}
+function worldRender(sceneOnly=false){let cw=canvas.width,ch=canvas.height;let day=(Math.sin((time/1440)*Math.PI*2-Math.PI/2)+1)/2;
  drawBackdrop(cw,ch);
  let left=Math.max(0,Math.floor((cam.x-cw/2/zoom)/T)-1),right=Math.min(W-1,Math.ceil((cam.x+cw/2/zoom)/T)+1),top=Math.max(0,Math.floor((cam.y-ch/2/zoom)/T)-1),bottom=Math.min(H-1,Math.ceil((cam.y+ch/2/zoom)/T)+1),ts=T*zoom;
  for(let y=top;y<=bottom;y++)for(let x=left;x<=right;x++){let t=get(x,y),bg=getWall(x,y);if(t===0&&bg===0)continue;let px=Math.floor((x*T-cam.x)*zoom+cw/2),py=Math.floor((y*T-cam.y)*zoom+ch/2);if(bg&&t===0){drawWall(px,py,Math.ceil(ts+.15),x,y)}if(t!==0)drawBlock(t,px,py,Math.ceil(ts+.15),x,y)}
@@ -1187,7 +1427,8 @@ function worldRender(){let cw=canvas.width,ch=canvas.height;let day=(Math.sin((t
  }
  for(const [k,c] of crops){let [x,y]=k.split(',').map(Number);if(x<left||x>right||y<top||y>bottom)continue;let sx=(x*T-cam.x)*zoom+cw/2,sy=(y*T-cam.y)*zoom+ch/2;let h=(8+Math.floor(c.age)*7)*zoom;ctx.fillStyle=c.kind===100?'#a6c85b':'#67bc51';ctx.fillRect(sx+14*zoom,sy+32*zoom-h,4*zoom,h);if(c.age>1){ctx.fillStyle=c.kind===100?'#ead67c':'#f69a41';ctx.fillRect(sx+10*zoom,sy+32*zoom-h,12*zoom,8*zoom)}}
  if(weather!=='clear'){let count=weather==='storm'?95:65;for(let i=0;i<count;i++){let sx=(hash(i,1482)*cw+weatherPhase*(weather==='snow'?14:140)+i*73)%(cw+20),sy=(hash(i,1782)*ch+weatherPhase*(weather==='snow'?26:240)+i*41)%(ch+20);ctx.strokeStyle=weather==='snow'?'#eafaffcc':'#9ddcff9a';ctx.lineWidth=Math.max(1,zoom*.55);ctx.beginPath();ctx.moveTo(sx,sy);ctx.lineTo(sx+(weather==='snow'?2:5)*zoom,sy+(weather==='snow'?2:12)*zoom);ctx.stroke()}if(weather==='storm'&&Math.sin(weatherPhase*5)>.9995){ctx.fillStyle='#d9f1ff44';ctx.fillRect(0,0,cw,ch)}}
- drawWorldDrops(cw,ch);drawGraves(cw,ch);let px=(player.x*T-cam.x)*zoom+cw/2,py=(player.y*T-cam.y)*zoom+ch/2;character(px,py,32*zoom);drawEnemies(cw,ch);drawProjectiles(cw,ch);drawAttack(cw,ch);drawFx(cw,ch);drawLighting(cw,ch,left,right,top,bottom,day);
+ if(sceneOnly)return;
+ drawWorldDrops(cw,ch);drawGraves(cw,ch);let px=(player.x*T-cam.x)*zoom+cw/2,py=(player.y*T-cam.y)*zoom+ch/2;character(px,py,32*zoom);drawEnemies(cw,ch);drawProjectiles(cw,ch);drawAttack(cw,ch);drawFx(cw,ch);drawLighting(cw,ch,left,right,top,bottom,day);drawEnvironmentVignette(cw,ch);
  let {tx,ty,reachable,front,back}=tileTarget();if(reachable&&tx>=0&&tx<W&&ty>=0&&ty<H){let mx=(tx*T-cam.x)*zoom+cw/2,my=(ty*T-cam.y)*zoom+ch/2;ctx.strokeStyle='#f9e9ae';ctx.lineWidth=Math.max(1,zoom);ctx.strokeRect(Math.floor(mx)+1,Math.floor(my)+1,ts-2,ts-2);if(mineProgress>0&&mineX===tx&&mineY===ty){ctx.fillStyle='#0009';ctx.fillRect(mx,my+ts*.75,ts,ts*.16);ctx.fillStyle='#ffe18a';ctx.fillRect(mx,my+ts*.75,ts*Math.min(1,mineProgress/digTime(get(tx,ty),inv[active]?.id)),ts*.16)}}
  // カーソル表示と採掘・設置対象は同じ座標変換を使用する。
  drawItemCursor();
@@ -1206,7 +1447,125 @@ let miniTimer=0;function renderMini(dt){miniTimer+=dt;if(miniTimer<.3)return;min
 }
 function resize(){let scale=window.devicePixelRatio||1;canvas.width=Math.floor(innerWidth*scale);canvas.height=Math.floor(innerHeight*scale);ctx.imageSmoothingEnabled=false;ctx.setTransform(1,0,0,1,0,0); // display pixel coordinates via device-size canvas
 }
-function loop(ts){requestAnimationFrame(loop);if(touchDevice)document.body.classList.toggle('touchPlaying',mode==='playing');let dt=Math.min(.05,(ts-last)/1000||0);last=ts;if(!player||mode==='menu')return;if(mode==='playing'){accumulator+=dt;while(accumulator>=1/60){survivalAndEnvironment(1/60);physics(1/60);updateWorldDrops(1/60);drinkAndEatTick(1/60);act(1/60);updateEnemies(1/60);updateProjectiles(1/60);enemyAnimTime+=1/60;player.mp=Math.min(20,player.mp+1/60*1.1);tickFurnaces(1/60);updateFx(1/60);attackVisual.elapsed+=1/60;attackCooldown=Math.max(0,attackCooldown-1/60);if(!timeFrozen)time=(time+(1/60)*10)%1440;accumulator-=1/60}autosave+=dt;if(autosave>300){save(true);autosave=0}let cx=player.x*T,cy=(player.y-player.h*.6)*T;let a=Math.min(1,dt*6);cam.x+=(cx-cam.x)*a;cam.y+=(cy-cam.y)*a;hudUpdate();updateHP();renderMini(dt)}worldRender()}
+// A day/night cycle is 3 times longer than before: 10 -> 10/3 game minutes per second.
+const WORLD_TIME_RATE=10/3;
+function loop(ts){
+ requestAnimationFrame(loop);
+ if(touchDevice)document.body.classList.toggle('touchPlaying',mode==='playing'||mode==='touchEdit');
+ const dt=Math.min(.05,(ts-last)/1000||0);last=ts;
+ if(['menu','worldSlots','worldCreate','worldRename','titleSettings','titleControls'].includes(mode)){if(player){titlePreviewFrame+=dt;cam.x=titleViewX*T+Math.sin(titlePreviewFrame*.14)*T*1.5;cam.y=(heightAt(titleViewX)-3)*T;worldRender(true);}return;}if(!player)return;
+ // Only Esc pause (and its settings screen) or the death screen stops the world.
+ const pauseWorld=mode==='pause'||mode==='dead'||(mode==='settings'&&(settingsPauseWorld||settingsReturn==='menu'));
+ if(!pauseWorld){
+  const interactive=mode==='playing';
+  if(!interactive){keys.clear();mouse.left=mouse.right=false;}
+  accumulator+=dt;
+  while(accumulator>=1/60){
+   const step=1/60;
+   updateFlowWater(step);survivalAndEnvironment(step);if(mode==='dead'){accumulator=0;break;}
+   physics(step);if(mode==='dead'){accumulator=0;break;}
+   updateWorldDrops(step);drinkAndEatTick(step);if(mode==='dead'){accumulator=0;break;}
+   if(interactive)act(step);
+   updateEnemies(step);if(mode==='dead'){accumulator=0;break;}
+   updateProjectiles(step);if(mode==='dead'){accumulator=0;break;}
+   enemyAnimTime+=step;player.mp=Math.min(20,player.mp+step*1.1);
+   tickFurnaces(step);updateFx(step);attackVisual.elapsed+=step;
+   attackCooldown=Math.max(0,attackCooldown-step);
+   if(!timeFrozen)time=(time+step*WORLD_TIME_RATE)%1440;
+   accumulator-=step;
+  }
+  if(mode!=='dead'){
+   autosave+=dt;if(autosave>300){save(true);autosave=0}
+   const cx=player.x*T,cy=(player.y-player.h*.6)*T,a=Math.min(1,dt*6);
+   cam.x+=(cx-cam.x)*a;cam.y+=(cy-cam.y)*a;
+   hudUpdate();updateHP();renderMini(dt);
+   const inventoryClock=document.getElementById('inventoryClock');
+   if(inventoryClock)inventoryClock.textContent=document.getElementById('clock').textContent;
+  }
+ }
+ worldRender();
+}
+
+// Persist touch control coordinates as percentages so they survive device rotation/resize.
+const TOUCH_IDS=['touchLeft','touchRight','touchStick','touchDrop','touchDown','touchJump','touchZoomIn','touchZoomOut','quickInventory','quickCraft','quickMap','quickSettings'];
+const TOUCH_DEFAULTS={touchLeft:[9,78,76],touchRight:[22,78,76],touchStick:[14,77,112],touchDrop:[70,79,58],touchDown:[79,79,60],touchJump:[90,78,76],touchZoomIn:[91,48,48],touchZoomOut:[91,63,48],quickInventory:[36,9,49],quickCraft:[43,9,49],quickMap:[57,9,49],quickSettings:[64,9,49]};
+let mobileLayout={type:'buttons',positions:{}};
+try{let v=JSON.parse(localStorage.getItem('wildroot_mobile_layout_v2')||'{}');if(v&&typeof v==='object')mobileLayout={type:v.type==='stick'?'stick':'buttons',positions:v.positions||{}}}catch(e){}
+function getTouchPlacement(id){let v=mobileLayout.positions[id];return Array.isArray(v)&&v.length===3&&v.every(Number.isFinite)?v:TOUCH_DEFAULTS[id];}
+function applyTouchLayout(){
+ const w=innerWidth,h=innerHeight;
+ for(const id of TOUCH_IDS){const b=document.getElementById(id);if(!b)continue;
+  const [px,py,size]=getTouchPlacement(id);const dim=Math.max(36,Math.min(140,size));
+  b.style.left=`${Math.max(0,Math.min(w-dim,w*px/100-dim/2))}px`;
+  b.style.top=`${Math.max(0,Math.min(h-dim,h*py/100-dim/2))}px`;
+  b.style.width=dim+'px';b.style.height=dim+'px';
+ }
+ for(const id of ['touchLeft','touchRight'])document.getElementById(id).style.display=mobileLayout.type==='stick'?'none':'flex';
+ document.getElementById('touchStick').style.display=mobileLayout.type==='stick'?'flex':'none';
+}
+function saveTouchLayout(){try{localStorage.setItem('wildroot_mobile_layout_v2',JSON.stringify(mobileLayout))}catch(e){}}
+let touchEditorReturn='game',editingTouchId='touchLeft';
+function startTouchEditor(){
+ touchEditorReturn=(mode==='titleControls'||mode==='titleSettings'||mode==='menu')?'title':'game';
+ if(!player)prepareTitlePreview();
+ if(touchEditorReturn==='title')document.body.classList.remove('titleScene');
+ mode='touchEdit';mouse.left=mouse.right=false;keys.clear();overlay.classList.add('hidden');
+ document.body.classList.add('touchEditing');document.body.classList.add('touchPlaying');
+ document.getElementById('touchStyle').value=mobileLayout.type;
+ selectTouchControl(mobileLayout.type==='stick'?'touchStick':'touchLeft');applyTouchLayout();
+}
+function selectTouchControl(id){
+ editingTouchId=id;
+ for(const b of TOUCH_IDS)document.getElementById(b)?.classList.toggle('editSelected',id===b);
+ document.getElementById('touchSize').value=getTouchPlacement(id)[2];
+ document.getElementById('touchEditSelection').textContent='選択: '+(document.getElementById(id)?.getAttribute('aria-label')||id);
+}
+function closeTouchEditor(){
+ document.body.classList.remove('touchEditing');
+ for(const id of TOUCH_IDS)document.getElementById(id).classList.remove('editSelected');
+ saveTouchLayout();keys.clear();mouse.left=mouse.right=false;
+ if(touchEditorReturn==='title'){document.body.classList.add('titleScene');openControlSettings('title')}
+ else openSettings('playing');
+}
+document.getElementById('touchStyle').addEventListener('change',e=>{mobileLayout.type=e.target.value;applyTouchLayout();selectTouchControl(mobileLayout.type==='stick'?'touchStick':'touchLeft');saveTouchLayout()});
+document.getElementById('touchSize').addEventListener('input',e=>{mobileLayout.positions[editingTouchId]=[...getTouchPlacement(editingTouchId).slice(0,2),Number(e.target.value)];applyTouchLayout()});
+document.getElementById('touchLayoutReset').onclick=()=>{mobileLayout={type:'buttons',positions:{}};document.getElementById('touchStyle').value='buttons';applyTouchLayout();selectTouchControl('touchLeft');saveTouchLayout()};
+document.getElementById('touchEditDone').onclick=closeTouchEditor;
+for(const id of TOUCH_IDS){const b=document.getElementById(id);if(!b)continue;
+ let editingPointer=null;
+ b.addEventListener('pointerdown',e=>{if(mode!=='touchEdit')return;e.preventDefault();e.stopImmediatePropagation();
+  selectTouchControl(id);editingPointer=e.pointerId;b.setPointerCapture(e.pointerId);
+ },true);
+ b.addEventListener('pointermove',e=>{if(mode!=='touchEdit'||editingPointer!==e.pointerId)return;e.preventDefault();
+  const r=b.getBoundingClientRect(),size=getTouchPlacement(id)[2];
+  // pointer delta is tracked on the element, so dragging remains smooth at any zoom.
+  mobileLayout.positions[id]=[Math.max(4,Math.min(96,(e.clientX)/innerWidth*100)),Math.max(6,Math.min(94,(e.clientY)/innerHeight*100)),size];applyTouchLayout();
+ },true);
+ const release=e=>{if(editingPointer===e.pointerId){editingPointer=null;saveTouchLayout()}};
+ b.addEventListener('pointerup',release,true);b.addEventListener('pointercancel',release,true);
+ b.addEventListener('click',e=>{if(mode==='touchEdit'){e.preventDefault();e.stopImmediatePropagation()}},true);
+}
+// Joystick controls are a choice instead of the discrete left/right buttons.
+const touchStick=document.getElementById('touchStick');
+let stickPointer=null;
+function moveStick(e){const r=touchStick.getBoundingClientRect();const value=(e.clientX-(r.left+r.width/2))/(r.width*.5);
+ keys.delete('ArrowLeft');keys.delete('ArrowRight');
+ if(value<-.25)keys.add('ArrowLeft');else if(value>.25)keys.add('ArrowRight');
+ document.getElementById('stickKnob').style.transform=`translateX(${Math.max(-.8,Math.min(.8,value))*65}%)`;
+}
+touchStick.addEventListener('pointerdown',e=>{if(mode!=='playing')return;e.preventDefault();stickPointer=e.pointerId;touchStick.setPointerCapture(e.pointerId);moveStick(e)});
+touchStick.addEventListener('pointermove',e=>{if(mode==='playing'&&e.pointerId===stickPointer){e.preventDefault();moveStick(e)}});
+for(const event of ['pointerup','pointercancel','lostpointercapture'])touchStick.addEventListener(event,()=>{stickPointer=null;keys.delete('ArrowLeft');keys.delete('ArrowRight');document.getElementById('stickKnob').style.transform=''});
+function zoomMobile(delta){if(mode!=='playing')return;zoom=Math.max(1,Math.min(3,Math.round((zoom+delta)*4)/4));}
+document.getElementById('touchZoomIn').addEventListener('pointerdown',e=>{e.preventDefault();zoomMobile(.25)});
+document.getElementById('touchZoomOut').addEventListener('pointerdown',e=>{e.preventDefault();zoomMobile(-.25)});
+applyTouchLayout();
+// Disable native mobile selection / copy / long-press menus while mining.
+for(const target of [canvas,document.getElementById('touchControls')]){
+ target.addEventListener('contextmenu',e=>e.preventDefault());
+ target.addEventListener('selectstart',e=>e.preventDefault());
+ target.addEventListener('dragstart',e=>e.preventDefault());
+}
 
 // Touch controls: buttons emulate keyboard movement, canvas differentiates taps and holds.
 function touchJump(){
@@ -1265,10 +1624,10 @@ function touchRelease(e){
 }
 canvas.addEventListener('pointerup',touchRelease,{passive:false});
 canvas.addEventListener('pointercancel',touchRelease,{passive:false});
-window.addEventListener('orientationchange',()=>{keys.clear();mouse.left=mouse.right=false;resize()});
-window.addEventListener('resize',resize);window.addEventListener('blur',()=>{keys.clear();mouse.left=mouse.right=false;if(mode==='playing')pause()});
-window.addEventListener('keydown',e=>{if(['Space','ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Tab'].includes(e.code))e.preventDefault();if(e.code==='Space'&&gameMode==='sandbox'&&mode==='playing'&&!e.repeat){let now=performance.now();if(now-lastSpaceTap<330){spectator=!spectator;boatRiding=false;player.jumpBuffer=0;lastSpaceTap=-10000;toast(spectator?'スペクテイター：壁を通り抜けて飛行できます':'通常の移動に戻りました');return;}lastSpaceTap=now;}if(e.code==='KeyM'&&(mode==='playing'||mode==='worldmap')){e.preventDefault();if(mode==='worldmap')closeWorldMap();else openWorldMap();return}if(e.code==='Escape'){if(mode==='settings'){if(settingsReturn==='menu')showMenu();else startPlay();return}if(mode!=='menu')pause();return}if(e.code==='KeyE'){if(mode==='storage'){startPlay();return}if(mode==='inventory')closeInventory();else if(mode==='craft'){mode='inventory';renderInventory()}else if(mode==='playing')openInventory();return}if(e.code==='KeyC'){if(mode==='craft')startPlay();else if(mode==='playing'||mode==='inventory')openCraft();return}if(mode!=='playing')return;keys.add(e.code);if(!e.repeat&&(e.code==='Space'||e.code==='KeyW')&&!spectator)player.jumpBuffer=.12;if(e.code==='KeyF')save();if(e.code==='KeyQ'&&!e.repeat){e.preventDefault();dropSelected(e.ctrlKey);return;}if(/^Digit[1-9]$/.test(e.code)){active=Number(e.code.slice(5))-1;updateBar()}});
-window.addEventListener('keyup',e=>keys.delete(e.code));canvas.addEventListener('mousemove',e=>{let r=canvas.getBoundingClientRect();let sx=canvas.width/r.width,sy=canvas.height/r.height;mouse.x=(e.clientX-r.left)*sx;mouse.y=(e.clientY-r.top)*sy;mouse.inside=true});canvas.addEventListener('mouseleave',()=>{mouse.inside=false;mouse.left=mouse.right=false});canvas.addEventListener('mousedown',e=>{if(touchDevice&&e.sourceCapabilities?.firesTouchEvents)return;if(mode!=='playing')return;if(e.button===0)mouse.left=true;if(e.button===2)mouse.right=true});window.addEventListener('mouseup',e=>{if(e.button===0)mouse.left=false;if(e.button===2)mouse.right=false});canvas.addEventListener('contextmenu',e=>e.preventDefault());canvas.addEventListener('wheel',e=>{if(mode!=='playing')return;e.preventDefault();if(e.ctrlKey){active=(active+(e.deltaY>0?1:8))%9;updateBar()}else{zoom=Math.max(1,Math.min(3,Math.round((zoom+(e.deltaY>0?-.25:.25))*4)/4))}},{passive:false});
+window.addEventListener('orientationchange',()=>{keys.clear();mouse.left=mouse.right=false;resize();applyTouchLayout()});
+window.addEventListener('resize',()=>{resize();applyTouchLayout()});window.addEventListener('blur',()=>{keys.clear();mouse.left=mouse.right=false;if(mode==='playing')pause()});
+window.addEventListener('keydown',e=>{const code=toGameKey(e.code);if(['Space','ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Tab'].includes(code))e.preventDefault();if(code==='Space'&&gameMode==='sandbox'&&mode==='playing'&&!e.repeat){let now=performance.now();if(now-lastSpaceTap<330){spectator=!spectator;boatRiding=false;player.jumpBuffer=0;lastSpaceTap=-10000;toast(spectator?'スペクテイター：壁を通り抜けて飛行できます':'通常の移動に戻りました');return;}lastSpaceTap=now;}if(code==='KeyM'&&(mode==='playing'||mode==='worldmap')){e.preventDefault();if(mode==='worldmap')closeWorldMap();else openWorldMap();return}if((code==='Equal'||code==='Minus')&&mode==='playing'){zoom=Math.max(1,Math.min(3,Math.round((zoom+(code==='Equal'?.25:-.25))*4)/4));return;}if(code==='Escape'){if(mode==='touchEdit'){closeTouchEditor();return}if(mode==='gameControls'){openSettings('playing');return}if(mode==='worldRename'){showWorldSlots();return}if(['worldSlots','worldCreate','titleSettings','titleControls'].includes(mode)){showMenu();return}if(mode==='settings'){if(settingsReturn==='menu')showMenu();else startPlay();return}if(mode!=='menu')pause();return}if(code==='KeyE'){if(mode==='storage'){startPlay();return}if(mode==='inventory')closeInventory();else if(mode==='craft'){mode='inventory';renderInventory()}else if(mode==='playing')openInventory();return}if(code==='KeyC'){if(mode==='craft')startPlay();else if(mode==='playing'||mode==='inventory')openCraft();return}if(mode!=='playing')return;if(e.code===keyBinds.mine)mouse.left=true;if(e.code===keyBinds.place)mouse.right=true;keys.add(code);if(!e.repeat&&(code==='Space'||code==='KeyW')&&!spectator)player.jumpBuffer=.12;if(code==='KeyF')save();if(code==='KeyQ'&&!e.repeat){e.preventDefault();dropSelected(e.ctrlKey);return;}if(/^Digit[1-9]$/.test(code)){active=Number(code.slice(5))-1;updateBar()}});
+window.addEventListener('keyup',e=>{keys.delete(toGameKey(e.code));if(e.code===keyBinds.mine)mouse.left=false;if(e.code===keyBinds.place)mouse.right=false;});canvas.addEventListener('mousemove',e=>{let r=canvas.getBoundingClientRect();let sx=canvas.width/r.width,sy=canvas.height/r.height;mouse.x=(e.clientX-r.left)*sx;mouse.y=(e.clientY-r.top)*sy;mouse.inside=true});canvas.addEventListener('mouseleave',()=>{mouse.inside=false;mouse.left=mouse.right=false});canvas.addEventListener('mousedown',e=>{if(touchDevice&&e.sourceCapabilities?.firesTouchEvents)return;if(mode!=='playing')return;if('Mouse'+e.button===keyBinds.mine)mouse.left=true;if('Mouse'+e.button===keyBinds.place)mouse.right=true});window.addEventListener('mouseup',e=>{if('Mouse'+e.button===keyBinds.mine)mouse.left=false;if('Mouse'+e.button===keyBinds.place)mouse.right=false});canvas.addEventListener('contextmenu',e=>e.preventDefault());canvas.addEventListener('wheel',e=>{if(mode!=='playing')return;e.preventDefault();if(e.ctrlKey){active=(active+(e.deltaY>0?1:8))%9;updateBar()}else{zoom=Math.max(1,Math.min(3,Math.round((zoom+(e.deltaY>0?-.25:.25))*4)/4))}},{passive:false});
 mini.addEventListener('click',()=>{if(mode==='playing')openWorldMap()});document.getElementById('quickInventory').onclick=()=>{if(mode==='playing')openInventory()};document.getElementById('quickCraft').onclick=()=>{if(mode==='playing')openCraft()};document.getElementById('quickMap').onclick=()=>{if(mode==='playing')openWorldMap()};document.getElementById('quickSettings').onclick=()=>{if(mode==='playing'){save(true);openSettings('playing')}};resize();showMenu();requestAnimationFrame(loop);
 })();
 
