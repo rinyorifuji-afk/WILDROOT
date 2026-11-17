@@ -76,7 +76,7 @@ button{background:linear-gradient(#546950,#283c39 60%,#253039);color:#ffeed1;bor
 body.titleScene #game{cursor:default}
 body.titleScene #hud,body.titleScene #touchControls{display:none!important}
 body.titleScene #overlay{background:linear-gradient(90deg,rgba(5,14,19,.38),rgba(6,14,22,.19) 58%,rgba(5,14,19,.47));backdrop-filter:none}
-body.titleScene #modal{width:100%;height:100dvh;max-height:100dvh;max-width:none;margin:0;padding:0;background:transparent;border:none;border-radius:0;box-shadow:none;overflow:auto;display:flex;justify-content:center;align-items:center}
+body.titleScene #modal{width:100%;height:100%;max-height:100%;max-width:none;margin:0;padding:0;background:transparent;border:none;border-radius:0;box-shadow:none;overflow:auto;display:flex;justify-content:center;align-items:center}
 body.titleScene #modal::before{display:none!important;content:none!important}
 body.titleScene #modal>.titlePanel{flex:0 1 930px;min-width:0;width:min(930px,94vw);margin:auto;box-sizing:border-box}
 body.titleScene #modal>.titleHome{flex:0 0 100%;box-sizing:border-box}
@@ -112,7 +112,7 @@ html,body,#game,#touchControls,#touchControls button{-webkit-touch-callout:none;
 #touchControls button{position:absolute;box-sizing:border-box;min-width:0!important;min-height:0!important;padding:0!important;margin:0!important;display:flex;align-items:center;justify-content:center;border-radius:17px;font-size:clamp(18px,2.5vw,31px)}
 #touchMove,#touchSpecial{position:static!important;display:contents!important}
 #touchStick{border-radius:50%!important;background:#18394dbb!important}
-#stickKnob{width:42%;height:42%;border-radius:50%;background:#c9edff;box-shadow:0 0 0 3px #447eab}
+#stickKnob{display:block;position:absolute;left:29%;top:29%;width:42%;height:42%;border-radius:50%;background:#c9edff;box-shadow:0 0 0 3px #447eab}
 #touchGuide{bottom:2px!important;font-size:9px!important}
 #touchEditBar{display:none;position:fixed;left:50%;top:5px;transform:translateX(-50%);z-index:9;max-width:96vw;min-height:51px;padding:5px 10px;border-radius:9px;border:2px solid #6aa9cc;background:#132432ef;color:#fff;align-items:center;gap:9px;white-space:nowrap;font-size:12px;pointer-events:auto}
 #touchEditBar label{display:flex;align-items:center;gap:3px}
@@ -329,7 +329,7 @@ button,.quickButton,.invSlot,.recipe,select,input{touch-action:manipulation;-web
 
 /* Dual-stick controls and always-visible targeting cursor */
 #touchCursorStick{border-radius:50%!important;background:#193f50d9!important;border:3px solid #9ccadd!important;}
-#cursorKnob{width:40%;height:40%;border-radius:50%;background:#ffe3a4;box-shadow:0 0 0 3px #8a6b37;pointer-events:none;}
+#cursorKnob{display:block;position:absolute;left:30%;top:30%;width:40%;height:40%;border-radius:50%;background:#ffe3a4;box-shadow:0 0 0 3px #8a6b37;pointer-events:none;}
 #touchMine{background:#654238dd!important;border-color:#efb099!important;}
 #touchPlace{background:#315b41dd!important;border-color:#a8e6a7!important;}
 #touchZoomIn,#touchZoomOut{background:#263d53ec!important;}
@@ -463,6 +463,18 @@ button,.quickButton,.invSlot,.recipe,select,input{touch-action:manipulation;-web
 #miniZoomControl{position:fixed;z-index:3;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;width:27px;background:#172638df;border:2px solid #718896;border-radius:6px;padding:5px 2px;pointer-events:auto;touch-action:none}
 #miniZoomSlider{writing-mode:vertical-lr;direction:rtl;appearance:slider-vertical;-webkit-appearance:slider-vertical;width:18px;height:85px;padding:0;margin:0;touch-action:none;cursor:pointer;accent-color:#90d6b2}
 #miniZoomControl span{font-size:10px;line-height:1}body.titleScene #miniZoomControl{display:none}
+
+/* Stable 16:9 game viewport for desktop and landscape phones. Letterbox instead of stretching. */
+html{width:100%;height:100%;overflow:hidden!important;overscroll-behavior:none;background:#05070b!important;touch-action:none;-webkit-text-size-adjust:100%}
+body{position:fixed!important;inset:auto!important;left:50%!important;top:50%!important;width:min(100vw,177.7777778dvh)!important;height:min(100dvh,56.25vw)!important;transform:translate(-50%,-50%);overflow:hidden!important;overscroll-behavior:none;touch-action:none!important;-webkit-user-select:none!important;user-select:none!important;-webkit-touch-callout:none!important;-webkit-tap-highlight-color:transparent!important}
+#game,#hud,#overlay,#touchControls,#rotateNotice{width:100%!important;height:100%!important;inset:0!important;max-width:100%!important;max-height:100%!important}
+#game{position:absolute!important;display:block;touch-action:none!important}
+#hud,#overlay,#touchControls,#rotateNotice{position:absolute!important}
+body,body *:not(input):not(textarea){-webkit-user-select:none!important;user-select:none!important;-webkit-touch-callout:none!important}
+input,textarea{user-select:text!important;-webkit-user-select:text!important}
+button,.quickButton,.invSlot,.recipe,#touchControls button{touch-action:manipulation;-webkit-tap-highlight-color:transparent!important}
+#touchControls button{touch-action:none!important}
+#modal{overscroll-behavior:contain}
 </style></head><body><canvas id="game"></canvas><div id="hud"><div id="top"><div id="stats"><div class="stat">❤ HP <span id="hp">100 / 100</span></div><div class="bar"><div id="hpfill" class="fill" style="width:100%"></div></div><div class="stat">✦ MP <span id="mpnum">20 / 20</span></div><div class="bar"><div class="fill" id="mpfill" style="width:100%;background:#67a5f2"></div></div><div class="stat">🫧 酸素 <span id="oxynum">100 / 100</span></div><div class="bar"><div class="fill" id="oxyfill" style="width:100%;background:#a0e2f5"></div></div><div class="stat">🍖 食料 <span id="foodnum">100 / 100</span></div><div class="bar"><div class="fill" id="foodfill" style="width:100%;background:#d59752"></div></div><div class="stat">💧 水分 <span id="waternum">100 / 100</span></div><div class="bar" style="margin-bottom:0"><div class="fill" id="waterfill" style="width:100%;background:#55b3dc"></div></div></div><div id="info">地表 / 森林　|　深度: <span id="depth">0</span><br>座標: <span id="coords">0, 0</span><br>ズーム: <span id="zoomtext">2.0</span>x<br>光量: <span id="lighttext">100%</span> · 撃破: <span id="kills">0</span></div></div><canvas id="map" width="224" height="224" title="全体マップを表示 (M)"></canvas><div id="miniZoomControl" aria-label="ミニマップの拡大縮小"><input id="miniZoomSlider" type="range" min="0.7" max="6" step="0.1" value="2" aria-label="ミニマップ拡大率"><span>🔎</span></div><div id="clock">☀ 08:00</div><div id="toast"></div><div id="quickActions"><button type="button" class="quickButton" id="quickInventory" title="持ち物を開く (E)"><span class="keyhint">E</span><span class="symbol">🎒</span><span>持ち物</span></button><button type="button" class="quickButton" id="quickCraft" title="クラフト (C)"><span class="keyhint">C</span><span class="symbol">📖</span><span>クラフト</span></button></div><div id="quickActionsRight" class="right"><button type="button" class="quickButton" id="quickMap" title="全体マップ (M)"><span class="keyhint">M</span><span class="symbol">🗺️</span><span>マップ</span></button><button type="button" class="quickButton" id="quickSettings" title="メニュー (Esc)"><span class="keyhint">Esc</span><span class="symbol">⏸</span><span>メニュー</span></button></div><div id="hotbar"></div></div><div id="rotateNotice">📱 横画面にしてください<small>WILDROOTのスマホ版は横向き専用です。<br>端末を横に回転してプレイしてください。</small></div><div id="touchControls" aria-label="スマホ操作"><div id="touchMove"><button id="touchLeft" aria-label="左へ移動">◀</button><button id="touchRight" aria-label="右へ移動">▶</button><button id="touchStick" aria-label="移動スティック"><span id="stickKnob"></span></button></div><div id="touchSpecial"><button id="touchDrop" aria-label="アイテムを捨てる">🗑</button><button id="touchDash" aria-label="ダッシュ">⇧</button><button id="touchDown" aria-label="下へ">▼</button><button id="touchJump" aria-label="ジャンプ">⤒</button><button id="touchCursorStick" aria-label="カーソルスティック"><span id="cursorKnob"></span></button><button id="touchMine" aria-label="破壊">⛏</button><button id="touchPlace" aria-label="設置・使用">▣</button><button id="touchZoomIn" aria-label="拡大">＋</button><button id="touchZoomOut" aria-label="縮小">－</button></div><div id="touchGuide">左：移動　右：照準　⛏ 破壊／攻撃　▣ 設置／使用</div></div><div id="touchEditBar"><strong>📱 スマホ操作配置</strong><label>移動 <select id="touchStyle"><option value="buttons">左右ボタン</option><option value="stick">スティック</option></select></label><label>サイズ <input id="touchSize" type="range" min="38" max="140" step="2" value="72"></label><span id="touchEditSelection">ボタンを選択・ドラッグ</span><button id="touchLayoutReset">初期化</button><button id="touchEditDone">保存して戻る</button></div><div id="itemTooltip" role="tooltip"></div><div id="overlay"><div id="modal"></div></div><script>
 
 'use strict';
@@ -1043,8 +1055,7 @@ function openSettings(from='playing'){openUnifiedSettings(from==='menu'?'title':
 function openTitleSettings(){openUnifiedSettings('title','general');}
 function openControlSettings(back='title'){openUnifiedSettings(back==='game'?'game':'title','controls');}
 function openUnifiedSettings(origin='title',tab='general'){
- if(tab==='controls'&&touchDevice){startTouchEditor(origin);return;}
- bindingCleanup();bindingCleanup=()=>{};
+  bindingCleanup();bindingCleanup=()=>{};
  const onTitle=origin==='title';settingsReturn=onTitle?'menu':'playing';settingsPauseWorld=!onTitle;
  mode=onTitle?'titleSettings':'settings';keys.clear();mouse.left=mouse.right=false;
  document.body.classList.toggle('titleScene',onTitle);
@@ -1054,7 +1065,7 @@ function openUnifiedSettings(origin='title',tab='general'){
  if(tab==='general'){
   content='<p>ゲームの表示と初期ズームを調整します。</p><div class="settingsSection settingsOptions"><label class="keyRow">ミニマップを表示 <input type="checkbox" id="settingMini" '+(titlePrefs.mini?'checked':'')+'></label><label class="keyRow">操作ヒントを表示 <input type="checkbox" id="settingHelp" '+(titlePrefs.help?'checked':'')+'></label><label class="keyRow">新しいワールドの初期ズーム <select id="settingZoom"><option value="1">1.0 倍</option><option value="1.5">1.5 倍</option><option value="2">2.0 倍</option><option value="2.5">2.5 倍</option><option value="3">3.0 倍</option></select></label><label class="keyRow">UI文字サイズ <select id="settingUiScale"><option value="0.9">小</option><option value="1">標準</option><option value="1.15">大</option><option value="1.3">特大</option></select></label>'+(touchDevice?'<label class="keyRow">カーソル感度 <input type="range" id="settingCursorSensitivity" min="0.25" max="3" step="0.05" style="width:145px"><span id="cursorSensitivityValue"></span></label>':'')+'</div>';
  }else if(touchDevice){
-  content='<div class="touchSettingsInfo"><h3>📱 スマホ操作設定</h3><p>右スティックで照準を操作し、⛏で破壊・攻撃、▣で設置・使用します。配置とサイズはドラッグで変更できます。感度は一般設定から変更できます。</p><button class="worldPrimary" id="editTouchLayout">📱 操作ボタンの配置を編集する</button></div>';
+  content='<div class="touchSettingsInfo"><h3>📱 スマホ操作設定</h3><label class="keyRow">操作方式 <select id="settingTouchMode"><option value="sticks">左右スティック＋破壊／設置ボタン</option><option value="classic">画面タップで設置／長押しで破壊</option></select></label><p>スティック方式では右側のスティックで照準を自由に動かせます。従来方式では画面タップで設置・使用、長押しで破壊・攻撃します。</p><p>カーソル感度は「一般設定」から変更可能。</p><button class="worldPrimary" id="editTouchLayout">📱 操作ボタンの配置を編集する</button></div>';
  }else{
   content='<p>変更する操作を選び、キー・マウスボタン・マウスホイールを入力してください。</p><div class="controlGrid">'+BIND_LABELS.map(([id,label])=>'<div class="controlRow"><strong>'+label+'</strong><button type="button" data-bind="'+id+'">'+displayBinding(keyBinds[id])+'</button></div>').join('')+'</div><p id="bindNotice" class="small">入力待ち中はホイールでスクロールしません。Escで割り当てをキャンセル。</p><div class="worldActions"><button id="resetControls">キー割り当てを初期化</button></div>';
  }
@@ -1067,7 +1078,7 @@ function openUnifiedSettings(origin='title',tab='general'){
   document.getElementById('settingHelp').onchange=e=>{titlePrefs.help=e.target.checked;saveTitlePrefs()};
   const select=document.getElementById('settingZoom');select.value=String(titlePrefs.zoom);select.onchange=e=>{titlePrefs.zoom=Number(e.target.value);saveTitlePrefs()};const uiScale=document.getElementById('settingUiScale');uiScale.value=String(titlePrefs.uiScale||1);uiScale.onchange=e=>{titlePrefs.uiScale=Number(e.target.value);saveTitlePrefs()};if(touchDevice){const sens=document.getElementById('settingCursorSensitivity');const label=document.getElementById('cursorSensitivityValue');sens.value=String(cursorSensitivity);label.textContent=cursorSensitivity.toFixed(2)+'倍';sens.oninput=e=>{cursorSensitivity=Number(e.target.value);label.textContent=cursorSensitivity.toFixed(2)+'倍';try{localStorage.setItem('wildroot_cursor_sensitivity_v1',String(cursorSensitivity))}catch(_){}};}
  }else if(touchDevice){
-  document.getElementById('editTouchLayout').onclick=()=>startTouchEditor(origin);
+  const modeSelect=document.getElementById('settingTouchMode');modeSelect.value=touchControlMode;modeSelect.onchange=e=>{touchControlMode=e.target.value;try{localStorage.setItem('wildroot_touch_mode_v1',touchControlMode)}catch(_){};stopCursor();classicCancel();applyTouchLayout()};document.getElementById('editTouchLayout').onclick=()=>startTouchEditor(origin);
  }else{
   for(const button of modal.querySelectorAll('button[data-bind]'))button.onclick=()=>{
    bindingCleanup();const action=button.dataset.bind;button.textContent='入力待ち…';
@@ -2667,6 +2678,7 @@ function renderFrameBudget(){
 let wrLastTouchPlaying=null;
 function loop(ts){
  requestAnimationFrame(loop);
+updateCursorStick(ts);
 if(touchDevice){const v=mode==='playing'||mode==='touchEdit';if(wrLastTouchPlaying!==v){wrLastTouchPlaying=v;document.body.classList.toggle('touchPlaying',v);}}
  const dt=Math.min(.05,(ts-last)/1000||0);last=ts;lightingFrameDt=Math.max(.001,dt);
  if(['menu','worldSlots','worldCreate','worldRename','worldDelete','titleSettings','titleControls','multiplayerEntry','multiWorldCreate','multiLobby','friendsEntry','profile'].includes(mode)){
@@ -2687,7 +2699,7 @@ if(touchDevice){const v=mode==='playing'||mode==='touchEdit';if(wrLastTouchPlayi
   // Prevent long render stalls from triggering a cascade of physics updates.
   accumulator=Math.min(accumulator,.085);
   let physicsSteps=0;
-  while(accumulator>=1/60&&physicsSteps++<5){
+  while(accumulator>=1/60&&physicsSteps++<3){
    const step=1/60;
    wrEnvironmentStepClock+=step;if(wrEnvironmentStepClock>=1/15){updateFlowWater(wrEnvironmentStepClock);survivalAndEnvironment(wrEnvironmentStepClock);wrEnvironmentStepClock=0;}if(mode==='dead'){accumulator=0;break;}
    physics(step);if(mode==='dead'){accumulator=0;break;}
@@ -2738,9 +2750,11 @@ if(touchDevice){const v=mode==='playing'||mode==='touchEdit';if(wrLastTouchPlayi
 
 // Persist touch control coordinates as percentages so they survive device rotation/resize.
 const TOUCH_IDS=['touchLeft','touchRight','touchStick','touchCursorStick','touchMine','touchPlace','touchDrop','touchDash','touchDown','touchJump','touchZoomIn','touchZoomOut','quickInventory','quickCraft','quickMap','quickSettings'];
-const TOUCH_DEFAULTS={touchLeft:[9,82,72],touchRight:[22,82,72],touchStick:[13,78,102],touchCursorStick:[83,75,100],touchMine:[66,69,58],touchPlace:[94,52,58],touchDrop:[62,42,42],touchDash:[37,80,50],touchDown:[48,80,50],touchJump:[94,88,58],touchZoomIn:[73,10,44],touchZoomOut:[82,10,44],quickInventory:[40,8,46],quickCraft:[46,8,46],quickMap:[54,8,46],quickSettings:[60,8,46]};
+const TOUCH_DEFAULTS={touchLeft:[9,79,48],touchRight:[26,79,48],touchStick:[12,77,96],touchCursorStick:[87,78,96],touchMine:[78,42,48],touchPlace:[89,42,48],touchDrop:[65,35,38],touchDash:[30,75,42],touchDown:[65,52,38],touchJump:[69,70,55],touchZoomIn:[59,9,40],touchZoomOut:[66,9,40],quickInventory:[26,9,40],quickCraft:[34,9,40],quickMap:[42,9,40],quickSettings:[50,9,40]};
 let mobileLayout={type:'stick',positions:{}};
-try{let v=JSON.parse(localStorage.getItem('wildroot_mobile_layout_v3')||'{}');if(v&&typeof v==='object')mobileLayout={type:v.type==='buttons'?'buttons':'stick',positions:v.positions||{}}}catch(e){}
+// New balanced defaults; saved user-customized positions remain unchanged.
+const TOUCH_LAYOUT_VERSION='wildroot_mobile_layout_v5';
+try{let v=JSON.parse(localStorage.getItem(TOUCH_LAYOUT_VERSION)||'{}');if(v&&typeof v==='object')mobileLayout={type:v.type==='buttons'?'buttons':'stick',positions:v.positions||{}}}catch(e){}
 function getTouchPlacement(id){let v=mobileLayout.positions[id];return Array.isArray(v)&&v.length===3&&v.every(Number.isFinite)?v:TOUCH_DEFAULTS[id];}
 function applyTouchLayout(){
  const gameRect=canvas.getBoundingClientRect(), w=gameRect.width||innerWidth,h=gameRect.height||innerHeight;
@@ -2755,14 +2769,14 @@ function applyTouchLayout(){
   let [px,py,size]=getTouchPlacement(id);
   // Shorter displays must not squash the action controls over the hotbar.
   let dim=Math.max(32,Math.min(small?Math.max(42,h*.20):Math.max(48,h*.23),size));
-  if(id==='touchStick'||id==='touchCursorStick')dim=Math.max(66,Math.min(110,h*.29));
+  if(id==='touchStick'||id==='touchCursorStick')dim=Math.max(62,Math.min(104,h*.26));
   if(id.startsWith('quick'))dim=Math.max(38,Math.min(51,h*.13));
-  let x=ox+w*px/100-dim/2,y=oy+h*py/100-dim/2;
+  let x=w*px/100-dim/2,y=h*py/100-dim/2;
   // Use exactly the same saved coordinates in gameplay and in the editor.
   // Do not silently recenter quick buttons or force action buttons to edges;
   // that made configured layouts look different on actual smartphones.
-  x=Math.max(ox+safeL,Math.min(ox+w-dim-safeR,x));
-  y=Math.max(oy+safeT,Math.min(oy+h-dim-safeB,y));
+  x=Math.max(safeL,Math.min(w-dim-safeR,x));
+  y=Math.max(safeT,Math.min(h-dim-safeB,y));
   b.style.setProperty('left',x+'px','important');
   b.style.setProperty('top',y+'px','important');
   b.style.setProperty('width',dim+'px','important');
@@ -2770,8 +2784,9 @@ function applyTouchLayout(){
  }
  for(const id of ['touchLeft','touchRight'])document.getElementById(id).style.display=mobileLayout.type==='stick'?'none':'flex';
  document.getElementById('touchStick').style.display=mobileLayout.type==='stick'?'flex':'none';
+ for(const id of ['touchCursorStick','touchMine','touchPlace'])document.getElementById(id).style.display=touchControlMode==='sticks'?'flex':'none';
 }
-function saveTouchLayout(){try{localStorage.setItem('wildroot_mobile_layout_v3',JSON.stringify(mobileLayout))}catch(e){}}
+function saveTouchLayout(){try{localStorage.setItem(TOUCH_LAYOUT_VERSION,JSON.stringify(mobileLayout))}catch(e){}}
 let touchEditorReturn='game',editingTouchId='touchLeft';
 function startTouchEditor(origin=null){
  touchEditorReturn=origin==='title'||origin==='game'?origin:(mode==='titleControls'||mode==='titleSettings'||mode==='menu'?'title':'game');
@@ -2807,54 +2822,80 @@ for(const id of TOUCH_IDS){const b=document.getElementById(id);if(!b)continue;
  b.addEventListener('pointermove',e=>{if(mode!=='touchEdit'||editingPointer!==e.pointerId)return;e.preventDefault();
   const r=b.getBoundingClientRect(),size=getTouchPlacement(id)[2];
   // pointer delta is tracked on the element, so dragging remains smooth at any zoom.
-  mobileLayout.positions[id]=[Math.max(4,Math.min(96,(e.clientX)/innerWidth*100)),Math.max(6,Math.min(94,(e.clientY)/innerHeight*100)),size];applyTouchLayout();
+  mobileLayout.positions[id]=[Math.max(4,Math.min(96,(e.clientX-canvas.getBoundingClientRect().left)/Math.max(1,canvas.getBoundingClientRect().width)*100)),Math.max(6,Math.min(94,(e.clientY-canvas.getBoundingClientRect().top)/Math.max(1,canvas.getBoundingClientRect().height)*100)),size];applyTouchLayout();
  },true);
  const release=e=>{if(editingPointer===e.pointerId){editingPointer=null;saveTouchLayout()}};
  b.addEventListener('pointerup',release,true);b.addEventListener('pointercancel',release,true);
  b.addEventListener('click',e=>{if(mode==='touchEdit'){e.preventDefault();e.stopImmediatePropagation()}},true);
 }
 // Independent 360-degree cursor stick for touch: persistent pointer, no tapping on terrain.
+let touchControlMode='sticks';
+try{if(localStorage.getItem('wildroot_touch_mode_v1')==='classic')touchControlMode='classic'}catch(_){}
 let cursorSensitivity=1;
 try{const v=Number(localStorage.getItem('wildroot_cursor_sensitivity_v1'));if(Number.isFinite(v)&&v>=.25&&v<=3)cursorSensitivity=v;}catch(_){}
 const touchCursorStick=document.getElementById('touchCursorStick');
 const cursorKnob=document.getElementById('cursorKnob');
 let cursorPointer=null,cursorDirX=0,cursorDirY=0,cursorLoopLast=0;
+let cursorStickBounds=null;
 function cursorReady(){
  if(!mouse.inside||!Number.isFinite(mouse.x)||!Number.isFinite(mouse.y)){
   mouse.x=canvas.width*.5;mouse.y=canvas.height*.5;
  }
  mouse.inside=true;touchActive=true;touchAimX=mouse.x;touchAimY=mouse.y;
 }
+// Always map screen-up to cursor-up and screen-down to cursor-down.
+// Cache the stick center at pointerdown: neither layout shifts nor touch
+// event retargeting can reverse the direction mid-gesture.
 function steerCursor(e){
- const r=touchCursorStick.getBoundingClientRect(),rad=Math.max(1,r.width*.40);
- const x=(e.clientX-r.left-r.width*.5)/rad,y=(e.clientY-r.top-r.height*.5)/rad;
- const m=Math.max(1,Math.hypot(x,y));cursorDirX=x/m;cursorDirY=y/m;
- cursorKnob.style.transform=`translate(${Math.round(cursorDirX*105)}%,${Math.round(cursorDirY*105)}%)`;
+ if(!cursorStickBounds)return;
+ const {cx,cy,radius}=cursorStickBounds;
+ let x=(e.clientX-cx)/radius,y=(e.clientY-cy)/radius;
+ let magnitude=Math.hypot(x,y);
+ if(magnitude>1){x/=magnitude;y/=magnitude;magnitude=1;}
+ // A tiny dead-zone eliminates idle jitter; small displacements give
+ // sub-pixel fine aiming instead of the former abrupt minimum speed.
+ const dead=.075;
+ const output=magnitude<=dead?0:Math.pow((magnitude-dead)/(1-dead),1.45);
+ cursorDirX=magnitude?x/magnitude*output:0;
+ cursorDirY=magnitude?y/magnitude*output:0;
+ const travel=radius*.55;
+ cursorKnob.style.transform=`translate(${(x*travel).toFixed(1)}px,${(y*travel).toFixed(1)}px)`;
  cursorReady();
 }
-touchCursorStick.addEventListener('pointerdown',e=>{if(mode!=='playing')return;e.preventDefault();cursorPointer=e.pointerId;touchCursorStick.setPointerCapture(e.pointerId);steerCursor(e)});
-touchCursorStick.addEventListener('pointermove',e=>{if(mode!=='playing'||cursorPointer!==e.pointerId)return;e.preventDefault();steerCursor(e)});
-function stopCursor(e){if(e&&cursorPointer!==e.pointerId)return;cursorPointer=null;cursorDirX=cursorDirY=0;cursorKnob.style.transform='';}
-for(const event of ['pointerup','pointercancel','lostpointercapture'])touchCursorStick.addEventListener(event,stopCursor);
-function updateCursorStick(ts){
- const dt=cursorLoopLast?Math.min(.05,(ts-cursorLoopLast)/1000):0;
- cursorLoopLast=ts;
- if(touchDevice&&mode==='playing'){
-  cursorReady();
-  if(cursorPointer!==null){
-   // Pixels/second, independent of frame rate, with analog speed control.
-   const speed=Math.min(800,460*cursorSensitivity)*dt;
-   mouse.x=Math.max(5,Math.min(canvas.width-5,mouse.x+cursorDirX*speed));
-   mouse.y=Math.max(5,Math.min(canvas.height-5,mouse.y+cursorDirY*speed));
-   touchAimX=mouse.x;touchAimY=mouse.y;
-  }
- }
- requestAnimationFrame(updateCursorStick);
+touchCursorStick.addEventListener('pointerdown',e=>{
+ if(mode!=='playing'||touchControlMode!=='sticks')return;
+ e.preventDefault();cursorPointer=e.pointerId;
+ const r=touchCursorStick.getBoundingClientRect();
+ cursorStickBounds={cx:r.left+r.width/2,cy:r.top+r.height/2,radius:Math.max(1,r.width*.39)};
+ touchCursorStick.setPointerCapture(e.pointerId);steerCursor(e);
+});
+touchCursorStick.addEventListener('pointermove',e=>{
+ if(mode!=='playing'||cursorPointer!==e.pointerId)return;
+ e.preventDefault();steerCursor(e);
+});
+function stopCursor(e){
+ if(e&&cursorPointer!==e.pointerId)return;
+ cursorPointer=null;cursorStickBounds=null;cursorDirX=cursorDirY=0;
+ cursorKnob.style.transform='';
 }
-if(touchDevice)requestAnimationFrame(updateCursorStick);
+for(const event of ['pointerup','pointercancel','lostpointercapture'])touchCursorStick.addEventListener(event,stopCursor);
+// Called at the beginning of the *same* animation frame as physics/render.
+// No second rAF loop, no stale cursor updates behind the scene rendering.
+function updateCursorStick(ts){
+ const dt=cursorLoopLast?Math.min(.04,Math.max(0,(ts-cursorLoopLast)/1000)):0;
+ cursorLoopLast=ts;
+ if(!touchDevice||mode!=='playing'||touchControlMode!=='sticks')return;
+ cursorReady();
+ if(cursorPointer!==null){
+  const speed=570*cursorSensitivity*dt*(canvas.width/Math.max(1,canvas.clientWidth));
+  mouse.x=Math.max(3,Math.min(canvas.width-3,mouse.x+cursorDirX*speed));
+  mouse.y=Math.max(3,Math.min(canvas.height-3,mouse.y+cursorDirY*speed));
+  touchAimX=mouse.x;touchAimY=mouse.y;
+ }
+}
 function touchActionButton(id,property){
  const el=document.getElementById(id);let heldPointer=null;
- el.addEventListener('pointerdown',e=>{if(mode!=='playing')return;e.preventDefault();heldPointer=e.pointerId;el.setPointerCapture(e.pointerId);cursorReady();mouse[property]=true;el.classList.add('pressed')});
+ el.addEventListener('pointerdown',e=>{if(mode!=='playing'||touchControlMode!=='sticks')return;e.preventDefault();heldPointer=e.pointerId;el.setPointerCapture(e.pointerId);cursorReady();mouse[property]=true;el.classList.add('pressed')});
  const release=e=>{if(e&&heldPointer!==e.pointerId)return;heldPointer=null;mouse[property]=false;el.classList.remove('pressed')};
  for(const ev of ['pointerup','pointercancel','lostpointercapture'])el.addEventListener(ev,release);
 }
@@ -2929,9 +2970,51 @@ touchMovement('touchLeft','ArrowLeft');touchMovement('touchRight','ArrowRight');
 touchMovement('touchJump','Space',touchJump);
 touchMovement('touchDash','ShiftLeft');
 document.getElementById('touchDrop').addEventListener('pointerdown',e=>{e.preventDefault();if(mode==='playing')dropSelected(false)});
-// Screen touches no longer mine, attack, place, or move the aiming cursor.
-canvas.addEventListener('pointerdown',e=>{if(e.pointerType==='touch'&&mode==='playing')e.preventDefault()},{passive:false});
-canvas.addEventListener('pointermove',e=>{if(e.pointerType==='touch'&&mode==='playing')e.preventDefault()},{passive:false});
+// Optional classic mode: tap places/uses; hold mines/attacks.
+// This handler is disabled completely in dual-stick mode.
+let classicPointer=null,classicTimer=null;
+function classicAim(e){
+ const r=canvas.getBoundingClientRect();
+ mouse.x=Math.max(0,Math.min(canvas.width,(e.clientX-r.left)*canvas.width/Math.max(1,r.width)));
+ mouse.y=Math.max(0,Math.min(canvas.height,(e.clientY-r.top)*canvas.height/Math.max(1,r.height)));
+ mouse.inside=true;touchActive=true;touchAimX=mouse.x;touchAimY=mouse.y;
+}
+function classicCancel(){
+ clearTimeout(classicTimer);classicTimer=null;classicPointer=null;mouse.left=mouse.right=false;
+}
+canvas.addEventListener('pointerdown',e=>{
+ if(e.pointerType!=='touch'||mode!=='playing')return;
+ e.preventDefault();
+ if(touchControlMode!=='classic'||classicPointer)return;
+ classicAim(e);
+ classicPointer={id:e.pointerId,x:e.clientX,y:e.clientY,held:false};
+ canvas.setPointerCapture(e.pointerId);
+ classicTimer=setTimeout(()=>{
+  if(classicPointer&&classicPointer.id===e.pointerId&&mode==='playing'){
+   classicPointer.held=true;mouse.left=true;
+  }
+ },260);
+},{passive:false});
+canvas.addEventListener('pointermove',e=>{
+ if(e.pointerType!=='touch'||mode!=='playing')return;
+ e.preventDefault();
+ if(touchControlMode!=='classic'||!classicPointer||classicPointer.id!==e.pointerId)return;
+ classicAim(e);
+},{passive:false});
+canvas.addEventListener('pointerup',e=>{
+ if(e.pointerType!=='touch'||!classicPointer||classicPointer.id!==e.pointerId)return;
+ e.preventDefault();
+ const wasHeld=classicPointer.held;
+ classicAim(e);
+ clearTimeout(classicTimer);classicTimer=null;classicPointer=null;mouse.left=false;
+ if(!wasHeld&&mode==='playing'){
+  mouse.right=true;
+  // Keep the click for at least one physics step (60Hz) even on 120Hz displays.
+  setTimeout(()=>{mouse.right=false},38);
+ }
+},{passive:false});
+canvas.addEventListener('pointercancel',classicCancel);
+
 window.addEventListener('orientationchange',()=>{keys.clear();mouse.left=mouse.right=false;stopCursor();resize();applyTouchLayout()});
 window.addEventListener('resize',()=>{resize();applyTouchLayout()});window.addEventListener('blur',()=>{keys.clear();mouse.left=mouse.right=false;});
 window.addEventListener('keydown',e=>{if(e.code==='Enter'&&!e.repeat&&!e.isComposing&&onlineRoomCode&&mode==='playing'&&!e.target.closest('input,textarea,select,[contenteditable]')){e.preventDefault();wrChatOpen();return;}const code=toGameKey(e.code);if(['Space','ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Tab'].includes(code))e.preventDefault();if(code==='Space'&&gameMode==='sandbox'&&mode==='playing'&&!e.repeat){let now=performance.now();if(now-lastSpaceTap<330){spectator=!spectator;boatRiding=false;player.jumpBuffer=0;lastSpaceTap=-10000;toast(spectator?'スペクテイター：壁を通り抜けて飛行できます':'通常の移動に戻りました');return;}lastSpaceTap=now;}if(code==='KeyM'&&(mode==='playing'||mode==='worldmap')){e.preventDefault();if(mode==='worldmap')closeWorldMap();else openWorldMap();return}if((code==='Equal'||code==='Minus')&&mode==='playing'){zoom=zoomClamp(zoom+(code==='Equal'?.25:-.25)*(touchDevice?mobileZoomFactor():1));return;}if(code==='Escape'){e.preventDefault();if(mode==='touchEdit'){closeTouchEditor();return}if(mode==='gameControls'){openSettings('playing');return}if(mode==='worldRename'){showWorldSlots();return}if(['worldSlots','worldCreate','titleSettings','titleControls'].includes(mode)){showMenu();return}if(mode==='settings'){if(settingsReturn==='menu')showMenu();else startPlay();return}if(mode!=='menu')pause();return}if(code==='KeyE'){if(mode==='storage'){startPlay();return}if(mode==='inventory')closeInventory();else if(mode==='craft'){mode='inventory';renderInventory()}else if(mode==='playing')openInventory();return}if(code==='KeyC'){if(mode==='craft')startPlay();else if(mode==='playing'||mode==='inventory')openCraft();return}if(mode!=='playing')return;if(e.code===keyBinds.mine)mouse.left=true;if(e.code===keyBinds.place)mouse.right=true;keys.add(code);if(!e.repeat&&(code==='Space'||code==='KeyW')&&!spectator)player.jumpBuffer=.12;if(code==='KeyF')save();if(code==='KeyQ'&&!e.repeat){e.preventDefault();dropSelected(e.ctrlKey);return;}if(/^Digit[0-9]$/.test(code)){active=code==='Digit0'?9:Number(code.slice(5))-1;updateBar()}});
@@ -3121,4 +3204,10 @@ window.WRCloud={
   await deleteDoc(ref);
  }
 };
+</script><script>
+// Avoid long-press selection, dragging and browser pan/zoom during gameplay.
+document.addEventListener('contextmenu',e=>{if(!e.target.closest('input,textarea'))e.preventDefault()});
+document.addEventListener('dragstart',e=>{if(!e.target.closest('input,textarea'))e.preventDefault()});
+document.addEventListener('selectstart',e=>{if(!e.target.closest('input,textarea'))e.preventDefault()});
+document.addEventListener('touchmove',e=>{if(e.target.closest('#modal,#onlineChatLog,input,textarea'))return;if(e.cancelable)e.preventDefault()},{passive:false});
 </script></body></html>
