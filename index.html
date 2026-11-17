@@ -513,6 +513,37 @@ body.touchPlaying #quickActions,body.touchPlaying #quickActionsRight,body.touchE
 #overlay:not(.hidden){pointer-events:auto!important}
 #hud{pointer-events:none!important}
 #quickActions,#quickActionsRight,#hotbar,#map{pointer-events:auto!important}
+
+/* PC/mobile shared HUD: all four top shortcuts have one layout and one size. */
+#quickActions,#quickActionsRight,
+body.touchPlaying #quickActions,body.touchPlaying #quickActionsRight,
+body.touchEditing #quickActions,body.touchEditing #quickActionsRight{
+  display:flex!important;position:absolute!important;top:14px!important;bottom:auto!important;
+  gap:6px!important;align-items:stretch!important;z-index:6!important;
+  width:126px!important;height:54px!important;pointer-events:auto!important;
+}
+#quickActions,body.touchPlaying #quickActions,body.touchEditing #quickActions{
+  left:calc(50% - 129px)!important;right:auto!important;
+}
+#quickActionsRight,body.touchPlaying #quickActionsRight,body.touchEditing #quickActionsRight{
+  left:calc(50% + 3px)!important;right:auto!important;
+}
+#quickActions .quickButton,#quickActionsRight .quickButton,
+body.touchPlaying #quickActions .quickButton,body.touchPlaying #quickActionsRight .quickButton,
+body.touchEditing #quickActions .quickButton,body.touchEditing #quickActionsRight .quickButton{
+  position:relative!important;inset:auto!important;top:auto!important;left:auto!important;
+  right:auto!important;bottom:auto!important;transform:none!important;
+  display:flex!important;box-sizing:border-box!important;
+  flex:0 0 60px!important;width:60px!important;height:54px!important;
+  min-width:60px!important;max-width:60px!important;
+  min-height:54px!important;max-height:54px!important;
+  margin:0!important;padding:4px 6px!important;font-size:10px!important;
+  pointer-events:auto!important;touch-action:manipulation!important;
+}
+#quickActions .quickButton .symbol,#quickActionsRight .quickButton .symbol,
+body.touchPlaying .quickButton .symbol,body.touchEditing .quickButton .symbol{
+  font-size:19px!important;
+}
 </style></head><body><canvas id="game"></canvas><div id="hud"><div id="top"><div id="stats"><div class="stat">❤ HP <span id="hp">100 / 100</span></div><div class="bar"><div id="hpfill" class="fill" style="width:100%"></div></div><div class="stat">✦ MP <span id="mpnum">20 / 20</span></div><div class="bar"><div class="fill" id="mpfill" style="width:100%;background:#67a5f2"></div></div><div class="stat">🫧 酸素 <span id="oxynum">100 / 100</span></div><div class="bar"><div class="fill" id="oxyfill" style="width:100%;background:#a0e2f5"></div></div><div class="stat">🍖 食料 <span id="foodnum">100 / 100</span></div><div class="bar"><div class="fill" id="foodfill" style="width:100%;background:#d59752"></div></div><div class="stat">💧 水分 <span id="waternum">100 / 100</span></div><div class="bar" style="margin-bottom:0"><div class="fill" id="waterfill" style="width:100%;background:#55b3dc"></div></div></div><div id="info">地表 / 森林　|　深度: <span id="depth">0</span><br>座標: <span id="coords">0, 0</span><br>ズーム: <span id="zoomtext">2.0</span>x<br>光量: <span id="lighttext">100%</span> · 撃破: <span id="kills">0</span></div></div><canvas id="map" width="224" height="224" title="全体マップを表示 (M)"></canvas><div id="miniZoomControl" aria-label="ミニマップの拡大縮小"><input id="miniZoomSlider" type="range" min="0.7" max="6" step="0.1" value="2" aria-label="ミニマップ拡大率"><span>🔎</span></div><div id="clock">☀ 08:00</div><div id="toast"></div><div id="quickActions"><button type="button" class="quickButton" id="quickInventory" title="持ち物を開く (E)"><span class="keyhint">E</span><span class="symbol">🎒</span><span>持ち物</span></button><button type="button" class="quickButton" id="quickCraft" title="クラフト (C)"><span class="keyhint">C</span><span class="symbol">📖</span><span>クラフト</span></button></div><div id="quickActionsRight" class="right"><button type="button" class="quickButton" id="quickMap" title="全体マップ (M)"><span class="keyhint">M</span><span class="symbol">🗺️</span><span>マップ</span></button><button type="button" class="quickButton" id="quickSettings" title="メニュー (Esc)"><span class="keyhint">Esc</span><span class="symbol">⏸</span><span>メニュー</span></button></div><div id="hotbar"></div></div><div id="rotateNotice">📱 横画面にしてください<small>WILDROOTのスマホ版は横向き専用です。<br>端末を横に回転してプレイしてください。</small></div><div id="touchControls" aria-label="スマホ操作"><div id="touchMove"><button id="touchLeft" aria-label="左へ移動">◀</button><button id="touchRight" aria-label="右へ移動">▶</button><button id="touchStick" aria-label="移動スティック"><span id="stickKnob"></span></button></div><div id="touchSpecial"><button id="touchDrop" aria-label="アイテムを捨てる">🗑</button><button id="touchDash" aria-label="ダッシュ">⇧</button><button id="touchDown" aria-label="下へ">▼</button><button id="touchJump" aria-label="ジャンプ">⤒</button><button id="touchCursorStick" aria-label="カーソルスティック"><span id="cursorKnob"></span></button><button id="touchMine" aria-label="破壊">⛏</button><button id="touchPlace" aria-label="設置・使用">▣</button><button id="touchZoomIn" aria-label="拡大">＋</button><button id="touchZoomOut" aria-label="縮小">－</button></div><div id="touchGuide">左：移動　画面スワイプ：照準　⛏ 破壊／攻撃　▣ 設置／使用</div></div><div id="touchEditBar"><strong>📱 スマホ操作配置</strong><label>移動 <select id="touchStyle"><option value="buttons">左右ボタン</option><option value="stick">スティック</option></select></label><label>サイズ <input id="touchSize" type="range" min="38" max="140" step="2" value="72"></label><span id="touchEditSelection">ボタンを選択・ドラッグ</span><button id="touchLayoutReset">初期化</button><button id="touchEditDone">保存して戻る</button></div><div id="itemTooltip" role="tooltip"></div><div id="overlay"><div id="modal"></div></div><script>
 
 'use strict';
@@ -2813,6 +2844,12 @@ function applyTouchLayout(){
  const small=h<460;
  for(const id of TOUCH_IDS){
   const b=document.getElementById(id);if(!b)continue;
+  // The four top shortcuts belong to the common desktop HUD, not the mobile touch layout.
+  // Do not apply per-device coordinates, sizes or inline !important rules to them.
+  if(id.startsWith('quick')){
+    for(const prop of ['left','top','width','height']) b.style.removeProperty(prop);
+    continue;
+  }
   let [px,py,size]=getTouchPlacement(id);
   // Shorter displays must not squash the action controls over the hotbar.
   let dim=Math.max(32,Math.min(small?Math.max(42,h*.20):Math.max(48,h*.23),size));
